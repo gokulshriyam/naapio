@@ -25,6 +25,7 @@ const Index = () => {
           </a>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
+            <a href="/for-tailors" className="hover:text-foreground transition-colors">For Tailors</a>
             <a href="/#categories" className="hover:text-foreground transition-colors">Categories</a>
           </div>
           <div className="flex items-center gap-3">
