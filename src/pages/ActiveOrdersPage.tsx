@@ -1,183 +1,338 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Check, Clock, AlertCircle, Lock, Scissors, Video, Package, ArrowLeft, Star, Upload } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Check, Lock, ArrowLeft, Star, Play, Package, Scissors, Video, Ruler, Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { orderMilestones } from "@/data/mockData";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import redLehenga from "@/assets/red-lehenga.jpg";
 
-const statusConfig = {
-  completed: { icon: Check, color: "bg-success text-success-foreground", ring: "ring-success/20", label: "Completed" },
-  action_required: { icon: AlertCircle, color: "bg-warning text-warning-foreground", ring: "ring-warning/20 animate-pulse-gold", label: "Action Required" },
-  in_progress: { icon: Clock, color: "bg-info text-primary-foreground", ring: "ring-info/20", label: "In Progress" },
-  pending: { icon: Lock, color: "bg-muted text-muted-foreground", ring: "", label: "Pending" },
-};
+const MEASUREMENT_FIELDS = [
+  "Chest","Waist","Hips","Shoulder Width","Sleeve Length","Back Length",
+  "Front Length","Neck","Bicep","Forearm","Wrist","Thigh","Knee","Calf",
+  "Ankle","Torso","Cross Back","Cross Front","Armhole","Rise","Inseam",
+];
 
-const milestoneIcons: Record<string, typeof Scissors> = {
-  ruler: Check, scissors: Scissors, thread: Clock, video: Video, package: Package,
+const MILESTONES = [
+  { id: 1, title: "Fit & Measurement Confirmation", icon: Ruler },
+  { id: 2, title: "Fabric Approval", icon: Scissors },
+  { id: 3, title: "Stitching in Progress", icon: Scissors },
+  { id: 4, title: "Virtual Trial", icon: Video },
+  { id: 5, title: "Final Approval & Dispatch", icon: Package },
+];
+
+const slideVariants = {
+  enter: { opacity: 0, x: 60 },
+  center: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -60 },
 };
 
 const ActiveOrdersPage = () => {
   const navigate = useNavigate();
-  const [review, setReview] = useState({ quality: 0, communication: 0, timeliness: 0, value: 0, text: "" });
+  const [activeMilestone, setActiveMilestone] = useState(1);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const completedCount = orderMilestones.filter((m) => m.status === "completed").length;
+  // M1 state
+  const [measurements, setMeasurements] = useState<Record<string, string>>({});
+  const [dpdp1, setDpdp1] = useState(false);
+  const [dpdp2, setDpdp2] = useState(false);
+
+  // M2 state — nothing extra needed
+
+  // M3 state
+  const [stitchProgress, setStitchProgress] = useState(0);
+
+  // M4 state
+  const [trialChecks, setTrialChecks] = useState<Record<string, boolean>>({});
+
+  // M5 state
+  const [shippingForm, setShippingForm] = useState({ name: "", addr1: "", addr2: "", city: "", state: "", pincode: "", phone: "" });
+  const [dispatched, setDispatched] = useState(false);
+  const [delivered, setDelivered] = useState(false);
+  const [review, setReview] = useState({ quality: 0, communication: 0, timeliness: 0, value: 0, text: "" });
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  // M3 auto-advance
+  useEffect(() => {
+    if (activeMilestone !== 3) return;
+    setStitchProgress(0);
+    const interval = setInterval(() => {
+      setStitchProgress((p) => {
+        if (p >= 100) { clearInterval(interval); return 100; }
+        return p + 2;
+      });
+    }, 100);
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      setActiveMilestone(4);
+    }, 5000);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
+  }, [activeMilestone]);
+
+  const advance = (next: number) => {
+    toast.success(`Milestone ${next - 1} completed!`);
+    setActiveMilestone(next);
+    contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const m1Valid = MEASUREMENT_FIELDS.every((f) => measurements[f]?.trim()) && dpdp1 && dpdp2;
+  const m4Valid = MEASUREMENT_FIELDS.every((f) => trialChecks[f]);
+  const m5ShipValid = Object.entries(shippingForm).every(([k, v]) => k === "addr2" || v.trim());
+
+  const progressPercent = ((activeMilestone - 1) / 5) * 100;
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl" ref={contentRef}>
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </button>
 
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-foreground">Track Order <span className="text-accent">#12346</span></h1>
-          <p className="text-muted-foreground font-sans mt-1">Men's Bandhgala Suit • Artisan #3</p>
+      <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#12346</span></h1>
+      <p className="text-muted-foreground font-sans mb-6">Men's Bandhgala Suit • Artisan #3</p>
+
+      {/* Top progress */}
+      <div className="mb-8">
+        <div className="flex justify-between text-xs font-sans text-muted-foreground mb-2">
+          <span>Milestone {Math.min(activeMilestone, 5)} of 5</span>
+          <span>{Math.round(progressPercent)}% complete</span>
         </div>
-        <span className="px-4 py-1.5 rounded-full text-sm font-sans font-medium bg-success-light text-success">
-          {completedCount}/5 Completed
-        </span>
+        <Progress value={progressPercent} className="h-2" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8">
-        {/* Order card */}
-        <div className="bg-card rounded-2xl border border-border p-5 h-fit sticky top-24">
-          <div className="relative rounded-xl overflow-hidden mb-4">
-            <img src={redLehenga} alt="Order" className="w-full h-48 object-cover" />
-            <div className="absolute top-2 right-2 px-2 py-1 bg-card/90 backdrop-blur-sm rounded-md text-xs font-sans font-medium">RED LEHENGA</div>
-          </div>
-          <p className="text-accent font-sans text-sm underline cursor-pointer mb-4">Click here to view the Measurement Card</p>
-          <div className="space-y-3 text-sm font-sans">
-            <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground">Order Summary</p>
-            <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="px-2 py-0.5 rounded-full text-xs font-medium bg-info-light text-info">IN PROGRESS</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Expected Delivery</span><span className="font-medium text-foreground">April 20, 2026</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Total Price</span><span className="font-serif font-bold text-xl text-foreground">₹20,000</span></div>
-          </div>
-          <div className="mt-4 flex items-center justify-center gap-2 py-2 px-4 bg-success-light rounded-full text-success text-sm font-sans font-medium">
-            <Check className="w-4 h-4" /> ₹20k in Escrow
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-border">
-            <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground mb-3">Master Tailor</p>
-            <h3 className="font-sans font-semibold text-foreground">Studio Vastra <Check className="w-4 h-4 inline text-info" /></h3>
-            <p className="text-xs text-muted-foreground font-sans mt-1">📍 Indiranagar, Bangalore</p>
-            <div className="flex items-center gap-2 mt-2">
-              <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-              <span className="text-sm font-sans">4.5 Rating</span>
-              <span className="text-xs font-sans font-bold px-2 py-0.5 rounded-full bg-accent text-accent-foreground">GOLD TIER</span>
+      {/* Milestone indicators */}
+      <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-2">
+        {MILESTONES.map((ms, i) => {
+          const completed = ms.id < activeMilestone;
+          const active = ms.id === activeMilestone;
+          const locked = ms.id > activeMilestone;
+          return (
+            <div key={ms.id} className="flex items-center gap-1 flex-shrink-0">
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-sans font-bold transition-all ${
+                completed ? "bg-success text-success-foreground" : active ? "bg-accent text-accent-foreground ring-4 ring-accent/20" : "bg-muted text-muted-foreground"
+              }`}>
+                {completed ? <Check className="w-4 h-4" /> : locked ? <Lock className="w-3.5 h-3.5" /> : ms.id}
+              </div>
+              {i < MILESTONES.length - 1 && (
+                <div className={`w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
+              )}
             </div>
-            <Button variant="default" className="w-full mt-4" onClick={() => navigate("/dashboard/chat")}>
-              💬 Chat
-            </Button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8">
+        {/* Sidebar order card */}
+        <div className="bg-card rounded-2xl border border-border p-5 h-fit sticky top-24">
+          <img src={redLehenga} alt="Order" className="w-full h-40 object-cover rounded-xl mb-4" />
+          <div className="space-y-2 text-sm font-sans">
+            <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="px-2 py-0.5 rounded-full text-xs font-medium bg-info-light text-info">IN PROGRESS</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span className="font-medium text-foreground">April 20, 2026</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Price</span><span className="font-serif font-bold text-lg text-foreground">₹20,000</span></div>
           </div>
+          <div className="mt-4 flex items-center justify-center gap-2 py-2 px-4 bg-success-light rounded-full text-success text-xs font-sans font-medium">
+            <Check className="w-3 h-3" /> ₹20k in Escrow
+          </div>
+          <Button variant="default" className="w-full mt-4" size="sm" onClick={() => navigate("/dashboard/chat")}>💬 Chat with Tailor</Button>
         </div>
 
-        {/* Milestones */}
-        <div className="space-y-1">
-          <h2 className="font-serif font-bold text-xl text-foreground mb-6">Project Milestones</h2>
-
-          {orderMilestones.map((ms, i) => {
-            const config = statusConfig[ms.status];
-            const Icon = config.icon;
-
-            return (
-              <motion.div
-                key={ms.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative"
-              >
-                {/* Connector line */}
-                {i < orderMilestones.length - 1 && (
-                  <div className={`absolute left-[19px] top-[48px] w-0.5 h-[calc(100%-32px)] ${ms.status === "completed" ? "bg-success" : "bg-border"}`} />
-                )}
-
-                <div className="flex gap-4 pb-8">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ring-4 ${config.color} ${config.ring}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-
-                  <div className={`flex-1 p-5 rounded-xl border transition-all ${ms.status === "pending" ? "bg-muted/50 border-border opacity-60" : "bg-card border-border"} ${ms.status === "action_required" ? "border-warning/40 shadow-md" : ""}`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        {ms.status === "action_required" && <span className="text-xs font-sans font-bold text-warning uppercase mb-1 block">ACTIVE</span>}
-                        <h3 className="font-sans font-semibold text-foreground">{ms.title}</h3>
-                      </div>
-                      {ms.completedDate && <span className="text-xs text-muted-foreground font-sans">{ms.completedDate}</span>}
+        {/* Milestone content */}
+        <div className="min-h-[400px]">
+          <AnimatePresence mode="wait">
+            {/* ========== MILESTONE 1 ========== */}
+            {activeMilestone === 1 && (
+              <motion.div key="m1" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Fit & Measurement Confirmation</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-6">Enter your 21-point measurements (in inches) so the tailor can begin.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                  {MEASUREMENT_FIELDS.map((f) => (
+                    <div key={f}>
+                      <Label className="text-xs font-sans text-muted-foreground">{f}</Label>
+                      <Input
+                        type="number"
+                        placeholder="in"
+                        value={measurements[f] || ""}
+                        onChange={(e) => setMeasurements({ ...measurements, [f]: e.target.value })}
+                        className="mt-1 h-9 text-sm"
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground font-sans">{ms.description}</p>
+                  ))}
+                </div>
+                <div className="space-y-3 mb-6 p-4 bg-secondary rounded-xl">
+                  <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground">DPDP Act 2023 Consent</p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox checked={dpdp1} onCheckedChange={(v) => setDpdp1(!!v)} />
+                    <span className="text-xs font-sans text-foreground leading-relaxed">I consent to my measurement data being stored securely and shared only with my accepted vendor per Naapio's Privacy Policy (DPDP Act 2023)</span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox checked={dpdp2} onCheckedChange={(v) => setDpdp2(!!v)} />
+                    <span className="text-xs font-sans text-foreground leading-relaxed">I understand my data will be deleted upon request within 72 hours</span>
+                  </label>
+                </div>
+                <Button variant="gold" disabled={!m1Valid} onClick={() => advance(2)} className="w-full sm:w-auto">
+                  Confirm Measurements
+                </Button>
+              </motion.div>
+            )}
 
-                    {/* Vendor message */}
-                    {ms.vendorMessage && (
-                      <div className="mt-4 p-4 bg-secondary rounded-lg border border-border">
-                        <p className="text-sm font-sans text-foreground italic">"{ms.vendorMessage}"</p>
-                      </div>
-                    )}
-
-                    {/* Fabric swatches */}
-                    {ms.fabrics && (
-                      <div className="mt-4 flex gap-4">
-                        {ms.fabrics.map((f) => (
-                          <div key={f.name} className="text-center">
-                            <div className={`w-20 h-20 rounded-xl bg-gradient-to-br ${f.color} shadow-sm cursor-pointer hover:scale-105 transition-transform`} />
-                            <span className="text-xs font-sans text-muted-foreground mt-1 block">{f.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Action buttons */}
-                    {ms.status === "action_required" && (
-                      <div className="flex gap-3 mt-4">
-                        <Button variant="outline" size="sm">Request Change</Button>
-                        <Button variant="gold" size="sm" onClick={() => toast.success("Fabric approved!")}>Approve Fabric</Button>
-                      </div>
-                    )}
-
-                    {/* Progress update */}
-                    {ms.progressUpdate && (
-                      <p className="mt-3 text-xs text-muted-foreground font-sans bg-info-light p-3 rounded-lg">{ms.progressUpdate}</p>
-                    )}
-
-                    {ms.estimatedDate && (
-                      <p className="mt-2 text-xs text-muted-foreground font-sans">Est. completion: {ms.estimatedDate}</p>
-                    )}
-
-                    {/* Final milestone - review */}
-                    {ms.id === 5 && ms.status !== "pending" && (
-                      <div className="mt-4 space-y-4">
-                        {["Quality", "Communication", "Timeliness", "Value"].map((cat) => {
-                          const key = cat.toLowerCase() as keyof typeof review;
-                          return (
-                            <div key={cat} className="flex items-center gap-3">
-                              <span className="text-sm font-sans text-foreground w-28">{cat}</span>
-                              <div className="flex gap-1">
-                                {[1, 2, 3, 4, 5].map((s) => (
-                                  <Star
-                                    key={s}
-                                    className={`w-5 h-5 cursor-pointer transition-colors ${s <= (review[key] as number) ? "fill-accent text-accent" : "text-border"}`}
-                                    onClick={() => setReview({ ...review, [key]: s })}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                        <Textarea placeholder="Write a review..." value={review.text} onChange={(e) => setReview({ ...review, text: e.target.value })} className="font-sans" />
-                        <Button variant="gold" onClick={() => toast.success("Review submitted!")}>Submit Review</Button>
-                      </div>
-                    )}
-                  </div>
+            {/* ========== MILESTONE 2 ========== */}
+            {activeMilestone === 2 && (
+              <motion.div key="m2" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Fabric Approval</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-6">Your tailor has sent 3 fabric swatches for your approval.</p>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {[
+                    { name: "Royal Silk #1", color: "from-amber-800 to-amber-600" },
+                    { name: "Brocade Gold", color: "from-yellow-700 to-yellow-500" },
+                    { name: "Velvet Navy", color: "from-blue-900 to-blue-700" },
+                  ].map((s) => (
+                    <div key={s.name} className="text-center">
+                      <div className={`aspect-square rounded-xl bg-gradient-to-br ${s.color} shadow-md hover:scale-105 transition-transform cursor-pointer`} />
+                      <span className="text-xs font-sans text-muted-foreground mt-2 block">{s.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-4 bg-secondary rounded-xl mb-6">
+                  <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for a Bandhgala."</p>
+                  <p className="text-xs text-muted-foreground font-sans mt-1">— Studio Vastra</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" onClick={() => toast.info("Alteration request sent to tailor.")}>Request Change</Button>
+                  <Button variant="gold" size="sm" onClick={() => advance(3)}>Approve Fabric</Button>
                 </div>
               </motion.div>
-            );
-          })}
+            )}
+
+            {/* ========== MILESTONE 3 ========== */}
+            {activeMilestone === 3 && (
+              <motion.div key="m3" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Stitching in Progress</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-6">No action required — sit back while your garment is crafted.</p>
+                <div className="p-8 bg-card border border-border rounded-2xl text-center space-y-6">
+                  <Scissors className="w-12 h-12 mx-auto text-accent animate-pulse" />
+                  <p className="font-sans text-foreground font-medium">Your garment is being stitched by the artisan.</p>
+                  <Progress value={stitchProgress} className="h-3 max-w-md mx-auto" />
+                  <p className="text-xs text-muted-foreground font-sans">Estimated completion in a few moments…</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ========== MILESTONE 4 ========== */}
+            {activeMilestone === 4 && (
+              <motion.div key="m4" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Virtual Trial</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-6">Review the garment on a mannequin and verify each measurement checkpoint.</p>
+                {/* Video placeholder */}
+                <div className="aspect-video bg-muted rounded-2xl flex items-center justify-center mb-6 cursor-pointer hover:bg-muted/80 transition-colors border border-border">
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center mx-auto mb-3">
+                      <Play className="w-7 h-7 text-accent-foreground ml-1" />
+                    </div>
+                    <p className="text-sm font-sans text-muted-foreground">Virtual trial video</p>
+                  </div>
+                </div>
+                <p className="text-sm font-sans font-semibold text-foreground mb-3">Measurement Checkpoints</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+                  {MEASUREMENT_FIELDS.map((f) => (
+                    <label key={f} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-secondary transition-colors">
+                      <Checkbox checked={!!trialChecks[f]} onCheckedChange={(v) => setTrialChecks({ ...trialChecks, [f]: !!v })} />
+                      <span className="text-xs font-sans text-foreground">{f}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" onClick={() => toast.info("Alteration request sent.")}>Request Alteration</Button>
+                  <Button variant="gold" size="sm" disabled={!m4Valid} onClick={() => advance(5)}>Approve Trial</Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ========== MILESTONE 5 ========== */}
+            {activeMilestone === 5 && (
+              <motion.div key="m5" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Final Approval & Dispatch</h2>
+
+                {reviewSubmitted ? (
+                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-8 bg-success-light rounded-2xl text-center mt-6">
+                    <Check className="w-14 h-14 mx-auto text-success mb-4" />
+                    <h3 className="font-serif font-bold text-xl text-foreground mb-2">Thank You!</h3>
+                    <p className="text-sm font-sans text-muted-foreground">Your review has been submitted. We appreciate your feedback.</p>
+                  </motion.div>
+                ) : delivered ? (
+                  /* Rating form */
+                  <div className="mt-4 space-y-5">
+                    <p className="text-sm font-sans text-muted-foreground">Rate your experience with Studio Vastra.</p>
+                    {(["Quality","Communication","Timeliness","Value for Money"] as const).map((cat) => {
+                      const rKey = (cat === "Value for Money" ? "value" : cat.toLowerCase()) as keyof typeof review;
+                      return (
+                        <div key={cat} className="flex items-center gap-3">
+                          <span className="text-sm font-sans text-foreground w-36">{cat}</span>
+                          <div className="flex gap-1">
+                            {[1,2,3,4,5].map((s) => (
+                              <Star key={s} className={`w-5 h-5 cursor-pointer transition-colors ${s <= (review[rKey] as number) ? "fill-accent text-accent" : "text-border hover:text-accent/40"}`}
+                                onClick={() => setReview({ ...review, [rKey]: s })} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <Textarea placeholder="Additional comments…" value={review.text} onChange={(e) => setReview({ ...review, text: e.target.value })} className="font-sans" />
+                    <Button variant="gold" onClick={() => { setReviewSubmitted(true); toast.success("Review submitted!"); }}>Submit Review</Button>
+                  </div>
+                ) : dispatched ? (
+                  /* Post-dispatch */
+                  <div className="mt-4 space-y-4">
+                    <div className="p-6 bg-success-light rounded-2xl text-center">
+                      <Truck className="w-10 h-10 mx-auto text-success mb-3" />
+                      <p className="font-sans font-semibold text-foreground">Your garment will be dispatched soon!</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-sans text-muted-foreground">AWB Tracking Number</Label>
+                      <Input value="DTDC1234567890" readOnly className="mt-1 bg-muted font-mono text-sm" />
+                    </div>
+                    <Button variant="gold" onClick={() => { setDelivered(true); toast.success("Marked as delivered!"); }}>Mark as Delivered</Button>
+                  </div>
+                ) : (
+                  /* Shipping form */
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground font-sans mb-4">Confirm your shipping address for dispatch.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                      {([
+                        ["name","Full Name"],["addr1","Address Line 1"],["addr2","Address Line 2 (optional)"],
+                        ["city","City"],["state","State"],["pincode","Pincode"],["phone","Phone"],
+                      ] as const).map(([k, label]) => (
+                        <div key={k} className={k === "addr1" || k === "addr2" ? "sm:col-span-2" : ""}>
+                          <Label className="text-xs font-sans text-muted-foreground">{label}</Label>
+                          <Input value={shippingForm[k]} onChange={(e) => setShippingForm({ ...shippingForm, [k]: e.target.value })} className="mt-1 h-9 text-sm" />
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="gold" disabled={!m5ShipValid} onClick={() => { setDispatched(true); toast.success("Dispatch confirmed!"); }}>Confirm Dispatch</Button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+
+      {/* Completed milestones summary */}
+      {activeMilestone > 1 && (
+        <div className="mt-10 space-y-2">
+          <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground mb-3">Completed Milestones</p>
+          {MILESTONES.filter((ms) => ms.id < activeMilestone).map((ms) => (
+            <div key={ms.id} className="flex items-center gap-3 p-3 bg-success-light/50 rounded-xl">
+              <div className="w-7 h-7 rounded-full bg-success flex items-center justify-center"><Check className="w-4 h-4 text-success-foreground" /></div>
+              <span className="text-sm font-sans text-foreground font-medium">{ms.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
