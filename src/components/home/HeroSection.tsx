@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, Sparkles } from "lucide-react";
+import { Upload, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroBanner from "@/assets/hero-banner.jpg";
 
@@ -56,7 +56,7 @@ const HeroSection = () => {
               onClick={() => {
                 document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground hover:border-primary-foreground/50"
             >
               How it works
             </Button>
@@ -70,7 +70,9 @@ const HeroSection = () => {
           >
             <div className="flex -space-x-2">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-8 h-8 rounded-full bg-accent/30 border-2 border-primary-foreground/20" />
+                <div key={i} className="w-8 h-8 rounded-full bg-accent/30 border-2 border-primary-foreground/20 flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary-foreground/70" />
+                </div>
               ))}
             </div>
             <span>2,400+ happy customers this month</span>
