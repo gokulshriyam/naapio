@@ -56,7 +56,7 @@ const HeroSection = () => {
               onClick={() => {
                 document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground hover:border-primary-foreground/50"
+              className="bg-primary-foreground/20 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/30 hover:border-primary-foreground/60"
             >
               How it works
             </Button>
