@@ -11,6 +11,7 @@ import denimImg from "@/assets/fabrics/denim.jpg";
 import woolImg from "@/assets/fabrics/wool.jpg";
 import organzaImg from "@/assets/fabrics/organza.jpg";
 import brocadeImg from "@/assets/fabrics/brocade.jpg";
+import vendorsChoiceImg from "@/assets/fabrics/vendors-choice.jpg";
 
 export const fabricOptionsWithImages = [
   { name: "Silk", image: silkImg },
@@ -26,5 +27,5 @@ export const fabricOptionsWithImages = [
   { name: "Wool", image: woolImg },
   { name: "Organza", image: organzaImg },
   { name: "Brocade", image: brocadeImg },
-  { name: "Vendor's Choice", image: null },
+  { name: "Vendor's Choice", image: vendorsChoiceImg },
 ];
