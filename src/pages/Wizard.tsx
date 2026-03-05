@@ -1,15 +1,47 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X } from "lucide-react";
+import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { menCategories, womenCategories, fabricOptions, measurementFields } from "@/data/mockData";
+import { menCategories, womenCategories, measurementFields } from "@/data/mockData";
+import { fabricOptionsWithImages } from "@/data/fabricData";
 import redLehenga from "@/assets/red-lehenga.jpg";
+
+const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
+  "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
+  "Saree Blouse": { min: 1500, max: 6000, label: "🧵 Saree Blouse" },
+  "Salwar Kameez": { min: 2000, max: 8000, label: "👘 Salwar Kameez" },
+  "Anarkali": { min: 5000, max: 25000, label: "✨ Anarkali" },
+  "Gown": { min: 10000, max: 50000, label: "👗 Gown" },
+  "Kurti": { min: 1500, max: 5000, label: "👚 Kurti" },
+  "Co-ord Set": { min: 3000, max: 12000, label: "🎀 Co-ord Set" },
+  "Jacket": { min: 5000, max: 20000, label: "🧥 Jacket" },
+  "Sherwani": { min: 15000, max: 60000, label: "🤵 Sherwani" },
+  "Kurta": { min: 2000, max: 8000, label: "👔 Kurta" },
+  "Bandhgala": { min: 5000, max: 20000, label: "🎩 Bandhgala" },
+  "Suit": { min: 8000, max: 30000, label: "👔 Suit" },
+  "Blazer": { min: 5000, max: 20000, label: "🧥 Blazer" },
+  "Trousers": { min: 2000, max: 8000, label: "👖 Trousers" },
+  "Indo-Western": { min: 8000, max: 35000, label: "✨ Indo-Western" },
+};
+
+const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
+
+const quickBrackets = [
+  { label: "₹5K – ₹15K", min: 5000, max: 15000 },
+  { label: "₹15K – ₹35K", min: 15000, max: 35000 },
+  { label: "₹35K – ₹75K", min: 35000, max: 75000 },
+  { label: "₹75K – ₹1.5L", min: 75000, max: 150000 },
+  { label: "₹1.5L – ₹3L", min: 150000, max: 300000 },
+];
+
+const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 const Wizard = () => {
   const navigate = useNavigate();
@@ -24,9 +56,9 @@ const Wizard = () => {
   const [measurements, setMeasurements] = useState<Record<string, string>>({});
   const [consent1, setConsent1] = useState(false);
   const [consent2, setConsent2] = useState(false);
-  const [budget, setBudget] = useState([45000]);
-  const [budgetManual, setBudgetManual] = useState("45000");
+  const [budgetRange, setBudgetRange] = useState([5000, 50000]);
   const [deliveryDate, setDeliveryDate] = useState("");
+  const [flexibleDate, setFlexibleDate] = useState(false);
   const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
   const [fabricNotes, setFabricNotes] = useState("");
   const [phone, setPhone] = useState("");
@@ -55,7 +87,7 @@ const Wizard = () => {
       if (measurementType === "later") return consent1 && consent2;
       return consent1 && consent2;
     }
-    if (step === 3) return budget[0] >= 2000 && deliveryDate && selectedFabrics.length > 0;
+    if (step === 3) return budgetRange[0] >= 1000 && (flexibleDate || deliveryDate) && selectedFabrics.length > 0;
     if (step === 4) return otpVerified && termsAccepted;
     return true;
   };
@@ -75,6 +107,7 @@ const Wizard = () => {
   };
 
   const categories = gender === "men" ? menCategories : womenCategories;
+  const catRange = categoryBudgetRanges[selectedCategory] || defaultRange;
 
   return (
     <div className="min-h-screen bg-secondary">
@@ -246,56 +279,142 @@ const Wizard = () => {
           {step === 3 && (
             <motion.div key="s3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+                {/* Budget Section */}
                 <div>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Budget</h2>
-                  <div className="p-6 bg-card rounded-2xl border border-border">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="font-sans text-sm text-muted-foreground">₹2,000</span>
-                      <span className="font-serif font-bold text-2xl text-accent">₹{Number(budget[0]).toLocaleString("en-IN")}</span>
-                      <span className="font-sans text-sm text-muted-foreground">₹2,00,000</span>
+                  <div className="p-6 bg-card rounded-2xl border border-border space-y-5">
+                    {/* Display selected range */}
+                    <div className="text-center">
+                      <span className="font-serif font-bold text-2xl text-accent">
+                        {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])}
+                      </span>
                     </div>
-                    <Slider
-                      value={budget}
-                      onValueChange={(v) => { setBudget(v); setBudgetManual(String(v[0])); }}
-                      min={2000}
-                      max={200000}
-                      step={1000}
-                      className="mb-4"
-                    />
-                    <Input
-                      type="number"
-                      value={budgetManual}
-                      onChange={(e) => { setBudgetManual(e.target.value); setBudget([Number(e.target.value)]); }}
-                      className="font-sans"
-                      placeholder="Enter amount manually"
-                    />
+
+                    {/* Dual-handle range slider */}
+                    <div>
+                      <div className="flex justify-between text-xs font-sans text-muted-foreground mb-2">
+                        <span>₹1,000</span>
+                        <span>₹5,00,000</span>
+                      </div>
+                      <Slider
+                        value={budgetRange}
+                        onValueChange={setBudgetRange}
+                        min={1000}
+                        max={500000}
+                        step={500}
+                        minStepsBetweenThumbs={1}
+                      />
+                    </div>
+
+                    {/* Category context card */}
+                    <div className="p-4 bg-muted rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-sans font-semibold text-foreground">{catRange.label}</span>
+                        {selectedCategory && (
+                          <span className="text-xs font-sans text-muted-foreground">typical range</span>
+                        )}
+                      </div>
+                      <p className="text-sm font-sans text-accent font-medium">
+                        {formatINR(catRange.min)} – {formatINR(catRange.max)}
+                      </p>
+                    </div>
+
+                    {/* Quick-select chips */}
+                    <div className="flex flex-wrap gap-2">
+                      {quickBrackets.map((b) => (
+                        <button
+                          key={b.label}
+                          onClick={() => setBudgetRange([b.min, b.max])}
+                          className={`px-3 py-1.5 rounded-full text-xs font-sans font-medium transition-all border ${
+                            budgetRange[0] === b.min && budgetRange[1] === b.max
+                              ? "border-accent bg-accent/10 text-accent"
+                              : "border-border bg-card text-foreground hover:border-accent/40"
+                          }`}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Pricing tip */}
+                    <div className="flex items-start gap-2 p-3 bg-accent/5 border border-accent/20 rounded-lg">
+                      <Lightbulb className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                      <p className="text-xs font-sans text-muted-foreground">
+                        <span className="font-medium text-foreground">Pricing tip:</span> A wider budget range attracts more vendors and gives you better options. You can always negotiate the final price.
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Delivery Date Section */}
                 <div>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Delivery Date</h2>
-                  <div className="p-6 bg-card rounded-2xl border border-border">
-                    <p className="text-sm text-muted-foreground font-sans mb-3">Minimum 14 days from today</p>
+                  <div className="p-6 bg-card rounded-2xl border border-border space-y-4">
+                    <p className="text-sm text-muted-foreground font-sans">Minimum 14 days from today</p>
                     <Input
                       type="date"
                       value={deliveryDate}
                       min={minDate()}
                       onChange={(e) => setDeliveryDate(e.target.value)}
-                      className="font-sans"
+                      className={`font-sans ${flexibleDate ? "opacity-50 pointer-events-none" : ""}`}
+                      disabled={flexibleDate}
                     />
+
+                    {/* Flexible date toggle */}
+                    <div className="flex items-center justify-between pt-2">
+                      <div>
+                        <label htmlFor="flexible-date" className="text-sm font-sans font-medium text-foreground cursor-pointer">
+                          Flexible date
+                        </label>
+                        <p className="text-xs font-sans text-muted-foreground">I can wait for the right vendor</p>
+                      </div>
+                      <Switch
+                        id="flexible-date"
+                        checked={flexibleDate}
+                        onCheckedChange={setFlexibleDate}
+                      />
+                    </div>
+
+                    {flexibleDate && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-start gap-2 p-3 bg-muted rounded-lg"
+                      >
+                        <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <p className="text-xs font-sans text-muted-foreground">
+                          We'll match you with the best available vendor
+                        </p>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </div>
 
+              {/* Fabric Preference */}
               <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Fabric Preference</h2>
-              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-3 mb-6">
-                {fabricOptions.map((fab) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
+                {fabricOptionsWithImages.map((fab) => (
                   <button
                     key={fab.name}
                     onClick={() => toggleFabric(fab.name)}
-                    className={`p-3 rounded-xl text-center transition-all border ${selectedFabrics.includes(fab.name) ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
+                    className={`rounded-xl text-center transition-all border overflow-hidden ${selectedFabrics.includes(fab.name) ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
                   >
-                    <div className={`w-full aspect-square rounded-lg bg-gradient-to-br ${fab.color} mb-2`} />
-                    <span className="text-xs font-sans font-medium text-foreground">{fab.name}</span>
+                    {fab.image ? (
+                      <div className="w-full aspect-square relative">
+                        <img src={fab.image} alt={fab.name} className="w-full h-full object-cover" />
+                        {selectedFabrics.includes(fab.name) && (
+                          <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
+                            <Check className="w-6 h-6 text-accent-foreground drop-shadow-lg" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-full aspect-square bg-muted flex items-center justify-center">
+                        <HelpCircle className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <span className="text-xs font-sans font-medium text-foreground block py-2 px-1">{fab.name}</span>
                   </button>
                 ))}
               </div>
@@ -337,7 +456,9 @@ const Wizard = () => {
                       <h3 className="font-sans font-semibold text-foreground">Budget & Timeline</h3>
                       <button onClick={() => setStep(3)} className="text-accent font-sans text-sm font-medium">Edit</button>
                     </div>
-                    <p className="text-sm text-muted-foreground font-sans">₹{Number(budget[0]).toLocaleString("en-IN")} • Deliver by {deliveryDate}</p>
+                    <p className="text-sm text-muted-foreground font-sans">
+                      {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])} • {flexibleDate ? "Flexible delivery" : `Deliver by ${deliveryDate}`}
+                    </p>
                     <p className="text-sm text-muted-foreground font-sans mt-1">Fabrics: {selectedFabrics.length > 0 ? selectedFabrics.join(", ") : "Silk, Velvet"}</p>
                   </div>
                 </div>
