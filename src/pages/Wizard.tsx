@@ -400,20 +400,14 @@ const Wizard = () => {
                     onClick={() => toggleFabric(fab.name)}
                     className={`rounded-xl text-center transition-all border overflow-hidden ${selectedFabrics.includes(fab.name) ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
                   >
-                    {fab.image ? (
-                      <div className="w-full aspect-square relative">
-                        <img src={fab.image} alt={fab.name} className="w-full h-full object-cover" />
-                        {selectedFabrics.includes(fab.name) && (
-                          <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
-                            <Check className="w-6 h-6 text-accent-foreground drop-shadow-lg" />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-full aspect-square bg-muted flex items-center justify-center">
-                        <HelpCircle className="w-8 h-8 text-muted-foreground" />
-                      </div>
-                    )}
+                    <div className="w-full relative" style={{ aspectRatio: '1 / 1' }}>
+                      <img src={fab.image} alt={fab.name} className="w-full h-full object-cover object-center" style={{ aspectRatio: '1 / 1' }} />
+                      {selectedFabrics.includes(fab.name) && (
+                        <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
+                          <Check className="w-6 h-6 text-accent-foreground drop-shadow-lg" />
+                        </div>
+                      )}
+                    </div>
                     <span className="text-xs font-sans font-medium text-foreground block py-2 px-1">{fab.name}</span>
                   </button>
                 ))}
