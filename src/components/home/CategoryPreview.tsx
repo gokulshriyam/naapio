@@ -41,7 +41,7 @@ const CategoryPreview = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="group relative overflow-hidden rounded-2xl cursor-pointer"
-              onClick={() => navigate("/wizard")}
+              onClick={() => navigate("/start")}
             >
               <img src={cat.image} alt={cat.title} className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent" />

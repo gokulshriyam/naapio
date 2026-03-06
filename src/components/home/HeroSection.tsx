@@ -44,7 +44,7 @@ const HeroSection = () => {
             <Button
               variant="gold"
               size="hero"
-              onClick={() => navigate("/wizard")}
+              onClick={() => navigate("/start")}
               className="animate-pulse-gold"
             >
               <Upload className="w-5 h-5" />
