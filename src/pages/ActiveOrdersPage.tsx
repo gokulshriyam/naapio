@@ -16,6 +16,7 @@ import redLehenga from "@/assets/red-lehenga.jpg";
 import royalSilkImg from "@/assets/fabrics/royalsilk.jpg";
 import brocadeGoldImg from "@/assets/fabrics/brocadegold.jpg";
 import velvetNavyImg from "@/assets/fabrics/velvetnavy.jpg";
+import virtualTrialCover from "@/assets/virtualtrialcover.jpg";
 
 const MEASUREMENT_FIELDS = [
   "Chest","Waist","Hips","Shoulder Width","Sleeve Length","Back Length",
@@ -52,7 +53,8 @@ const ActiveOrdersPage = () => {
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
 
-  // M2 state — nothing extra needed
+  // M2 state
+  const [selectedSwatches, setSelectedSwatches] = useState<Set<string>>(new Set());
 
   // M3 state
   const [stitchProgress, setStitchProgress] = useState(0);
