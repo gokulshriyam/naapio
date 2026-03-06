@@ -30,7 +30,7 @@ export const activeRequests = [
   },
   {
     id: "REQ-002",
-    category: "Men's Bandhgala Suit",
+    category: "Women's Lehenga",
     budgetMin: 25000,
     budgetMax: 35000,
     status: "bids_received" as const,
@@ -147,7 +147,7 @@ export const chatMessages = [
 ];
 
 export const notifications = [
-  { id: 1, type: "bid" as const, title: "New bid received", description: "Artisan #5 placed a bid of ₹31,000 on your Bandhgala Suit request", time: "2 hours ago", unread: true },
+  { id: 1, type: "bid" as const, title: "New bid received", description: "Artisan #5 placed a bid of ₹31,000 on your Women's Lehenga request", time: "2 hours ago", unread: true },
   { id: 2, type: "milestone" as const, title: "Milestone update", description: "Artisan #3 has uploaded fabric swatches for your approval", time: "5 hours ago", unread: true },
   { id: 3, type: "chat" as const, title: "New message", description: "Artisan #3 sent you a message about fabric selection", time: "1 day ago", unread: false },
 ];
@@ -248,7 +248,7 @@ export const faqItems = [
   },
   {
     q: "Can I share my measurements later?",
-    a: "Yes! You can choose to provide measurements during the request or after accepting a bid. Your chosen tailor can also guide you through a video call for accurate measurements.",
+    a: "Yes! You can choose to provide measurements during the request or after accepting a bid.",
   },
   {
     q: "How is my measurement data protected?",

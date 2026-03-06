@@ -11,7 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { customer } from "@/data/mockData";
 import redLehenga from "@/assets/red-lehenga.jpg";
+import royalSilkImg from "@/assets/fabrics/royalsilk.jpg";
+import brocadeGoldImg from "@/assets/fabrics/brocadegold.jpg";
+import velvetNavyImg from "@/assets/fabrics/velvetnavy.jpg";
 
 const MEASUREMENT_FIELDS = [
   "Chest","Waist","Hips","Shoulder Width","Sleeve Length","Back Length",
@@ -38,8 +42,13 @@ const ActiveOrdersPage = () => {
   const [activeMilestone, setActiveMilestone] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // M1 state
-  const [measurements, setMeasurements] = useState<Record<string, string>>({});
+  // M1 state — pre-fill from profile
+  const profileMeasurements = Object.values(customer.measurements);
+  const initialMeasurements: Record<string, string> = {};
+  MEASUREMENT_FIELDS.forEach((f, i) => {
+    initialMeasurements[f] = String(profileMeasurements[i] || "");
+  });
+  const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements);
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
 
@@ -94,7 +103,7 @@ const ActiveOrdersPage = () => {
       </button>
 
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#12346</span></h1>
-      <p className="text-muted-foreground font-sans mb-6">Men's Bandhgala Suit • Artisan #3</p>
+      <p className="text-muted-foreground font-sans mb-6">Women's Lehenga • Artisan #3</p>
 
       {/* Top progress */}
       <div className="mb-8">
@@ -187,18 +196,20 @@ const ActiveOrdersPage = () => {
                 <p className="text-sm text-muted-foreground font-sans mb-6">Your tailor has sent 3 fabric swatches for your approval.</p>
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   {[
-                    { name: "Royal Silk #1", color: "from-amber-800 to-amber-600" },
-                    { name: "Brocade Gold", color: "from-yellow-700 to-yellow-500" },
-                    { name: "Velvet Navy", color: "from-blue-900 to-blue-700" },
+                    { name: "Royal Silk #1", image: royalSilkImg },
+                    { name: "Brocade Gold", image: brocadeGoldImg },
+                    { name: "Velvet Navy", image: velvetNavyImg },
                   ].map((s) => (
                     <div key={s.name} className="text-center">
-                      <div className={`aspect-square rounded-xl bg-gradient-to-br ${s.color} shadow-md hover:scale-105 transition-transform cursor-pointer`} />
+                      <div className="rounded-xl overflow-hidden shadow-md hover:scale-105 transition-transform cursor-pointer" style={{ aspectRatio: '1 / 1' }}>
+                        <img src={s.image} alt={s.name} className="w-full h-full object-cover object-center" />
+                      </div>
                       <span className="text-xs font-sans text-muted-foreground mt-2 block">{s.name}</span>
                     </div>
                   ))}
                 </div>
                 <div className="p-4 bg-secondary rounded-xl mb-6">
-                  <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for a Bandhgala."</p>
+                  <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for your Lehenga."</p>
                   <p className="text-xs text-muted-foreground font-sans mt-1">— Studio Vastra</p>
                 </div>
                 <div className="flex gap-3">
@@ -238,10 +249,10 @@ const ActiveOrdersPage = () => {
                 </div>
                 <p className="text-sm font-sans font-semibold text-foreground mb-3">Measurement Checkpoints</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
-                  {MEASUREMENT_FIELDS.map((f) => (
+                  {MEASUREMENT_FIELDS.map((f, i) => (
                     <label key={f} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-secondary transition-colors">
                       <Checkbox checked={!!trialChecks[f]} onCheckedChange={(v) => setTrialChecks({ ...trialChecks, [f]: !!v })} />
-                      <span className="text-xs font-sans text-foreground">{f}</span>
+                      <span className="text-xs font-sans text-foreground">{f}: {profileMeasurements[i]}"</span>
                     </label>
                   ))}
                 </div>
