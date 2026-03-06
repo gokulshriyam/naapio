@@ -13,6 +13,7 @@ import ActiveOrdersPage from "./pages/ActiveOrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import ForTailorsPage from "./pages/ForTailorsPage";
+import StartPage from "./pages/StartPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/for-tailors" element={<ForTailorsPage />} />
+          <Route path="/start" element={<StartPage />} />
           <Route path="/wizard" element={<Wizard />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<BiddingPage />} />

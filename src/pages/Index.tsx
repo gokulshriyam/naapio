@@ -32,7 +32,7 @@ const Index = () => {
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
               Login
             </Button>
-            <Button variant="gold" size="sm" onClick={() => navigate("/wizard")}>
+            <Button variant="gold" size="sm" onClick={() => navigate("/start")}>
               Get Started
             </Button>
           </div>
@@ -52,7 +52,7 @@ const Index = () => {
           <p className="text-primary-foreground/70 font-sans text-lg mb-8 max-w-xl mx-auto">
             Join thousands of customers who trust Naapio for their bespoke fashion needs.
           </p>
-          <Button variant="gold" size="hero" onClick={() => navigate("/wizard")}>
+          <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
             Upload your inspiration
           </Button>
         </div>
