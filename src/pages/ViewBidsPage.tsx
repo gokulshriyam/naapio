@@ -37,7 +37,7 @@ const ViewBidsPage = () => {
       </button>
 
       <div className="bg-card rounded-xl border border-border p-5 mb-6">
-        <h2 className="font-sans font-semibold text-foreground mb-1">Men's Bandhgala Suit</h2>
+        <h2 className="font-sans font-semibold text-foreground mb-1">Women's Lehenga</h2>
         <p className="text-sm text-muted-foreground font-sans">Budget: ₹25,000–₹35,000 • Custom Measurements • Silk, Velvet • Deliver by Apr 20</p>
       </div>
 

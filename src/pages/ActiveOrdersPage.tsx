@@ -16,6 +16,7 @@ import redLehenga from "@/assets/red-lehenga.jpg";
 import royalSilkImg from "@/assets/fabrics/royalsilk.jpg";
 import brocadeGoldImg from "@/assets/fabrics/brocadegold.jpg";
 import velvetNavyImg from "@/assets/fabrics/velvetnavy.jpg";
+import virtualTrialCover from "@/assets/virtualtrialcover.jpg";
 
 const MEASUREMENT_FIELDS = [
   "Chest","Waist","Hips","Shoulder Width","Sleeve Length","Back Length",
@@ -52,7 +53,8 @@ const ActiveOrdersPage = () => {
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
 
-  // M2 state — nothing extra needed
+  // M2 state
+  const [selectedSwatches, setSelectedSwatches] = useState<Set<string>>(new Set());
 
   // M3 state
   const [stitchProgress, setStitchProgress] = useState(0);
@@ -199,14 +201,26 @@ const ActiveOrdersPage = () => {
                     { name: "Royal Silk #1", image: royalSilkImg },
                     { name: "Brocade Gold", image: brocadeGoldImg },
                     { name: "Velvet Navy", image: velvetNavyImg },
-                  ].map((s) => (
-                    <div key={s.name} className="text-center">
-                      <div className="rounded-xl overflow-hidden shadow-md hover:scale-105 transition-transform cursor-pointer" style={{ aspectRatio: '1 / 1' }}>
-                        <img src={s.image} alt={s.name} className="w-full h-full object-cover object-center" />
+                  ].map((s) => {
+                    const isSelected = selectedSwatches.has(s.name);
+                    return (
+                      <div key={s.name} className="text-center cursor-pointer" onClick={() => {
+                        const next = new Set(selectedSwatches);
+                        if (next.has(s.name)) next.delete(s.name); else next.add(s.name);
+                        setSelectedSwatches(next);
+                      }}>
+                        <div className={`rounded-xl overflow-hidden shadow-md hover:scale-105 transition-all relative ${isSelected ? "ring-3 ring-accent" : ""}`} style={{ aspectRatio: '1 / 1' }}>
+                          <img src={s.image} alt={s.name} className="w-full h-full object-cover object-center" />
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center">
+                              <Check className="w-4 h-4 text-accent-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs font-sans text-muted-foreground mt-2 block">{s.name}</span>
                       </div>
-                      <span className="text-xs font-sans text-muted-foreground mt-2 block">{s.name}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div className="p-4 bg-secondary rounded-xl mb-6">
                   <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for your Lehenga."</p>
@@ -214,7 +228,7 @@ const ActiveOrdersPage = () => {
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" size="sm" onClick={() => toast.info("Alteration request sent to tailor.")}>Request Change</Button>
-                  <Button variant="gold" size="sm" onClick={() => advance(3)}>Approve Fabric</Button>
+                  <Button variant="gold" size="sm" disabled={selectedSwatches.size === 0} onClick={() => advance(3)}>Approve Fabric</Button>
                 </div>
               </motion.div>
             )}
@@ -239,13 +253,14 @@ const ActiveOrdersPage = () => {
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">Virtual Trial</h2>
                 <p className="text-sm text-muted-foreground font-sans mb-6">Review the garment on a mannequin and verify each measurement checkpoint.</p>
                 {/* Video placeholder */}
-                <div className="aspect-video bg-muted rounded-2xl flex items-center justify-center mb-6 cursor-pointer hover:bg-muted/80 transition-colors border border-border">
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center mx-auto mb-3">
+                <div className="aspect-video rounded-2xl overflow-hidden relative mb-6 cursor-pointer border border-border group">
+                  <img src={virtualTrialCover} alt="Virtual trial" className="w-full h-full object-cover object-center" />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                    <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center">
                       <Play className="w-7 h-7 text-accent-foreground ml-1" />
                     </div>
-                    <p className="text-sm font-sans text-muted-foreground">Virtual trial video</p>
                   </div>
+                  <span className="absolute top-3 right-3 text-xs font-sans text-white/80 bg-black/50 px-2 py-1 rounded">Recorded: Today, 10:00 AM</span>
                 </div>
                 <p className="text-sm font-sans font-semibold text-foreground mb-3">Measurement Checkpoints</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
