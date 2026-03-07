@@ -33,6 +33,41 @@ const categoryBudgetRanges: Record<string, { min: number; max: number; label: st
 
 const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
 
+const subCategories: Record<string, string[]> = {
+  // Men's
+  "Sherwani": ["Achkan", "Indo-Western Sherwani", "Jodhpuri Sherwani", "Double-Breasted Sherwani", "Nehru Collar Sherwani"],
+  "Kurta": ["Straight Kurta", "Pathani Kurta", "Kaftan Kurta", "Embroidered / Festive Kurta", "Plain / Daily Wear Kurta", "Nehru Collar Kurta"],
+  "Bandhgala": ["Single-Breasted Bandhgala", "Double-Breasted Bandhgala", "Jodhpuri Suit with Trousers", "Jodhpuri Suit with Churidar"],
+  "Suit": ["2-Piece Suit", "3-Piece Suit with Waistcoat", "Single-Breasted Blazer", "Double-Breasted Blazer", "Tuxedo / Dinner Jacket", "Safari Suit"],
+  "Blazer": ["Single-Breasted Blazer", "Double-Breasted Blazer", "Casual Blazer"],
+  "Trousers": ["Formal Trousers", "Churidar", "Pyjama / Salwar", "Dhoti", "Jodhpuri Pants"],
+  "Indo-Western": ["Indo-Western Jacket + Kurta", "Cape + Kurta", "Fusion Sherwani-Suit", "Draped Dhoti Pant Set"],
+  // Women's
+  "Saree Blouse": ["Backless Blouse", "High-neck Blouse", "Halter Neck", "Peplum Blouse", "Off-shoulder", "Boat Neck", "Sheer / Net Blouse", "Princess-cut Blouse", "Sweetheart Neck", "One-shoulder"],
+  "Lehenga": ["Bridal Lehenga (Full 3-piece Set)", "Party Lehenga", "Lehenga Skirt Only", "Half-and-Half Lehenga", "Layered / Ruffle Lehenga", "Sharara Lehenga", "Chaniya Choli"],
+  "Salwar Kameez": ["Straight Suit", "Patiala Suit", "Palazzo Suit", "Churidar Suit", "Afghani Suit", "Pakistani Style Suit", "Gharara Suit"],
+  "Anarkali": ["Floor-length Anarkali", "Mid-calf Anarkali", "Jacket Anarkali", "Front-slit Anarkali", "Layered Anarkali"],
+  "Gown": ["A-line Gown", "Ball Gown", "Mermaid / Fishtail Gown", "Indo-Western Gown", "Cape Gown", "Kaftan Gown"],
+  "Kurti": ["Straight Kurti", "A-line Kurti", "Tunic / Long Kurti", "Asymmetric Kurti", "Jacket Kurti"],
+  "Co-ord Set": ["Kurti + Palazzo", "Crop Top + Skirt", "Blazer Set", "Co-ord Kurta Set"],
+  "Jacket": ["Embroidered Jacket", "Shrug / Cape", "Embellished Blazer"],
+};
+
+const occasions = [
+  { label: "Wedding / Baraat / Nikah", emoji: "💒" },
+  { label: "Reception / Cocktail", emoji: "🥂" },
+  { label: "Engagement / Roka", emoji: "💍" },
+  { label: "Mehendi / Haldi", emoji: "🌿" },
+  { label: "Festival (Diwali / Eid / Navratri)", emoji: "🪔" },
+  { label: "Garba / Dandiya Night", emoji: "💃" },
+  { label: "Religious Ceremony / Puja", emoji: "🛕" },
+  { label: "Formal Office / Corporate", emoji: "💼" },
+  { label: "Casual / Daily Wear", emoji: "☀️" },
+  { label: "Party / Night Out", emoji: "🎉" },
+  { label: "Pre-Wedding / Photoshoot", emoji: "📸" },
+  { label: "Graduation / Convocation", emoji: "🎓" },
+];
+
 const quickBrackets = [
   { label: "₹5K – ₹15K", min: 5000, max: 15000 },
   { label: "₹15K – ₹35K", min: 15000, max: 35000 },
@@ -50,6 +85,9 @@ const Wizard = () => {
   const [description, setDescription] = useState("");
   const [gender, setGender] = useState<"men" | "women">("women");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
+  const [selectedOccasion, setSelectedOccasion] = useState("");
+  const [step2Phase, setStep2Phase] = useState<"category" | "occasion" | "measurements">("category");
   const [measurementType, setMeasurementType] = useState<"standard" | "custom" | "later">("standard");
   const [standardSize, setStandardSize] = useState("M");
   const [sizeRegion, setSizeRegion] = useState("UK");
@@ -83,9 +121,10 @@ const Wizard = () => {
   const canProceed = () => {
     if (step === 1) return uploaded;
     if (step === 2) {
-      if (!selectedCategory) return false;
-      if (measurementType === "later") return consent1 && consent2;
-      return consent1 && consent2;
+      if (step2Phase === "category") return !!selectedCategory && !!selectedSubCategory;
+      if (step2Phase === "occasion") return !!selectedOccasion;
+      if (step2Phase === "measurements") return consent1 && consent2;
+      return false;
     }
     if (step === 3) return budgetRange[0] >= 1000 && (flexibleDate || deliveryDate) && selectedFabrics.length > 0;
     if (step === 4) return otpVerified && termsAccepted;
@@ -116,7 +155,15 @@ const Wizard = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
-            <span className="font-sans text-sm text-muted-foreground">Step {step} of 4</span>
+            <span className="font-sans text-sm text-muted-foreground">
+              {step === 2
+                ? step2Phase === "category"
+                  ? "Step 2a of 4 — Category"
+                  : step2Phase === "occasion"
+                  ? "Step 2b of 4 — Occasion"
+                  : "Step 2c of 4 — Measurements"
+                : `Step ${step} of 4`}
+            </span>
           </div>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <motion.div
@@ -177,101 +224,208 @@ const Wizard = () => {
             </motion.div>
           )}
 
-          {/* STEP 2: Category & Measurements */}
+          {/* STEP 2: Category, Occasion & Measurements */}
           {step === 2 && (
-            <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div>
-                <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Category</h2>
-                <div className="flex gap-3 mb-6">
-                  {(["men", "women"] as const).map((g) => (
-                    <button
-                      key={g}
-                      onClick={() => { setGender(g); setSelectedCategory(""); }}
-                      className={`px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all ${gender === g ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
-                    >
-                      {g === "men" ? "Men's" : "Women's"}
-                    </button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold" : "border-border bg-card text-foreground hover:border-accent/30"}`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Measurements</h2>
-                <div className="flex gap-2 mb-6">
-                  {(["standard", "custom", "later"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setMeasurementType(t)}
-                      className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${measurementType === t ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
-                    >
-                      {t === "later" ? "Provide Later" : t.charAt(0).toUpperCase() + t.slice(1)}
-                    </button>
-                  ))}
-                </div>
+            <motion.div key={`s2-${step2Phase}`} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
 
-                {measurementType === "standard" && (
-                  <div className="space-y-4">
-                    <div className="flex gap-2 mb-3">
-                      {["UK", "US", "EU"].map((r) => (
-                        <button key={r} onClick={() => setSizeRegion(r)} className={`px-3 py-1.5 rounded-md text-xs font-sans font-medium ${sizeRegion === r ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>{r}</button>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((s) => (
-                        <button key={s} onClick={() => setStandardSize(s)} className={`w-14 h-14 rounded-xl font-sans font-medium text-sm transition-all ${standardSize === s ? "bg-accent text-accent-foreground" : "bg-card border border-border text-foreground hover:border-accent/30"}`}>{s}</button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              {/* SUB-PHASE: CATEGORY + SUBCATEGORY */}
+              {step2Phase === "category" && (
+                <div>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What are you getting made?</h2>
+                  <p className="text-muted-foreground font-sans mb-6">Select your garment category, then choose a specific style</p>
 
-                {measurementType === "custom" && (
-                  <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                    {measurementFields.map((field) => (
-                      <div key={field}>
-                        <label className="text-xs font-sans text-muted-foreground mb-1 block">{field}</label>
-                        <Input
-                          type="number"
-                          placeholder="0.0"
-                          value={measurements[field] || ""}
-                          onChange={(e) => setMeasurements({ ...measurements, [field]: e.target.value })}
-                          className="font-sans"
-                        />
-                      </div>
+                  {/* Gender Toggle */}
+                  <div className="flex gap-3 mb-6">
+                    {(["men", "women"] as const).map((g) => (
+                      <button
+                        key={g}
+                        onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); }}
+                        className={`px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all ${gender === g ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
+                      >
+                        {g === "men" ? "👔 Men's" : "👗 Women's"}
+                      </button>
                     ))}
                   </div>
-                )}
 
-                {measurementType === "later" && (
-                  <p className="text-muted-foreground font-sans text-sm p-4 bg-card rounded-xl border border-border">
-                    No worries! Your accepted tailor will guide you through measurements via a video call.
-                  </p>
-                )}
-
-                <div className="mt-6 space-y-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox id="c1" checked={consent1} onCheckedChange={(v) => setConsent1(!!v)} />
-                    <label htmlFor="c1" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
-                      I consent to my measurement data being stored securely and shared only with my accepted vendor per Naapio's Privacy Policy (DPDP Act 2023)
-                    </label>
+                  {/* Category Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
+                        className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Checkbox id="c2" checked={consent2} onCheckedChange={(v) => setConsent2(!!v)} />
-                    <label htmlFor="c2" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
-                      I understand my data will be deleted upon request within 72 hours
-                    </label>
+
+                  {/* Subcategory Accordion — shown when category is selected */}
+                  {selectedCategory && subCategories[selectedCategory] && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2"
+                    >
+                      <p className="font-sans text-sm font-medium text-muted-foreground mb-3">
+                        Select the specific style for <span className="text-foreground font-semibold">{selectedCategory}</span>:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {subCategories[selectedCategory].map((sub) => (
+                          <button
+                            key={sub}
+                            onClick={() => setSelectedSubCategory(sub)}
+                            className={`px-4 py-2 rounded-full font-sans text-sm transition-all border ${selectedSubCategory === sub ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"}`}
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* If category has no subcategories, auto-select and show confirmation */}
+                  {selectedCategory && !subCategories[selectedCategory] && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 p-4 bg-accent/10 border border-accent/30 rounded-xl flex items-center gap-3"
+                    >
+                      <Check className="w-5 h-5 text-accent" />
+                      <span className="font-sans text-sm text-foreground font-medium">{selectedCategory} selected — tap Next to continue</span>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* SUB-PHASE: OCCASION */}
+              {step2Phase === "occasion" && (
+                <div>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's the occasion?</h2>
+                  <p className="text-muted-foreground font-sans mb-6">This helps your tailor understand the formality, fabric weight, and embellishment level needed</p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {occasions.map((occ) => (
+                      <button
+                        key={occ.label}
+                        onClick={() => setSelectedOccasion(occ.label)}
+                        className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedOccasion === occ.label ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                      >
+                        <span className="text-2xl block mb-2">{occ.emoji}</span>
+                        <span className="leading-tight block">{occ.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Garba warning */}
+                  {selectedOccasion === "Garba / Dandiya Night" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3"
+                    >
+                      <span className="text-xl">💃</span>
+                      <p className="font-sans text-sm text-amber-800">
+                        <span className="font-semibold">Garba note:</span> We'll tell your tailor to ensure full arm movement and a minimum 4-metre flare for dancing. This will be included in your brief automatically.
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* SUB-PHASE: MEASUREMENTS — existing UI preserved exactly */}
+              {step2Phase === "measurements" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div>
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements</h2>
+                    <p className="text-muted-foreground font-sans mb-6">
+                      For <span className="font-semibold text-foreground">{gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}</span>
+                    </p>
+                    <div className="flex gap-2 mb-6">
+                      {(["standard", "custom", "later"] as const).map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setMeasurementType(t)}
+                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${measurementType === t ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
+                        >
+                          {t === "later" ? "Provide Later" : t.charAt(0).toUpperCase() + t.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+
+                    {measurementType === "standard" && (
+                      <div className="space-y-4">
+                        <div className="flex gap-2 mb-3">
+                          {["UK", "US", "EU"].map((r) => (
+                            <button key={r} onClick={() => setSizeRegion(r)} className={`px-3 py-1.5 rounded-md text-xs font-sans font-medium ${sizeRegion === r ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>{r}</button>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((s) => (
+                            <button key={s} onClick={() => setStandardSize(s)} className={`w-14 h-14 rounded-xl font-sans font-medium text-sm transition-all ${standardSize === s ? "bg-accent text-accent-foreground" : "bg-card border border-border text-foreground hover:border-accent/30"}`}>{s}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {measurementType === "custom" && (
+                      <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        {measurementFields.map((field) => (
+                          <div key={field}>
+                            <label className="text-xs font-sans text-muted-foreground mb-1 block">{field}</label>
+                            <Input
+                              type="number"
+                              placeholder="0.0"
+                              value={measurements[field] || ""}
+                              onChange={(e) => setMeasurements({ ...measurements, [field]: e.target.value })}
+                              className="font-sans"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {measurementType === "later" && (
+                      <p className="text-muted-foreground font-sans text-sm p-4 bg-card rounded-xl border border-border">
+                        No worries! Your accepted tailor will guide you through measurements via a video call. You have 48 hours after going live to submit measurements.
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Data & Consent</h2>
+                    <p className="text-muted-foreground font-sans mb-6">Required before your order goes live</p>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="c1" checked={consent1} onCheckedChange={(v) => setConsent1(!!v)} />
+                        <label htmlFor="c1" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                          I consent to my measurement data being stored securely and shared only with my accepted vendor per Naapio's Privacy Policy (DPDP Act 2023)
+                        </label>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="c2" checked={consent2} onCheckedChange={(v) => setConsent2(!!v)} />
+                        <label htmlFor="c2" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                          I understand my data will be deleted upon request within 72 hours
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Order summary so far */}
+                    <div className="mt-6 p-4 bg-card rounded-xl border border-border">
+                      <p className="font-sans text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your order so far</p>
+                      <div className="space-y-1">
+                        <p className="font-sans text-sm text-foreground">
+                          <span className="text-muted-foreground">Garment:</span> {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}
+                        </p>
+                        <p className="font-sans text-sm text-foreground">
+                          <span className="text-muted-foreground">Occasion:</span> {selectedOccasion}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
             </motion.div>
           )}
 
@@ -443,7 +597,9 @@ const Wizard = () => {
                       <h3 className="font-sans font-semibold text-foreground">Category & Measurements</h3>
                       <button onClick={() => setStep(2)} className="text-accent font-sans text-sm font-medium">Edit</button>
                     </div>
-                    <p className="text-sm text-muted-foreground font-sans">{gender === "women" ? "Women's" : "Men's"} {selectedCategory || "Lehenga"} • {measurementType === "standard" ? `Size ${standardSize} (${sizeRegion})` : measurementType === "custom" ? "Custom measurements" : "Will provide later"}</p>
+                    <p className="text-sm text-muted-foreground font-sans">
+                      {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory || "Lehenga"} • {selectedOccasion && `${selectedOccasion} • `}{measurementType === "standard" ? `Size ${standardSize} (${sizeRegion})` : measurementType === "custom" ? "Custom measurements" : "Will provide later"}
+                    </p>
                   </div>
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
@@ -524,15 +680,42 @@ const Wizard = () => {
         <div className="flex justify-between mt-10 pt-6 border-t border-border">
           <Button
             variant="outline"
-            onClick={() => step > 1 ? setStep(step - 1) : navigate("/")}
+            onClick={() => {
+              if (step === 2) {
+                if (step2Phase === "measurements") {
+                  setStep2Phase("occasion");
+                } else if (step2Phase === "occasion") {
+                  setStep2Phase("category");
+                } else {
+                  setStep(1);
+                }
+              } else if (step > 1) {
+                setStep(step - 1);
+              } else {
+                navigate("/");
+              }
+            }}
           >
-            <ChevronLeft className="w-4 h-4" /> {step > 1 ? "Back" : "Home"}
+            <ChevronLeft className="w-4 h-4" /> Back
           </Button>
           {step < 4 && (
             <Button
               variant="gold"
               disabled={!canProceed()}
-              onClick={() => setStep(step + 1)}
+              onClick={() => {
+                if (step === 2) {
+                  if (step2Phase === "category") {
+                    setStep2Phase("occasion");
+                  } else if (step2Phase === "occasion") {
+                    setStep2Phase("measurements");
+                  } else {
+                    setStep(step + 1);
+                    setStep2Phase("category");
+                  }
+                } else {
+                  setStep(step + 1);
+                }
+              }}
             >
               Next <ChevronRight className="w-4 h-4" />
             </Button>
