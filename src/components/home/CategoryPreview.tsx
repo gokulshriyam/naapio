@@ -4,15 +4,46 @@ import { ArrowRight } from "lucide-react";
 import mensFashion from "@/assets/mens-fashion.jpg";
 import womensFashion from "@/assets/womens-fashion.jpg";
 
+const orderTypes = [
+  {
+    emoji: "🆕",
+    title: "New Order",
+    description: "Make a new outfit from scratch",
+    color: "bg-blue-50 border-blue-200 hover:border-blue-400",
+    type: "new-order",
+  },
+  {
+    emoji: "✂️",
+    title: "Alteration / Repair",
+    description: "Fix or resize existing clothes",
+    color: "bg-orange-50 border-orange-200 hover:border-orange-400",
+    type: "alteration",
+  },
+  {
+    emoji: "🧵",
+    title: "I Have My Own Fabric",
+    description: "Just need stitching & design",
+    color: "bg-green-50 border-green-200 hover:border-green-400",
+    type: "own-fabric",
+  },
+  {
+    emoji: "🎨",
+    title: "Customise My Garment",
+    description: "Add artwork to existing piece",
+    color: "bg-purple-50 border-purple-200 hover:border-purple-400",
+    type: "customise",
+  },
+];
+
 const categories = [
   {
     title: "Men's Bespoke",
-    items: ["Sherwani", "Bandhgala", "Suit", "Kurta", "Indo-Western"],
+    items: ["Sherwani", "Bandhgala", "Suit", "Kurta", "Indo-Western", "Veshti / Mundu", "Regional Traditional"],
     image: mensFashion,
   },
   {
     title: "Women's Bespoke",
-    items: ["Lehenga", "Saree Blouse", "Anarkali", "Gown", "Salwar Kameez"],
+    items: ["Lehenga", "Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Chaniya Choli", "Maternity Wear"],
     image: womensFashion,
   },
 ];
@@ -23,6 +54,7 @@ const CategoryPreview = () => {
   return (
     <section id="categories" className="py-24 bg-secondary">
       <div className="container mx-auto px-6">
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -33,6 +65,40 @@ const CategoryPreview = () => {
           <p className="text-muted-foreground font-sans text-lg">From regal sherwanis to breathtaking lehengas</p>
         </motion.div>
 
+        {/* ORDER TYPE TILES — 4 tiles, 2×2 on mobile, 4-across on desktop */}
+        <div className="mb-12">
+          <p className="text-sm font-sans font-semibold text-muted-foreground uppercase tracking-wider mb-4 text-center">
+            What would you like to do?
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            {orderTypes.map((type) => (
+              <button
+                key={type.title}
+                onClick={() => navigate(`/start`)}
+                className={`border-2 rounded-xl p-5 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${type.color}`}
+              >
+                <div className="text-3xl mb-2">{type.emoji}</div>
+                <h3 className="text-sm font-serif font-bold text-foreground mb-1">
+                  {type.title}
+                </h3>
+                <p className="text-xs font-sans text-muted-foreground leading-snug">
+                  {type.description}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4 max-w-4xl mx-auto mb-12">
+          <div className="flex-1 h-px bg-border" />
+          <p className="text-sm font-sans font-semibold text-muted-foreground uppercase tracking-wider">
+            Browse by category
+          </p>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* CATEGORY CARDS — existing 2-card grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {categories.map((cat, i) => (
             <motion.div
