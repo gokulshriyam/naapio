@@ -390,24 +390,25 @@ const Wizard = () => {
       const prompt = buildOutfitPrompt();
       const apiKey = "AIzaSyAJJrSzFD4l1We-3mLIfx6P84IJtmVD40A"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{
-              parts: [
-                {
-                  inline_data: {
-                    mime_type: file.type || 'image/jpeg',
-                    data: base64
-                  }
-                },
-                { text: prompt }
-              ]
+            instances: [{
+              prompt: prompt,
+              referenceImages: [{
+                referenceType: "STYLE",
+                referenceId: 1,
+                referenceImage: {
+                  bytesBase64Encoded: base64,
+                  mimeType: file.type || 'image/jpeg'
+                }
+              }]
             }],
-            generationConfig: {
-              responseModalities: ["TEXT", "IMAGE"]
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: "3:4"
             }
           })
         }
@@ -416,13 +417,9 @@ const Wizard = () => {
         throw new Error(`API error: ${response.status}`);
       }
       const data = await response.json();
-      const imagePart = data?.candidates?.[0]?.content?.parts?.find(
-        (part: any) => part.inlineData?.mimeType?.startsWith('image/')
-      );
-      if (imagePart?.inlineData?.data) {
-        setGeneratedOutfitImage(
-          `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`
-        );
+      const imageData = data?.predictions?.[0]?.bytesBase64Encoded;
+      if (imageData) {
+        setGeneratedOutfitImage(`data:image/png;base64,${imageData}`);
       } else {
         throw new Error("No image in response");
       }
