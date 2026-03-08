@@ -90,6 +90,7 @@ const initialDemoOrder = {
 
 const BiddingPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [timers, setTimers] = useState(activeRequests.map((r) => ({ ...r.countdown, minutes: 0, seconds: 0 })));
 
   // Load last order from localStorage
