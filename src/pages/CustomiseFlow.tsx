@@ -231,7 +231,7 @@ const CustomiseFlow = () => {
     }
     if (step === 3) return totalSelectedZones > 0;
     if (step === 4) return true;
-    if (step === 5) return !!customiseBudgetMin.trim() && !!customiseDeliveryDate;
+    if (step === 5) return customiseBudgetRange[0] >= 1000 && !!customiseDeliveryDate;
     return true;
   };
 
