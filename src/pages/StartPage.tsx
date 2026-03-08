@@ -10,6 +10,7 @@ const StartPage = () => {
       description: "Make a new outfit from scratch. Tailor sources fabric and stitches to your specs.",
       color: "bg-blue-50 border-blue-200 hover:border-blue-400",
       route: "/wizard",
+      img: "https://source.unsplash.com/featured/?indian+woman+ethnic+fashion+fabric&1002",
     },
     {
       emoji: "✂️",
@@ -17,6 +18,7 @@ const StartPage = () => {
       description: "Fix, resize, shorten or repair an existing garment you already own.",
       color: "bg-orange-50 border-orange-200 hover:border-orange-400",
       route: "/alteration",
+      img: "https://source.unsplash.com/featured/?tailor+sewing+mannequin+workshop&1003",
     },
     {
       emoji: "🧵",
@@ -24,6 +26,7 @@ const StartPage = () => {
       description: "You have fabric ready. Tailor stitches your garment using it.",
       color: "bg-green-50 border-green-200 hover:border-green-400",
       route: "/wizard?type=own-fabric",
+      img: "https://source.unsplash.com/featured/?fabric+bolt+textile+store&1004",
     },
     {
       emoji: "🎨",
@@ -31,6 +34,7 @@ const StartPage = () => {
       description: "Add embroidery, artwork, sequins, prints or patches to an existing piece.",
       color: "bg-purple-50 border-purple-200 hover:border-purple-400",
       route: "/customise",
+      img: "https://source.unsplash.com/featured/?embroidery+jacket+closeup+detail&1005",
     },
   ];
 
@@ -57,15 +61,22 @@ const StartPage = () => {
           <button
             key={type.title}
             onClick={() => navigate(type.route)}
-            className={`border-2 rounded-2xl p-8 text-left transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${type.color}`}
+            className={`border-2 rounded-2xl overflow-hidden text-left transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${type.color}`}
           >
-            <div className="text-4xl mb-4">{type.emoji}</div>
-            <h2 className="text-xl font-serif font-bold text-foreground mb-2">
-              {type.title}
-            </h2>
-            <p className="text-sm font-sans text-muted-foreground leading-relaxed">
-              {type.description}
-            </p>
+            <img
+              src={type.img}
+              alt={type.title}
+              className="w-full h-36 object-cover"
+            />
+            <div className="p-6 pt-4">
+              <div className="text-3xl mb-3">{type.emoji}</div>
+              <h2 className="text-xl font-serif font-bold text-foreground mb-2">
+                {type.title}
+              </h2>
+              <p className="text-sm font-sans text-muted-foreground leading-relaxed">
+                {type.description}
+              </p>
+            </div>
           </button>
         ))}
       </div>

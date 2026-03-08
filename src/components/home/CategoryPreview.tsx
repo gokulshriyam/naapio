@@ -1,8 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import mensFashion from "@/assets/mens-fashion.jpg";
-import womensFashion from "@/assets/womens-fashion.jpg";
 
 const orderTypes = [
   {
@@ -39,12 +37,12 @@ const categories = [
   {
     title: "Men's Bespoke",
     items: ["Sherwani", "Bandhgala", "Suit", "Kurta", "Indo-Western", "Veshti / Mundu", "Regional Traditional"],
-    image: mensFashion,
+    image: "https://source.unsplash.com/featured/?indian+man+sherwani+ethnic+fashion&1070",
   },
   {
     title: "Women's Bespoke",
     items: ["Lehenga", "Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Chaniya Choli", "Maternity Wear"],
-    image: womensFashion,
+    image: "https://source.unsplash.com/featured/?indian+woman+lehenga+bridal+fashion&1071",
   },
 ];
 
@@ -65,7 +63,7 @@ const CategoryPreview = () => {
           <p className="text-muted-foreground font-sans text-lg">From regal sherwanis to breathtaking lehengas</p>
         </motion.div>
 
-        {/* ORDER TYPE TILES — 4 tiles, 2×2 on mobile, 4-across on desktop */}
+        {/* ORDER TYPE TILES */}
         <div className="mb-12">
           <p className="text-sm font-sans font-semibold text-muted-foreground uppercase tracking-wider mb-4 text-center">
             What would you like to do?
@@ -98,7 +96,7 @@ const CategoryPreview = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        {/* CATEGORY CARDS — existing 2-card grid */}
+        {/* CATEGORY CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {categories.map((cat, i) => (
             <motion.div

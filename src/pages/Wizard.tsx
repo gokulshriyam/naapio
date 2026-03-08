@@ -106,12 +106,12 @@ const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
 const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
 
 const feelOptions = [
-  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400" },
-  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=400" },
-  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400" },
-  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400" },
-  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400" },
-  { label: "No Preference", desc: "Let the tailor recommend", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400" },
+  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://source.unsplash.com/featured/?chiffon+fabric+flowing+breeze&1030" },
+  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://source.unsplash.com/featured/?lehenga+structured+silhouette+formal&1031" },
+  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://source.unsplash.com/featured/?bridal+lehenga+heavy+embroidery+velvet&1032" },
+  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://source.unsplash.com/featured/?formal+blazer+suit+lapels+closeup&1033" },
+  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://source.unsplash.com/featured/?soft+draped+fabric+indian+ethnic&1034" },
+  { label: "No Preference", desc: "Let the tailor recommend", img: "https://source.unsplash.com/featured/?fabric+textile+assorted+colour&1035" },
 ];
 
 const fabricTypesByFeel: Record<string, string[]> = {
@@ -139,17 +139,17 @@ const colourMoodOptions = [
 
 const surfaceOptions = [
   { label: "Plain / No Embellishment", exclusive: true },
-  { label: "Heavy Embroidery", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300" },
-  { label: "Zardozi / Zari Work", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300" },
-  { label: "Mirror Work", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300" },
-  { label: "Sequence & Beadwork", img: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=300" },
-  { label: "Bandhani / Tie-Dye", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=300" },
-  { label: "Kalamkari / Block Print", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=300" },
-  { label: "Resham Thread Work", img: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300" },
-  { label: "Cutwork / Lace", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300" },
-  { label: "Smocking / Pintucks", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300" },
-  { label: "Digital Print", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=300" },
-  { label: "Appliqué", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=300" },
+  { label: "Heavy Embroidery", img: "https://source.unsplash.com/featured/?heavy+embroidery+indian+fabric+closeup&1040" },
+  { label: "Zardozi / Zari Work", img: "https://source.unsplash.com/featured/?zari+zardozi+gold+embroidery+closeup&1041" },
+  { label: "Mirror Work", img: "https://source.unsplash.com/featured/?mirror+work+shisha+embroidery+india&1042" },
+  { label: "Sequence & Beadwork", img: "https://source.unsplash.com/featured/?sequins+beadwork+fabric+closeup&1043" },
+  { label: "Bandhani / Tie-Dye", img: "https://source.unsplash.com/featured/?bandhani+tie+dye+fabric+india&1044" },
+  { label: "Kalamkari / Block Print", img: "https://source.unsplash.com/featured/?kalamkari+block+print+fabric+india&1045" },
+  { label: "Resham Thread Work", img: "https://source.unsplash.com/featured/?resham+thread+embroidery+fabric&1046" },
+  { label: "Cutwork / Lace", img: "https://source.unsplash.com/featured/?cutwork+lace+fabric+detail&1047" },
+  { label: "Smocking / Pintucks", img: "https://source.unsplash.com/featured/?smocking+pintucks+fabric+texture&1048" },
+  { label: "Digital Print", img: "https://source.unsplash.com/featured/?digital+print+fabric+pattern&1049" },
+  { label: "Appliqué", img: "https://source.unsplash.com/featured/?applique+patchwork+fabric+indian&1050" },
   { label: "No Preference", img: null },
 ];
 
