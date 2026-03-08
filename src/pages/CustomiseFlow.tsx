@@ -250,7 +250,7 @@ const CustomiseFlow = () => {
         orderType: "Customise",
         garment: customisationTypes.join(", "),
         occasion: "",
-        budgetRange: `₹${customiseBudgetMin} – ₹${customiseBudgetMax || "—"}`,
+        budgetRange: `${formatBudget(customiseBudgetRange[0])} – ${formatBudget(customiseBudgetRange[1])}`,
         deliveryDate: customiseDeliveryDate,
         timestamp: new Date().toISOString()
       }));
