@@ -100,14 +100,14 @@ const VendorNotificationBell = () => {
           <div
             className={cn(
               "fixed inset-0",
-              isMobile ? "bg-black/40 z-[199]" : "z-40"
+              isMobile ? "bg-black/40 z-[299]" : "z-[299]"
             )}
             onClick={() => setOpen(false)}
           />
 
           {isMobile ? (
             /* Mobile: bottom sheet */
-            <div className="fixed bottom-0 left-0 right-0 z-[200] bg-card border-t border-border rounded-t-2xl shadow-xl max-h-[70vh] overflow-y-auto">
+            <div className="fixed bottom-0 left-0 right-0 z-[300] bg-card border-t border-border rounded-t-2xl shadow-xl max-h-[70vh] overflow-y-auto">
               <div className="mx-auto mt-3 mb-1 h-1.5 w-12 rounded-full bg-muted" />
               <NotificationList
                 notifications={notifications}
@@ -117,8 +117,8 @@ const VendorNotificationBell = () => {
               />
             </div>
           ) : (
-            /* Desktop: dropdown */
-            <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-xl z-[200] overflow-hidden">
+            /* Desktop: fixed dropdown anchored to right edge of viewport */
+            <div className="fixed top-16 right-4 w-80 max-h-[70vh] overflow-hidden bg-card border border-border rounded-2xl shadow-xl z-[300]">
               <NotificationList
                 notifications={notifications}
                 onMarkAllRead={markAllRead}

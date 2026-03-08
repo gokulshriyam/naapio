@@ -63,7 +63,6 @@ const FullBriefGrid = ({ data }: { data: Record<string, any> }) => {
 
   return (
     <div className="space-y-3 mt-3">
-      {/* Surfaces as pills */}
       {data.selectedSurfaces && data.selectedSurfaces.length > 0 && (
         <div>
           <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground">Surface / Embellishment</p>
@@ -99,6 +98,7 @@ const VendorLeads = () => {
   const [bidModalLead, setBidModalLead] = useState<Lead | null>(null);
   const [bids, setBids] = useState<Record<string, { amount: number; rank: number }>>({});
   const [expandedBriefs, setExpandedBriefs] = useState<Set<string>>(new Set());
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   // Filters
   const [city, setCity] = useState('All Cities');
@@ -267,82 +267,107 @@ const VendorLeads = () => {
         {filtered.map(lead => {
           const hasBid = bids[lead.id] || lead.myBidRank;
           const isExpanded = expandedBriefs.has(lead.id);
+          const thumbSrc = lead.inspirationPhoto || lead.inspirationThumb;
           return (
-            <div key={lead.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-              {/* Inspiration photo */}
-              {lead.inspirationPhoto && (
-                <img src={lead.inspirationPhoto} alt="" className="w-full h-48 object-cover" />
+            <div key={lead.id} className="bg-card border border-border rounded-2xl p-4 hover:shadow-md transition-shadow">
+              {/* TOP ROW */}
+              <div className="flex gap-3 items-start">
+                {/* Thumbnail */}
+                {thumbSrc ? (
+                  <button onClick={() => setZoomImage(thumbSrc)} className="flex-shrink-0">
+                    <img src={thumbSrc} alt="" className="w-16 h-16 rounded-lg object-cover object-top" />
+                  </button>
+                ) : (
+                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-2xl flex-shrink-0">
+                    {lead.category.includes('Women') ? '👗' : '🤵'}
+                  </div>
+                )}
+
+                {/* Main info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{lead.orderType}</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{lead.subCategory}</Badge>
+                    {lead.isRushOrder && (
+                      <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] px-1.5 py-0">🔥 Rush</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm font-serif font-semibold text-foreground">{lead.category} · {lead.subCategory}</p>
+                  <p className="text-xs text-muted-foreground font-sans">#{lead.id} · {lead.customerFirstName}, {lead.city} · {lead.occasion}</p>
+                </div>
+
+                {/* Budget + deadline — right aligned */}
+                <div className="text-right flex-shrink-0 hidden sm:block">
+                  <p className="text-sm font-serif font-bold text-accent">
+                    ₹{(lead.budgetMin / 1000).toFixed(0)}K–₹{(lead.budgetMax / 1000).toFixed(0)}K
+                  </p>
+                  <p className="text-xs text-muted-foreground">Due {lead.deliveryDate}</p>
+                </div>
+              </div>
+
+              {/* Budget on mobile */}
+              <div className="sm:hidden mt-2 flex items-center justify-between">
+                <p className="text-sm font-serif font-bold text-accent">
+                  ₹{(lead.budgetMin / 1000).toFixed(0)}K–₹{(lead.budgetMax / 1000).toFixed(0)}K
+                </p>
+                <p className="text-xs text-muted-foreground">Due {lead.deliveryDate}</p>
+              </div>
+
+              {/* COMPETITION ROW */}
+              <div className="mt-2 flex items-center gap-3 text-xs font-sans text-muted-foreground">
+                <span>{lead.bidsCount} bids placed</span>
+                <span>·</span>
+                <span>Range: ₹{(lead.bidMin / 1000).toFixed(0)}K–₹{(lead.bidMax / 1000).toFixed(0)}K</span>
+                <span>·</span>
+                <span>Deadline: {formatCountdown(lead.bidDeadline)}</span>
+                {lead.isRushOrder && <span className="text-amber-600 font-medium">⚡ Rush</span>}
+              </div>
+
+              {/* FULL BRIEF (collapsible) */}
+              <button
+                onClick={() => toggleBrief(lead.id)}
+                className="text-xs text-accent hover:underline font-sans mt-2 block"
+              >
+                {isExpanded ? 'Hide Brief ↑' : 'View Full Brief ↓'}
+              </button>
+
+              {isExpanded && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <FullBriefGrid data={lead} />
+                </div>
               )}
 
-              <div className="p-4">
-                <div className="flex gap-3">
-                  {/* Thumb (show only if no inspiration photo) */}
-                  {!lead.inspirationPhoto && (
-                    <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
-                      {lead.inspirationThumb ? (
-                        <img src={lead.inspirationThumb} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        lead.category.includes('Women') ? '👗' : '🤵'
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{lead.orderType}</Badge>
-                      <span className="text-xs font-sans text-muted-foreground">{lead.category} · {lead.subCategory}</span>
-                      {lead.isRushOrder && (
-                        <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] px-1.5 py-0">🔥 Rush</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs font-sans text-muted-foreground">#{lead.id} · {lead.customerFirstName}, {lead.city}</p>
-                    <p className="text-xs font-sans text-muted-foreground">Occasion: {lead.occasion}</p>
-                    <p className="text-sm font-sans font-semibold text-accent mt-1">
-                      ₹{lead.budgetMin.toLocaleString('en-IN')} – ₹{lead.budgetMax.toLocaleString('en-IN')}
-                    </p>
-                    <p className="text-xs font-sans text-muted-foreground">
-                      Delivery: {lead.deliveryDate} · Bid deadline: <span className="font-semibold">{formatCountdown(lead.bidDeadline)}</span>
-                    </p>
-                    <p className="text-xs font-sans text-muted-foreground">
-                      {lead.bidsCount} bids placed · Range: ₹{lead.bidMin.toLocaleString('en-IN')} – ₹{lead.bidMax.toLocaleString('en-IN')}
-                    </p>
-
-                    {/* Collapsible brief toggle */}
-                    <button
-                      onClick={() => toggleBrief(lead.id)}
-                      className="flex items-center gap-1 text-xs font-sans text-accent hover:underline mt-2"
-                    >
-                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                      {isExpanded ? 'Hide Brief ↑' : 'View Full Brief ↓'}
-                    </button>
-
-                    {/* Expanded brief */}
-                    {isExpanded && <FullBriefGrid data={lead} />}
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 mt-3">
-                      {hasBid ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-sans text-green-600 dark:text-green-400 font-semibold">
-                            ✓ Bid submitted — Rank #{bids[lead.id]?.rank || lead.myBidRank} of {lead.bidsCount}
-                          </span>
-                          <Button variant="outline" size="sm" className="text-xs h-7">Edit Bid</Button>
-                          <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive">Withdraw</Button>
-                        </div>
-                      ) : (
-                        <>
-                          <Button variant="ghost" size="sm" className="text-xs h-7 min-h-[44px]" onClick={() => handleIgnore(lead.id)}>Ignore</Button>
-                          <Button variant="gold" size="sm" className="text-xs h-7 min-h-[44px]" onClick={() => setBidModalLead(lead)}>Place Bid →</Button>
-                        </>
-                      )}
-                    </div>
+              {/* ACTION BUTTONS */}
+              <div className="mt-3 pt-3 border-t border-border flex gap-2 justify-end">
+                {hasBid ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-sans text-green-600 dark:text-green-400 font-semibold">
+                      ✓ Bid submitted — Rank #{bids[lead.id]?.rank || lead.myBidRank} of {lead.bidsCount}
+                    </span>
+                    <Button variant="outline" size="sm" className="text-xs h-7">Edit Bid</Button>
+                    <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive">Withdraw</Button>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" className="text-xs min-h-[44px]" onClick={() => handleIgnore(lead.id)}>Ignore</Button>
+                    <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => setBidModalLead(lead)}>Place Bid →</Button>
+                  </>
+                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Lightbox */}
+      {zoomImage && (
+        <div className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center" onClick={() => setZoomImage(null)}>
+          <button onClick={() => setZoomImage(null)} className="fixed top-4 right-4 text-white z-[401]">
+            <X className="w-6 h-6" />
+          </button>
+          <img src={zoomImage} alt="" className="max-w-[90vw] max-h-[85vh] rounded-2xl object-contain shadow-2xl" />
+        </div>
+      )}
 
       {bidModalLead && (
         <VendorBidModal
