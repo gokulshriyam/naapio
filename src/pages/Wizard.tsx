@@ -68,6 +68,39 @@ const occasions = [
   { label: "Graduation / Convocation", emoji: "🎓" },
 ];
 
+const fitOptions = [
+  { label: "Close-fitted / Slim", description: "Follows your body shape closely. Minimal ease.", emoji: "🤏" },
+  { label: "Regular / Comfortable", description: "Standard fit. Neither tight nor loose. Most popular.", emoji: "👌" },
+  { label: "Relaxed / Loose", description: "Fabric falls away from the body. Comfortable and airy.", emoji: "🌊" },
+  { label: "Flowing / Dramatic", description: "Maximum flare and volume. Best for gowns and lehengas.", emoji: "✨" },
+  { label: "Match a Reference Outfit", description: "We'll replicate the fit of an outfit that already works for you.", emoji: "📐" },
+];
+
+const necklineOptions = [
+  "Round Neck", "V-Neck", "Sweetheart", "Boat Neck", "High / Mandarin",
+  "Square Neck", "Keyhole", "Halter", "Off-shoulder", "One-shoulder",
+  "Deep Back / Backless", "Collar", "No Preference",
+];
+
+const sleeveOptions = [
+  "Sleeveless", "Cap Sleeve", "Half / Elbow", "3/4 Sleeve", "Full Sleeve",
+  "Bell / Flared", "Puff / Balloon", "Cold Shoulder", "No Preference",
+];
+
+const dupatttaOptions = [
+  "2-piece (no dupatta)", "3-piece same fabric", "3-piece contrast fabric",
+  "3-piece sheer / net dupatta", "Tailor suggests",
+];
+
+const liningOptions = [
+  "Fully Lined", "Partially Lined", "Unlined", "Padded (bust)", "No Preference",
+];
+
+const showNeckline = ["Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Kurti", "Kurta", "Sherwani", "Jacket", "Lehenga", "Co-ord Set"];
+const showSleeve = ["Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Kurti", "Kurta", "Sherwani", "Jacket", "Co-ord Set", "Lehenga"];
+const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
+const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
+
 const quickBrackets = [
   { label: "₹5K – ₹15K", min: 5000, max: 15000 },
   { label: "₹15K – ₹35K", min: 15000, max: 35000 },
@@ -87,7 +120,12 @@ const Wizard = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedOccasion, setSelectedOccasion] = useState("");
-  const [step2Phase, setStep2Phase] = useState<"category" | "occasion" | "measurements">("category");
+  const [step2Phase, setStep2Phase] = useState<"category" | "occasion" | "fit" | "design" | "measurements">("category");
+  const [selectedFit, setSelectedFit] = useState("");
+  const [selectedNeckline, setSelectedNeckline] = useState("");
+  const [selectedSleeve, setSelectedSleeve] = useState("");
+  const [selectedDupatta, setSelectedDupatta] = useState("");
+  const [selectedLining, setSelectedLining] = useState("");
   const [measurementType, setMeasurementType] = useState<"standard" | "custom" | "later">("standard");
   const [standardSize, setStandardSize] = useState("M");
   const [sizeRegion, setSizeRegion] = useState("UK");
@@ -121,8 +159,10 @@ const Wizard = () => {
   const canProceed = () => {
     if (step === 1) return uploaded;
     if (step === 2) {
-      if (step2Phase === "category") return !!selectedCategory && !!selectedSubCategory;
+      if (step2Phase === "category") return !!selectedCategory && (!!selectedSubCategory || !subCategories[selectedCategory]);
       if (step2Phase === "occasion") return !!selectedOccasion;
+      if (step2Phase === "fit") return !!selectedFit;
+      if (step2Phase === "design") return true;
       if (step2Phase === "measurements") return consent1 && consent2;
       return false;
     }
@@ -156,12 +196,16 @@ const Wizard = () => {
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
             <span className="font-sans text-sm text-muted-foreground">
-              {step === 2
+               {step === 2
                 ? step2Phase === "category"
-                  ? "Step 2a of 4 — Category"
+                  ? "Step 2a — Category"
                   : step2Phase === "occasion"
-                  ? "Step 2b of 4 — Occasion"
-                  : "Step 2c of 4 — Measurements"
+                  ? "Step 2b — Occasion"
+                  : step2Phase === "fit"
+                  ? "Step 2c — Fit"
+                  : step2Phase === "design"
+                  ? "Step 2d — Design Details"
+                  : "Step 2e — Measurements"
                 : `Step ${step} of 4`}
             </span>
           </div>
@@ -330,6 +374,145 @@ const Wizard = () => {
                       </p>
                     </motion.div>
                   )}
+                </div>
+              )}
+
+              {/* SUB-PHASE: FIT PREFERENCE */}
+              {step2Phase === "fit" && (
+                <div>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">How should it fit?</h2>
+                  <p className="text-muted-foreground font-sans mb-6">
+                    This tells your tailor how much ease to build into the garment
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {fitOptions.map((fit) => (
+                      <button
+                        key={fit.label}
+                        onClick={() => setSelectedFit(fit.label)}
+                        className={`p-5 rounded-xl text-left font-sans transition-all border ${
+                          selectedFit === fit.label
+                            ? "border-accent bg-gold-light ring-2 ring-accent/30"
+                            : "border-border bg-card hover:border-accent/30"
+                        }`}
+                      >
+                        <span className="text-3xl block mb-3">{fit.emoji}</span>
+                        <p className="font-semibold text-sm text-foreground mb-1">{fit.label}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{fit.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* SUB-PHASE: DESIGN DETAILS */}
+              {step2Phase === "design" && (
+                <div>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Design details</h2>
+                  <p className="text-muted-foreground font-sans mb-2">
+                    For <span className="font-semibold text-foreground">{selectedSubCategory || selectedCategory}</span>. All fields are optional — skip anything you don't have a preference for.
+                  </p>
+
+                  <div className="space-y-8 mt-6">
+
+                    {/* Neckline */}
+                    {showNeckline.includes(selectedCategory) && (
+                      <div>
+                        <p className="font-sans font-semibold text-foreground mb-3">Neckline</p>
+                        <div className="flex flex-wrap gap-2">
+                          {necklineOptions.map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() => setSelectedNeckline(selectedNeckline === opt ? "" : opt)}
+                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                selectedNeckline === opt
+                                  ? "border-accent bg-accent text-accent-foreground font-medium"
+                                  : "border-border bg-card text-foreground hover:border-accent/40"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sleeve */}
+                    {showSleeve.includes(selectedCategory) && (
+                      <div>
+                        <p className="font-sans font-semibold text-foreground mb-3">Sleeve Style</p>
+                        <div className="flex flex-wrap gap-2">
+                          {sleeveOptions.map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() => setSelectedSleeve(selectedSleeve === opt ? "" : opt)}
+                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                selectedSleeve === opt
+                                  ? "border-accent bg-accent text-accent-foreground font-medium"
+                                  : "border-border bg-card text-foreground hover:border-accent/40"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dupatta */}
+                    {showDupatta.includes(selectedCategory) && (
+                      <div>
+                        <p className="font-sans font-semibold text-foreground mb-3">Dupatta / Set Inclusion</p>
+                        <div className="flex flex-wrap gap-2">
+                          {dupatttaOptions.map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() => setSelectedDupatta(selectedDupatta === opt ? "" : opt)}
+                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                selectedDupatta === opt
+                                  ? "border-accent bg-accent text-accent-foreground font-medium"
+                                  : "border-border bg-card text-foreground hover:border-accent/40"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lining */}
+                    {showLining.includes(selectedCategory) && (
+                      <div>
+                        <p className="font-sans font-semibold text-foreground mb-3">Lining Preference</p>
+                        <div className="flex flex-wrap gap-2">
+                          {liningOptions.map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() => setSelectedLining(selectedLining === opt ? "" : opt)}
+                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                selectedLining === opt
+                                  ? "border-accent bg-accent text-accent-foreground font-medium"
+                                  : "border-border bg-card text-foreground hover:border-accent/40"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Skip message */}
+                    {!showNeckline.includes(selectedCategory) &&
+                     !showSleeve.includes(selectedCategory) &&
+                     !showDupatta.includes(selectedCategory) &&
+                     !showLining.includes(selectedCategory) && (
+                      <div className="p-4 bg-card rounded-xl border border-border text-center">
+                        <p className="text-muted-foreground font-sans text-sm">No specific design details needed for {selectedCategory}. Tap Next to continue to measurements.</p>
+                      </div>
+                    )}
+
+                  </div>
                 </div>
               )}
 
@@ -598,7 +781,18 @@ const Wizard = () => {
                       <button onClick={() => setStep(2)} className="text-accent font-sans text-sm font-medium">Edit</button>
                     </div>
                     <p className="text-sm text-muted-foreground font-sans">
-                      {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory || "Lehenga"} • {selectedOccasion && `${selectedOccasion} • `}{measurementType === "standard" ? `Size ${standardSize} (${sizeRegion})` : measurementType === "custom" ? "Custom measurements" : "Will provide later"}
+                      {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory || "Lehenga"}
+                    </p>
+                    <p className="text-sm text-muted-foreground font-sans mt-1">
+                      {selectedOccasion} {selectedFit && `• ${selectedFit}`}
+                    </p>
+                    {(selectedNeckline || selectedSleeve || selectedDupatta || selectedLining) && (
+                      <p className="text-sm text-muted-foreground font-sans mt-1">
+                        {[selectedNeckline, selectedSleeve, selectedDupatta, selectedLining].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground font-sans mt-1">
+                      {measurementType === "standard" ? `Size ${standardSize} (${sizeRegion})` : measurementType === "custom" ? "Custom measurements" : "Will provide later"}
                     </p>
                   </div>
                   <div className="p-5 bg-card rounded-xl border border-border">
@@ -683,6 +877,10 @@ const Wizard = () => {
             onClick={() => {
               if (step === 2) {
                 if (step2Phase === "measurements") {
+                  setStep2Phase("design");
+                } else if (step2Phase === "design") {
+                  setStep2Phase("fit");
+                } else if (step2Phase === "fit") {
                   setStep2Phase("occasion");
                 } else if (step2Phase === "occasion") {
                   setStep2Phase("category");
@@ -707,6 +905,10 @@ const Wizard = () => {
                   if (step2Phase === "category") {
                     setStep2Phase("occasion");
                   } else if (step2Phase === "occasion") {
+                    setStep2Phase("fit");
+                  } else if (step2Phase === "fit") {
+                    setStep2Phase("design");
+                  } else if (step2Phase === "design") {
                     setStep2Phase("measurements");
                   } else {
                     setStep(step + 1);
