@@ -78,7 +78,12 @@ const Index = () => {
             {!loginOtpSent ? (
               <div className="space-y-3">
                 <Input value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} placeholder="+91 98765 43210" type="tel" className="font-sans" />
-                <Button variant="gold" className="w-full" onClick={() => { if (loginPhone.trim()) setLoginOtpSent(true); }}>Send OTP →</Button>
+                <Button variant="gold" className="w-full" disabled={loginLoading} onClick={() => {
+                  if (loginPhone.trim()) {
+                    setLoginLoading(true);
+                    setTimeout(() => { setLoginOtpSent(true); setLoginLoading(false); }, 800);
+                  }
+                }}>{loginLoading ? 'Sending...' : 'Send OTP →'}</Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -86,11 +91,19 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground font-sans">Demo mode — enter any 4 digits</p>
                 <Button variant="gold" className="w-full" onClick={() => {
                   if (/^\d{4}$/.test(loginOtp)) {
+                    const userData = {
+                      phone: loginPhone,
+                      name: 'Customer',
+                      loggedInAt: new Date().toISOString(),
+                    };
+                    localStorage.setItem('naapio_user', JSON.stringify(userData));
+                    setIsLoggedIn(true);
                     setLoginOpen(false); setLoginOtpSent(false); setLoginOtp(''); setLoginPhone('');
                     toast.success("Welcome back! 👋");
                     navigate('/dashboard');
                   } else { toast.error("Enter any 4 digits"); }
                 }}>Verify →</Button>
+                <button onClick={() => setLoginOtpSent(false)} className="text-xs text-muted-foreground hover:text-foreground font-sans">← Change number</button>
               </div>
             )}
 
