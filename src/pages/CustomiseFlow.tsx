@@ -157,6 +157,28 @@ const CustomiseFlow = () => {
   const [zoneNotes, setZoneNotes] = useState<Record<string, string>>({});
   const [zonePhotos, setZonePhotos] = useState<Record<string, File | null>>({});
   const [placementCustomNote, setPlacementCustomNote] = useState("");
+
+  // Customise Intelligence
+  const custIntelligence = useMemo(() => {
+    const basesPerZone: Record<string, number> = {
+      'Embroidery / Thread Work': 1500, 'Zari / Zardozi Work': 2000,
+      'Mirror Work / Shisha': 1500, 'Sequins & Beadwork': 1200,
+      'Hand Painting / Fabric Art': 2000, 'Block / Screen Printing': 800,
+      'Patch / Appliqué Work': 1000, 'Monogram / Name Embroidery': 800,
+      'Digital / Heat Transfer Print': 600,
+    };
+    const zones = totalSelectedZones || 1;
+    const highestBase = customisationTypes.length > 0
+      ? Math.max(...customisationTypes.map(t => basesPerZone[t] || 1000))
+      : 1000;
+    const avg = Math.round(highestBase * zones / 500) * 500;
+    const min = Math.max(1000, Math.round(avg * 0.6 / 500) * 500);
+    const max = Math.round(avg * 1.8 / 500) * 500;
+    const factors: string[] = [];
+    if (customisationTypes.length > 0) factors.push(`${customisationTypes[0]}${customisationTypes.length > 1 ? ` + ${customisationTypes.length - 1} more` : ''}`);
+    if (zones > 1) factors.push(`${zones} zones selected`);
+    return { min, max, avg, explanation: factors };
+  }, [customisationTypes, totalSelectedZones]);
   const [referenceArtPhoto, setReferenceArtPhoto] = useState<File | null>(null);
   const [placementError, setPlacementError] = useState(false);
 
