@@ -402,8 +402,8 @@ const BiddingRoom = ({
                 <p className="text-xs text-muted-foreground font-sans flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{bid.location}</p>
               </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap gap-3 mt-3 text-xs font-sans text-muted-foreground">
+              {/* Stats — allow wrapping */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-xs font-sans text-muted-foreground">
                 <span>⭐ {bid.rating} ({bid.reviewCount} reviews)</span>
                 <span>✅ {bid.completionRate}% completed</span>
                 <span>🛡️ {bid.disputeRate}% disputes</span>
