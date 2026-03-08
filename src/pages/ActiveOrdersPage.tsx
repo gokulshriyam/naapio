@@ -441,7 +441,10 @@ const ActiveOrdersPage = () => {
   const initialM: Record<string, string> = {};
   garmentFields.forEach(f => { initialM[f.field] = savedMeasurements[f.field] || ''; });
   const [measurements, setMeasurements] = useState<Record<string, string>>(initialM);
-  const [heightValue, setHeightValue] = useState(savedMeasurements['Height'] || '');
+  const [heightUnit, setHeightUnit] = useState<'ftin' | 'cm'>('ftin');
+  const [heightFt, setHeightFt] = useState('');
+  const [heightIn, setHeightIn] = useState('');
+  const [heightCm, setHeightCm] = useState('');
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
   const [m1Locked, setM1Locked] = useState(false);
@@ -516,7 +519,7 @@ const ActiveOrdersPage = () => {
   const m1Valid = (() => {
     if (garmentConfig.noMeasurementNeeded) return true;
     const allFilled = garmentFields.every(f => measurements[f.field]?.trim());
-    const heightOk = !garmentConfig.heightRequired || heightValue.trim();
+    const heightOk = !garmentConfig.heightRequired || (heightUnit === 'ftin' ? (heightFt.trim() && heightIn.trim()) : heightCm.trim());
     return allFilled && heightOk && dpdp1 && dpdp2;
   })();
 
@@ -541,8 +544,12 @@ const ActiveOrdersPage = () => {
 
   const handleM1Confirm = () => {
     const confirmedAt = new Date().toISOString();
+    const heightDisplay = garmentConfig.heightRequired
+      ? (heightUnit === 'ftin' ? `${heightFt}'${heightIn}"` : `${heightCm} cm`)
+      : undefined;
+    const finalMeasurements = heightDisplay ? { Height: heightDisplay, ...measurements } : { ...measurements };
     localStorage.setItem('naapio_confirmed_measurements', JSON.stringify({
-      orderId, garment: garmentLabel, confirmedAt, measurements, dpdpConsentAt: confirmedAt, consentGiven: true,
+      orderId, garment: garmentLabel, confirmedAt, measurements: finalMeasurements, dpdpConsentAt: confirmedAt, consentGiven: true,
     }));
     // Also update measurement profile
     const garmentKey = resolvedGarmentName || garmentLabel;
@@ -551,7 +558,7 @@ const ActiveOrdersPage = () => {
       updatedAt: confirmedAt,
       source: 'M1_confirmed',
       orderId: orderId,
-      values: { ...measurements },
+      values: { ...finalMeasurements },
     };
     profile.lastUpdated = confirmedAt;
     localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
@@ -833,11 +840,37 @@ const ActiveOrdersPage = () => {
                       </Collapsible>
                     )}
 
-                    {/* Height field */}
+                    {/* Height field with ft/in ↔ cm toggle */}
                     {garmentConfig.heightRequired && (
                       <div className="mb-4 p-3 rounded-xl bg-secondary">
-                        <Label className="text-sm font-sans font-semibold text-foreground">Your Height (required for length calibration)</Label>
-                        <Input type="number" placeholder="e.g. 65" value={heightValue} onChange={e => setHeightValue(e.target.value)} className="mt-2 h-10" />
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-sm font-sans font-semibold text-foreground">Your Height (required for length calibration)</Label>
+                          <div className="flex rounded-full border border-border overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => { setHeightUnit('ftin'); setHeightCm(''); }}
+                              className={`px-3 py-1 text-xs font-sans font-medium transition-colors ${heightUnit === 'ftin' ? 'bg-accent text-accent-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                            >ft / in</button>
+                            <button
+                              type="button"
+                              onClick={() => { setHeightUnit('cm'); setHeightFt(''); setHeightIn(''); }}
+                              className={`px-3 py-1 text-xs font-sans font-medium transition-colors ${heightUnit === 'cm' ? 'bg-accent text-accent-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                            >cm</button>
+                          </div>
+                        </div>
+                        {heightUnit === 'ftin' ? (
+                          <div className="flex items-center gap-2">
+                            <Input type="number" min="1" max="8" placeholder="5" value={heightFt} onChange={e => setHeightFt(e.target.value)} className="w-[60px] h-9 text-sm" readOnly={m1Locked} />
+                            <span className="text-xs text-muted-foreground font-sans">ft</span>
+                            <Input type="number" min="0" max="11" placeholder="6" value={heightIn} onChange={e => setHeightIn(e.target.value)} className="w-[60px] h-9 text-sm" readOnly={m1Locked} />
+                            <span className="text-xs text-muted-foreground font-sans">in</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Input type="number" min="50" max="250" placeholder="168" value={heightCm} onChange={e => setHeightCm(e.target.value)} className="w-[100px] h-9 text-sm" readOnly={m1Locked} />
+                            <span className="text-xs text-muted-foreground font-sans">cm</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -854,14 +887,17 @@ const ActiveOrdersPage = () => {
                               </div>
                               <p className="text-xs text-muted-foreground font-sans">{f.description}</p>
                             </div>
-                            <Input
-                              type="number"
-                              placeholder="e.g. 36"
-                              value={measurements[f.field] || ''}
-                              onChange={e => setMeasurements({ ...measurements, [f.field]: e.target.value })}
-                              className="w-20 h-9 text-sm shrink-0"
-                              readOnly={m1Locked}
-                            />
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Input
+                                type="number"
+                                placeholder="e.g. 36"
+                                value={measurements[f.field] || ''}
+                                onChange={e => setMeasurements({ ...measurements, [f.field]: e.target.value })}
+                                className="w-20 h-9 text-sm"
+                                readOnly={m1Locked}
+                              />
+                              <span className="text-xs text-muted-foreground font-sans">inches</span>
+                            </div>
                             <button onClick={() => setTipField(f)} className="text-xs font-sans text-accent hover:underline shrink-0 mt-2">▶ How to measure</button>
                           </div>
                         );
