@@ -556,7 +556,7 @@ const Wizard = () => {
   useEffect(() => {
     if (!photoAnalysis || !photoAnalysis.analysisComplete || photoAnalysis.analysisError) return;
     
-    console.log('Applying pre-fills from photo analysis:', photoAnalysis);
+    
     
     // Pre-fill category if detected and not already set
     if (photoAnalysis.detectedGarment && !selectedCategory) {
