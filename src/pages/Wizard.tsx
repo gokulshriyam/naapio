@@ -1122,23 +1122,6 @@ Return a JSON object with ONLY these fields, no other text:
     }
   };
 
-  // Map detected garment to category
-  const mapDetectedToCategory = (detected: string): string | null => {
-    const map: Record<string, string> = {
-      'Saree Blouse': 'Saree Blouse',
-      'Kurti': 'Kurti',
-      'Salwar Kameez': 'Salwar Kameez',
-      'Anarkali': 'Anarkali',
-      'Lehenga': 'Lehenga',
-      'Gown': 'Gown',
-      'Kurta': 'Kurta',
-      'Sherwani': 'Sherwani',
-      'Bandhgala': 'Bandhgala',
-      'Chaniya Choli': 'Lehenga',
-      'Suit': 'Suit',
-    };
-    return map[detected] || null;
-  };
 
   // Handle inspiration photo upload
   const handleInspirationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
