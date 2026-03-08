@@ -1570,6 +1570,11 @@ Important rules:
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
             <span className="font-sans text-sm text-muted-foreground">
+               {/* Mobile: compact "Step X of 4", Desktop: full label */}
+               <span className="sm:hidden">
+                 {step === 0 ? "Step 0 of 4" : `Step ${step} of 4`}
+               </span>
+               <span className="hidden sm:inline">
                {step === 0
                 ? "Who's ordering?"
                 : step === 2
@@ -1605,6 +1610,7 @@ Important rules:
                   ? "Step 3i — Budget & Delivery"
                   : `Step 3 of 4`
                 : `Step ${step} of 4`}
+               </span>
             </span>
           </div>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
