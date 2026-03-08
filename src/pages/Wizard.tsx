@@ -15,7 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { menCategories, womenCategories, measurementFields } from "@/data/mockData";
+import { menCategories, womenCategories } from "@/data/mockData";
+import { MEASUREMENT_CONFIG, resolveGarmentMeasurementConfig, HEIGHT_FIELD, type GarmentMeasurementConfig, type MeasurementField } from "@/data/measurementConfig";
 import { fabricOptionsWithImages } from "@/data/fabricData";
 import redLehenga from "@/assets/red-lehenga.jpg";
 
