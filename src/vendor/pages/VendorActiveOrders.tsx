@@ -341,12 +341,14 @@ const VendorActiveOrders = () => {
   const [orderClosed, setOrderClosed] = useState(false);
 
   // Reset milestone state when order changes — START at currentMilestone (Fix 6)
+  // Auto-open first order and default to M1 on mount
   useEffect(() => {
-    if (selectedOrder) {
-      setActiveMilestone(selectedOrder.currentMilestone);
-      setM1ReadOnly(false);
+    const order = mockVendorActiveOrders[0];
+    if (order) {
+      setSelectedOrderId(order.orderId);
+      setActiveMilestone(1);
     }
-  }, [selectedOrder]);
+  }, []);
 
   // ─── ORDER LIST VIEW ───
   if (!selectedOrderId) {
