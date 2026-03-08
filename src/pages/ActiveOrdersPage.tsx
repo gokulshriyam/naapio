@@ -693,7 +693,7 @@ const ActiveOrdersPage = () => {
   return (
     <div className="max-w-4xl" ref={contentRef}>
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
-        <ArrowLeft className="w-4 h-4" /> ← My Orders
+        <ArrowLeft className="w-4 h-4" /> My Orders
       </button>
 
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
