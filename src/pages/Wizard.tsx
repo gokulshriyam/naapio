@@ -249,28 +249,8 @@ const ownFabricTypeOptions = ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet"
 const ownFabricWidthOptions = ["36 inches (narrow)", "44 inches (standard)", "54 inches (wide)", "I don't know"];
 const ownFabricConditionOptions = ["New / Unwashed", "Washed / Pre-treated", "Vintage / Heirloom", "Recycled (from another garment)"];
 
-// ═══ MEASUREMENT CONFIG SYSTEM (Naapio Wizard Spec v2.0) ═══
-type MeasurementField = {
-  field: string;
-  description: string;
-  tip: string;
-  videoUrl: string | null;
-};
-
-type GarmentMeasurementConfig = {
-  supportsStandard: boolean;
-  heightRequired: boolean;
-  noStitching?: boolean;
-  noStitchingMessage?: string;
-  fields: MeasurementField[];
-};
-
-const HEIGHT_FIELD: MeasurementField = {
-  field: 'Height',
-  description: 'Your full standing height',
-  tip: 'Stand straight against a wall. Mark the top of your head. Measure from floor to that mark. Enter in feet+inches (e.g. 5\'6") or cm (e.g. 168cm).',
-  videoUrl: null,
-};
+// MEASUREMENT_CONFIG, resolveGarmentMeasurementConfig, HEIGHT_FIELD, types
+// are now imported from @/data/measurementConfig
 
 const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
   'Saree (fabric only)': {
