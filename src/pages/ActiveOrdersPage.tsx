@@ -159,6 +159,26 @@ const ActiveOrdersPage = () => {
     ? new Date(new Date(activeOrder.acceptedAt).getTime() + deliveryDays * 86400000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })
     : 'TBD';
 
+  if (loading) {
+    return (
+      <div className="max-w-4xl animate-pulse">
+        <div className="h-4 w-24 bg-muted rounded mb-6" />
+        <div className="h-8 w-64 bg-muted rounded mb-2" />
+        <div className="h-4 w-48 bg-muted rounded mb-6" />
+        <div className="h-2 w-full bg-muted rounded mb-8" />
+        <div className="flex gap-4 mb-8">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="flex items-center gap-1">
+              <div className="w-9 h-9 rounded-full bg-muted" />
+              {i < 5 && <div className="w-8 h-0.5 bg-muted" />}
+            </div>
+          ))}
+        </div>
+        <div className="h-64 bg-muted rounded-xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl" ref={contentRef}>
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
