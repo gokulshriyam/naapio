@@ -536,8 +536,278 @@ const ForTailorsPage = () => {
         </div>
       </section>
 
+      {/* ======== DIVIDER ======== */}
+      <div className="container mx-auto px-6">
+        <div className="flex items-center gap-4 my-0">
+          <div className="flex-1 border-t border-border" />
+          <span className="text-muted-foreground font-sans text-sm">or</span>
+          <div className="flex-1 border-t border-border" />
+        </div>
+      </div>
+
+      {/* ======== ARTISAN SECTION ======== */}
+      <ArtisanSection />
+
       <SiteFooter />
     </div>
+  );
+};
+
+/* ═══════════════════════════════════════ */
+/*  Artisan / Embroiderer Interest Section */
+/* ═══════════════════════════════════════ */
+
+const artisanCraftOptions = [
+  "Embroidery / Thread Work",
+  "Zari / Zardozi",
+  "Mirror Work / Shisha",
+  "Hand Painting / Fabric Art",
+  "Block / Screen Printing",
+  "Sequins & Beadwork",
+  "Digital / Heat Transfer Print",
+  "Other",
+];
+
+const craftShowcase = [
+  { emoji: "🪡", label: "Embroidery & Thread Work" },
+  { emoji: "✨", label: "Zari / Zardozi" },
+  { emoji: "🎨", label: "Hand Painting" },
+  { emoji: "🖨️", label: "Block & Screen Printing" },
+  { emoji: "💎", label: "Sequins & Beadwork" },
+];
+
+const artisanBenefits = [
+  {
+    emoji: "🎨",
+    title: "Your craft, on your terms",
+    body: "Receive customisation briefs that match your speciality. Bid only on work you want to take.",
+  },
+  {
+    emoji: "🔒",
+    title: "Guaranteed payment",
+    body: "Same escrow protection as our tailor network. Payment released when the customer approves your work.",
+  },
+  {
+    emoji: "📈",
+    title: "Build your reputation",
+    body: "Every completed order adds a verified review to your profile. Better reviews mean more visibility and higher-value briefs.",
+  },
+];
+
+const ArtisanSection = () => {
+  const { toast } = useToast();
+  const [artisanName, setArtisanName] = useState("");
+  const [artisanCrafts, setArtisanCrafts] = useState<string[]>([]);
+  const [artisanCraftOther, setArtisanCraftOther] = useState("");
+  const [artisanCity, setArtisanCity] = useState("");
+  const [artisanPhone, setArtisanPhone] = useState("");
+  const [artisanSubmitted, setArtisanSubmitted] = useState(false);
+
+  const toggleCraft = (craft: string) => {
+    setArtisanCrafts((prev) =>
+      prev.includes(craft) ? prev.filter((c) => c !== craft) : [...prev, craft]
+    );
+  };
+
+  const isArtisanValid =
+    artisanName.trim().length > 0 &&
+    artisanCrafts.length > 0 &&
+    (!artisanCrafts.includes("Other") || artisanCraftOther.trim().length > 0) &&
+    artisanCity.trim().length > 0 &&
+    /^\d{10}$/.test(artisanPhone.replace(/\s/g, ""));
+
+  const handleArtisanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isArtisanValid) return;
+    setArtisanSubmitted(true);
+    setArtisanName("");
+    setArtisanCrafts([]);
+    setArtisanCraftOther("");
+    setArtisanCity("");
+    setArtisanPhone("");
+    toast({
+      title: "Thanks! We'll be in touch when we launch in your city. 🎨",
+    });
+  };
+
+  return (
+    <section className="py-24" style={{ backgroundColor: "#F0EBF9" }}>
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="text-sm font-sans font-semibold uppercase tracking-widest text-muted-foreground mb-3 block">
+            Also Looking For
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
+            Embroiderers, Artisans &amp; Painters
+          </h2>
+          <p className="text-muted-foreground font-sans text-lg max-w-2xl mx-auto leading-relaxed">
+            We're building a dedicated artisan network for our 'Customise My Garment'
+            order type. If you do embroidery, zari work, hand painting, block printing,
+            or any fabric art — we want to hear from you.
+          </p>
+        </motion.div>
+
+        {/* Craft Showcase Pills */}
+        <div className="flex flex-wrap justify-center gap-3 mb-16">
+          {craftShowcase.map((c) => (
+            <span
+              key={c.label}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border text-sm font-sans text-foreground"
+            >
+              <span>{c.emoji}</span> {c.label}
+            </span>
+          ))}
+        </div>
+
+        {/* Value Proposition */}
+        <div className="grid md:grid-cols-3 gap-8 mb-20">
+          {artisanBenefits.map((b, i) => (
+            <motion.div
+              key={b.title}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              custom={i}
+              className="bg-card rounded-2xl p-8 shadow-sm border border-border"
+            >
+              <div className="text-3xl mb-4">{b.emoji}</div>
+              <h3 className="text-xl font-serif font-bold text-foreground mb-3">
+                {b.title}
+              </h3>
+              <p className="text-muted-foreground font-sans leading-relaxed">
+                {b.body}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Interest Registration Form */}
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-8"
+          >
+            <h3 className="text-2xl font-serif font-bold text-foreground mb-2">
+              Register your interest
+            </h3>
+            <p className="text-muted-foreground font-sans">
+              We'll reach out when the artisan network launches in your city.
+            </p>
+          </motion.div>
+
+          {artisanSubmitted ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-card rounded-2xl border border-purple-300 p-12 text-center shadow-sm"
+            >
+              <CheckCircle2 className="w-16 h-16 text-purple-500 mx-auto mb-6" />
+              <h3 className="text-2xl font-serif font-bold text-foreground mb-3">
+                Thanks! We'll be in touch when we launch in your city. 🎨
+              </h3>
+            </motion.div>
+          ) : (
+            <motion.form
+              onSubmit={handleArtisanSubmit}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-card rounded-2xl border border-border p-8 md:p-10 shadow-sm space-y-6"
+            >
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="artisanName">Your name *</Label>
+                <Input
+                  id="artisanName"
+                  placeholder="Full name"
+                  maxLength={100}
+                  value={artisanName}
+                  onChange={(e) => setArtisanName(e.target.value)}
+                />
+              </div>
+
+              {/* Craft Type - Multi-select pills */}
+              <div className="space-y-2">
+                <Label>Your craft *</Label>
+                <div className="flex flex-wrap gap-2">
+                  {artisanCraftOptions.map((craft) => (
+                    <button
+                      key={craft}
+                      type="button"
+                      onClick={() => toggleCraft(craft)}
+                      className={`px-4 py-2 rounded-full text-sm font-sans border transition-all ${
+                        artisanCrafts.includes(craft)
+                          ? "bg-purple-100 border-purple-400 text-purple-800 dark:bg-purple-900/30 dark:border-purple-500 dark:text-purple-300"
+                          : "bg-card border-border text-foreground hover:border-purple-300"
+                      }`}
+                    >
+                      {artisanCrafts.includes(craft) && (
+                        <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                      )}
+                      {craft}
+                    </button>
+                  ))}
+                </div>
+                {artisanCrafts.includes("Other") && (
+                  <Input
+                    placeholder="Describe your craft"
+                    maxLength={200}
+                    value={artisanCraftOther}
+                    onChange={(e) => setArtisanCraftOther(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+
+              {/* City */}
+              <div className="space-y-2">
+                <Label htmlFor="artisanCity">Your city *</Label>
+                <Input
+                  id="artisanCity"
+                  placeholder="e.g. Bangalore, Chennai, Mumbai"
+                  maxLength={100}
+                  value={artisanCity}
+                  onChange={(e) => setArtisanCity(e.target.value)}
+                />
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="artisanPhone">Phone number *</Label>
+                <Input
+                  id="artisanPhone"
+                  type="tel"
+                  placeholder="10-digit mobile number"
+                  maxLength={10}
+                  value={artisanPhone}
+                  onChange={(e) =>
+                    setArtisanPhone(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                />
+              </div>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={!isArtisanValid}
+              >
+                Register My Interest
+              </Button>
+            </motion.form>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };
 
