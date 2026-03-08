@@ -834,7 +834,12 @@ const Wizard = () => {
     }
   }, []);
 
-  // Restore draft on mount
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
+
   useEffect(() => {
     const saved = localStorage.getItem("naapio_wizard_draft");
     if (saved) {
