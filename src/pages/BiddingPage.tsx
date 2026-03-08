@@ -601,7 +601,7 @@ const BiddingPage = () => {
   const handleCloseBid = (orderId: string) => {
     setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
     setPastOrders((prev) => [
-      { id: orderId, orderType: "New Order", garment: activeOrders.find((o) => o.id === orderId)?.garment || "", status: "expired", postedAt: "Mar 2026", bidsReceived: 0, note: "Closed by customer" },
+      { id: orderId, orderType: activeOrders.find(o => o.id === orderId)?.orderType || "New Order", garment: activeOrders.find((o) => o.id === orderId)?.garment || "", status: "expired", postedAt: "Mar 2026", bidsReceived: 0, note: "Closed by customer" },
       ...prev,
     ]);
     setCloseBidDialog(null);
