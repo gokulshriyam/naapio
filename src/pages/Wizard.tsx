@@ -3091,13 +3091,17 @@ const Wizard = () => {
                   } else if (step3Phase === "colour") {
                     setStep3Phase("surface");
                   } else if (step3Phase === "surface") {
-                    setStep3Phase("blend");
+                    if (showAdvancedFabric) {
+                      setStep3Phase("blend");
+                    } else {
+                      setStep3Phase("fabricBudget");
+                    }
                   } else if (step3Phase === "blend") {
                     setStep3Phase("brand");
                   } else if (step3Phase === "brand") {
                     setStep3Phase("fabricBudget");
                   } else if (step3Phase === "fabricBudget") {
-                    if (hasEmbellishment) {
+                    if (hasEmbellishment && showAdvancedFabric) {
                       setStep3Phase("embellishment");
                     } else {
                       setStep3Phase("budgetDelivery");
