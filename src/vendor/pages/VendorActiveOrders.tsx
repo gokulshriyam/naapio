@@ -508,9 +508,9 @@ const VendorActiveOrders = () => {
       <Progress value={progress} className="h-1.5 mb-8" />
 
       {/* Two-column layout */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
         {/* LEFT COLUMN */}
-        <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <aside className="w-full lg:w-72 lg:max-w-[288px] lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
           {/* Full brief card (Fix 7) */}
           <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
