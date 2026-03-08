@@ -2821,28 +2821,59 @@ Return a JSON object with ONLY these fields, no other text:
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What colour are you drawn to?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Choose a mood — your tailor will suggest specific shades</p>
+                      {/* Photo pre-fill notice */}
+                      {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                       photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-sans text-amber-800">
+                            We detected <span className="font-semibold">{photoAnalysis.detectedColour}</span> in your photo.
+                          </span>
+                        </motion.div>
+                      )}
+
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        {colourMoodOptions.map((cm) => (
-                          <button
-                            key={cm.label}
-                            onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
-                            className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${
-                              selectedColourMood === cm.label
-                                ? "border-accent bg-gold-light ring-2 ring-accent/30"
-                                : "border-border bg-card hover:border-accent/30"
-                            }`}
-                          >
-                            {cm.swatch ? (
-                              <div
-                                className="w-10 h-10 rounded-full mb-3 border border-border"
-                                style={{ backgroundColor: cm.swatch }}
-                              />
-                            ) : (
-                              <Upload className="w-10 h-10 text-muted-foreground mb-3" />
-                            )}
-                            <span className="leading-tight block font-medium">{cm.label}</span>
-                          </button>
-                        ))}
+                        {colourMoodOptions.map((cm) => {
+                          const isDetected = photoAnalysis?.analysisComplete && 
+                            !photoAnalysis?.analysisError && 
+                            photoAnalysis.detectedColour === cm.label;
+                          const isSelected = selectedColourMood === cm.label;
+                          
+                          // Auto pre-select detected colour if nothing selected yet
+                          if (isDetected && !selectedColourMood && !photoFromBadgeShown.has('colour')) {
+                            setTimeout(() => {
+                              setSelectedColourMood(cm.label);
+                              setPhotoFromBadgeShown(prev => new Set(prev).add('colour'));
+                            }, 100);
+                          }
+                          
+                          return (
+                            <button
+                              key={cm.label}
+                              onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
+                              className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${
+                                isSelected
+                                  ? "border-accent bg-gold-light ring-2 ring-accent/30"
+                                  : "border-border bg-card hover:border-accent/30"
+                              }`}
+                            >
+                              {cm.swatch ? (
+                                <div
+                                  className="w-10 h-10 rounded-full mb-3 border border-border"
+                                  style={{ backgroundColor: cm.swatch }}
+                                />
+                              ) : (
+                                <Upload className="w-10 h-10 text-muted-foreground mb-3" />
+                              )}
+                              <span className="leading-tight block font-medium">{cm.label}</span>
+                              {isDetected && isSelected && (
+                                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                                  ✨ From photo
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
 
                       {/* Upload reference photo */}
