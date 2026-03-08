@@ -301,12 +301,16 @@ const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActive
 const VendorActiveOrders = () => {
   const navigate = useNavigate();
   const [orders] = useState(mockVendorActiveOrders);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(
+    mockVendorActiveOrders.length === 1 ? mockVendorActiveOrders[0].orderId : null
+  );
   const selectedOrder = orders.find(o => o.orderId === selectedOrderId);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   // Milestone state — initialised from order's currentMilestone
-  const [activeMilestone, setActiveMilestone] = useState(2);
+  const [activeMilestone, setActiveMilestone] = useState(
+    mockVendorActiveOrders.length === 1 ? mockVendorActiveOrders[0].currentMilestone : 2
+  );
   const [m1ReadOnly, setM1ReadOnly] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
