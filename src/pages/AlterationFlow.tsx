@@ -113,6 +113,8 @@ const AlterationFlow = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isRushOrder, setIsRushOrder] = useState(false);
+  const [briefShared, setBriefShared] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
 
@@ -689,6 +691,23 @@ const AlterationFlow = () => {
                       <p className="text-xs text-muted-foreground font-sans">
                         Tailors bid on this range. The ₹499 posting fee still applies to go live, and is deducted from the tailor's final payment.
                       </p>
+                    </div>
+
+                    {/* Rush Order Toggle */}
+                    <div className={`p-5 rounded-xl border transition-all col-span-full mb-4 ${isRushOrder ? "bg-amber-50 border-amber-300" : "bg-card border-border"}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">⚡</span>
+                          <div>
+                            <p className="font-sans font-bold text-foreground text-sm">Rush Order</p>
+                            <p className="text-xs text-muted-foreground font-sans mt-0.5">Need it faster? Rush orders attract tailors who specialise in quick turnaround.</p>
+                          </div>
+                        </div>
+                        <Switch checked={isRushOrder} onCheckedChange={setIsRushOrder} />
+                      </div>
+                      {isRushOrder && (
+                        <p className="mt-3 p-3 bg-amber-100/60 rounded-lg text-xs text-amber-800 font-sans">⚡ Rush surcharge: Tailors may add 20–40% to their bid for rush orders.</p>
+                      )}
                     </div>
 
                     {/* Delivery Date */}

@@ -142,6 +142,8 @@ const CustomiseFlow = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isRushOrder, setIsRushOrder] = useState(false);
+  const [briefShared, setBriefShared] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
 
@@ -870,6 +872,23 @@ const CustomiseFlow = () => {
                       <p className="text-xs text-muted-foreground font-sans">
                         Artisans bid on this range. Complex hand work like Zardozi may need a higher range to attract skilled bids.
                       </p>
+                    </div>
+
+                    {/* Rush Order Toggle */}
+                    <div className={`p-5 rounded-xl border transition-all col-span-full mb-4 ${isRushOrder ? "bg-amber-50 border-amber-300" : "bg-card border-border"}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">⚡</span>
+                          <div>
+                            <p className="font-sans font-bold text-foreground text-sm">Rush Order</p>
+                            <p className="text-xs text-muted-foreground font-sans mt-0.5">Need it faster? Rush orders attract artisans who specialise in quick turnaround.</p>
+                          </div>
+                        </div>
+                        <Switch checked={isRushOrder} onCheckedChange={setIsRushOrder} />
+                      </div>
+                      {isRushOrder && (
+                        <p className="mt-3 p-3 bg-amber-100/60 rounded-lg text-xs text-amber-800 font-sans">⚡ Rush surcharge: Artisans may add 20–40% to their bid for rush orders.</p>
+                      )}
                     </div>
 
                     <div>

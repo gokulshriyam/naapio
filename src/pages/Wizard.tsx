@@ -213,7 +213,7 @@ const Wizard = () => {
   const [searchParams] = useSearchParams();
   const orderType = searchParams.get("type") || "new-order";
   const isOwnFabric = orderType === "own-fabric";
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [uploaded, setUploaded] = useState(false);
   const [description, setDescription] = useState("");
   const [gender, setGender] = useState<"men" | "women">("women");
@@ -264,6 +264,25 @@ const Wizard = () => {
   const [restoredDraft, setRestoredDraft] = useState<any>(null);
   const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
 
+  // Rush Order
+  const [isRushOrder, setIsRushOrder] = useState(false);
+
+  // Share Brief
+  const [briefShared, setBriefShared] = useState(false);
+
+  // Gift / Ordering for someone else
+  const [orderingFor, setOrderingFor] = useState<'self' | 'someone' | ''>('');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientRelation, setRecipientRelation] = useState('');
+  const [giftOrder, setGiftOrder] = useState(false);
+
+  // Kids lead capture
+  const [kidsExpanded, setKidsExpanded] = useState(false);
+  const [kidsEmail, setKidsEmail] = useState('');
+  const [kidsAgeRange, setKidsAgeRange] = useState('');
+  const [kidsNotified, setKidsNotified] = useState(false);
+
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
   const [generatedOutfitImage, setGeneratedOutfitImage] = useState<string>("");
@@ -275,6 +294,7 @@ const Wizard = () => {
     !selectedSurfaces.every((s) => s === "Plain / No Embellishment" || s === "No Preference");
 
   const getMinDeliveryDays = () => {
+    if (isRushOrder) return 7;
     const bridal = ["Lehenga", "Saree Blouse"];
     const formal = ["Sherwani", "Suit", "Bandhgala"];
     if (bridal.includes(selectedCategory)) return 21;
@@ -291,7 +311,7 @@ const Wizard = () => {
   useEffect(() => {
     const min = getMinDeliveryDate();
     setDeliveryDate(min.toISOString().split("T")[0]);
-  }, [selectedCategory]);
+  }, [selectedCategory, isRushOrder]);
 
   // Restore draft on mount
   useEffect(() => {
@@ -320,15 +340,21 @@ const Wizard = () => {
         selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
         selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
         embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
+        isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
       };
       localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
     }
   }, [step, step2Phase, step3Phase, gender, selectedCategory,
       selectedOccasion, selectedFit, measurementType,
-      selectedFeel, selectedColourMood, budgetRange]);
+      selectedFeel, selectedColourMood, budgetRange, isRushOrder]);
 
 
   const canProceed = () => {
+    if (step === 0) {
+      if (orderingFor === 'self') return true;
+      if (orderingFor === 'someone') return !!recipientName.trim() && !!recipientRelation;
+      return false;
+    }
     if (step === 1) return uploaded;
     if (step === 2) {
       if (step2Phase === "category") return !!selectedCategory && (!!selectedSubCategory || !subCategories[selectedCategory]);
@@ -360,6 +386,26 @@ const Wizard = () => {
     return `NP-2026-${num}`;
   };
 
+  const buildShareText = () => {
+    const lines = [
+      "👗 *My Naapio Order Brief*",
+      "",
+      `*Order Type:* ${isOwnFabric ? "Own Fabric" : "New Order"}`,
+      `*Garment:* ${gender === "women" ? "Women's" : "Men's"} · ${selectedCategory}${selectedSubCategory ? ' · ' + selectedSubCategory : ''}`,
+      `*Occasion:* ${selectedOccasion || 'Not specified'}`,
+      `*Fit:* ${selectedFit || 'Not specified'}`,
+      selectedColourMood ? `*Colour:* ${selectedColourMood}` : null,
+      selectedFeel ? `*Fabric Feel:* ${selectedFeel}` : null,
+      budgetRange ? `*Budget:* ${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}` : null,
+      deliveryDate ? `*Delivery by:* ${deliveryDate}` : null,
+      isRushOrder ? `⚡ *Rush Order*` : null,
+      "",
+      "Review my brief and let me know what you think!",
+      "Ordering via Naapio — naapio.in"
+    ].filter(Boolean).join('\n');
+    return encodeURIComponent(lines);
+  };
+
   const handlePay = () => {
     setLoading(true);
     setTimeout(() => {
@@ -372,6 +418,8 @@ const Wizard = () => {
         occasion: selectedOccasion,
         budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
         deliveryDate,
+        rushOrder: isRushOrder,
+        giftOrder, recipientName, recipientRelation, recipientPhone,
         timestamp: new Date().toISOString()
       }));
       localStorage.removeItem("naapio_wizard_draft");
@@ -587,7 +635,9 @@ const Wizard = () => {
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
             <span className="font-sans text-sm text-muted-foreground">
-               {step === 2
+               {step === 0
+                ? "Who is this for?"
+                : step === 2
                 ? step2Phase === "category"
                   ? "Step 2a — Category"
                   : step2Phase === "occasion"
@@ -625,15 +675,93 @@ const Wizard = () => {
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-accent rounded-full"
-              animate={{ width: `${(step / 4) * 100}%` }}
+              animate={{ width: `${(Math.max(step, 0) / 4) * 100}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
         </div>
       </div>
 
+      {/* Gift order banner */}
+      {giftOrder && step > 0 && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-2">
+            <p className="font-sans text-xs text-amber-800">Ordering for {recipientName} 🎁</p>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
+          {/* STEP 0: Who are you ordering for? */}
+          {step === 0 && (
+            <motion.div key="s0" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
+              <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Who are you ordering for?</h2>
+              <p className="text-muted-foreground font-sans mb-8">This helps us tailor the experience</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
+                <button
+                  onClick={() => { setOrderingFor('self'); setGiftOrder(false); }}
+                  className={`p-6 rounded-2xl text-left transition-all border-2 ${
+                    orderingFor === 'self' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
+                  }`}
+                >
+                  <span className="text-4xl block mb-3">👤</span>
+                  <p className="font-sans font-bold text-foreground mb-1 flex items-center gap-2">
+                    {orderingFor === 'self' && <Check className="w-4 h-4 text-accent" />}
+                    For Myself
+                  </p>
+                  <p className="text-xs text-muted-foreground font-sans">I'm ordering this outfit for myself</p>
+                </button>
+                <button
+                  onClick={() => { setOrderingFor('someone'); setGiftOrder(true); }}
+                  className={`p-6 rounded-2xl text-left transition-all border-2 ${
+                    orderingFor === 'someone' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
+                  }`}
+                >
+                  <span className="text-4xl block mb-3">🎁</span>
+                  <p className="font-sans font-bold text-foreground mb-1 flex items-center gap-2">
+                    {orderingFor === 'someone' && <Check className="w-4 h-4 text-accent" />}
+                    For Someone Else
+                  </p>
+                  <p className="text-xs text-muted-foreground font-sans">Gift, surprise, or ordering on behalf of family</p>
+                </button>
+              </div>
+
+              {orderingFor === 'someone' && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 max-w-lg space-y-4">
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-1 block">Recipient's name</label>
+                    <Input value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="e.g. Priya, Amma, Akka" className="font-sans" />
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-2 block">Your relation to them</label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Wife / Partner", "Mother", "Daughter", "Sister", "Friend", "Other"].map((rel) => (
+                        <button
+                          key={rel}
+                          onClick={() => setRecipientRelation(rel)}
+                          className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                            recipientRelation === rel ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                          }`}
+                        >
+                          {rel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-1 block">Their phone number (for measurements)</label>
+                    <Input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="10-digit mobile" type="tel" className="font-sans" />
+                    <p className="text-xs text-muted-foreground font-sans mt-1">
+                      We'll WhatsApp them to submit their measurements directly. You won't need to collect measurements yourself.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
           {/* STEP 1: Inspiration Upload */}
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -696,13 +824,53 @@ const Wizard = () => {
                     {(["men", "women"] as const).map((g) => (
                       <button
                         key={g}
-                        onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); }}
+                        onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); setKidsExpanded(false); }}
                         className={`px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all ${gender === g ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
                       >
                         {g === "men" ? "👔 Men's" : "👗 Women's"}
                       </button>
                     ))}
+                    {/* Kids tile */}
+                    <button
+                      onClick={() => setKidsExpanded(!kidsExpanded)}
+                      className="px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all bg-card border border-border text-foreground hover:bg-muted opacity-70 relative"
+                    >
+                      👶 Kids / Unisex
+                      <span className="ml-1 inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700">Coming Soon</span>
+                    </button>
                   </div>
+
+                  {/* Kids Lead Capture */}
+                  {kidsExpanded && !kidsNotified && (
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 bg-purple-50 border border-purple-200 rounded-xl">
+                      <h3 className="font-sans font-bold text-foreground mb-1">Kids wear is coming soon! 🎈</h3>
+                      <p className="text-sm text-muted-foreground font-sans mb-4">We're building a dedicated kids ethnic wear flow. Be the first to know when it launches.</p>
+                      <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                        <Input value={kidsEmail} onChange={(e) => setKidsEmail(e.target.value)} placeholder="Your email" type="email" className="font-sans flex-1" />
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {["0–2 yrs", "3–5 yrs", "6–9 yrs", "10–14 yrs"].map((range) => (
+                          <button
+                            key={range}
+                            onClick={() => setKidsAgeRange(range)}
+                            className={`px-3 py-1.5 rounded-full font-sans text-xs border transition-all ${
+                              kidsAgeRange === range ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                            }`}
+                          >
+                            {range}
+                          </button>
+                        ))}
+                      </div>
+                      <Button size="sm" onClick={() => { if (kidsEmail.trim()) { setKidsNotified(true); } }}>
+                        Notify Me →
+                      </Button>
+                    </motion.div>
+                  )}
+                  {kidsExpanded && kidsNotified && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                      <p className="text-sm text-purple-800 font-sans">Thanks! We'll notify you when kids wear launches. 🎈</p>
+                    </motion.div>
+                  )}
 
                   {/* Category Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
@@ -1465,11 +1633,30 @@ const Wizard = () => {
                           </p>
                         </div>
 
+                        {/* Rush Order Toggle */}
+                        <div className={`p-5 rounded-xl border transition-all mb-6 col-span-full ${isRushOrder ? "bg-amber-50 border-amber-300" : "bg-card border-border"}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-start gap-3">
+                              <span className="text-2xl">⚡</span>
+                              <div>
+                                <p className="font-sans font-bold text-foreground text-sm">Rush Order</p>
+                                <p className="text-xs text-muted-foreground font-sans mt-0.5">Need it faster? Rush orders are prioritised and attract tailors who specialise in quick turnaround.</p>
+                              </div>
+                            </div>
+                            <Switch checked={isRushOrder} onCheckedChange={setIsRushOrder} />
+                          </div>
+                          {isRushOrder && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 p-3 bg-amber-100/60 rounded-lg">
+                              <p className="text-xs text-amber-800 font-sans">⚡ Rush surcharge: Tailors may add 20–40% to their bid for rush orders. This is standard and reflects the priority work.</p>
+                            </motion.div>
+                          )}
+                        </div>
+
                         {/* Delivery Date */}
                         <div>
                           <h3 className="font-sans font-semibold text-foreground mb-4">When do you need this ready?</h3>
                           <p className="text-xs text-muted-foreground font-sans mb-3">
-                            Minimum {getMinDeliveryDays()} days from today for {selectedCategory || "this garment"}
+                            Minimum {getMinDeliveryDays()} days from today{isRushOrder ? " (rush)" : ` for ${selectedCategory || "this garment"}`}
                           </p>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -1568,6 +1755,15 @@ const Wizard = () => {
                     Start Another Order
                   </Button>
                 </div>
+
+                {giftOrder && (
+                  <div className="mt-4 p-4 bg-accent/10 border border-accent/30 rounded-xl text-center">
+                    <p className="font-sans text-sm font-semibold text-foreground">🎁 Gift order placed for {recipientName}!</p>
+                    {recipientPhone && (
+                      <p className="text-xs text-muted-foreground font-sans mt-1">We'll WhatsApp {recipientPhone} to collect their measurements within 48 hours.</p>
+                    )}
+                  </div>
+                )}
 
                 <p className="text-xs text-muted-foreground font-sans mt-6">
                   A summary has been sent to your WhatsApp number {phone}
@@ -1683,6 +1879,22 @@ const Wizard = () => {
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* GIFT ORDER SECTION */}
+                  {giftOrder && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Gift Order</span>
+                        <button onClick={() => { setStep(0); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                      </div>
+                      <p className="text-sm text-foreground font-sans">For {recipientName} ({recipientRelation})</p>
+                      {recipientPhone ? (
+                        <p className="text-xs text-muted-foreground font-sans mt-1">Measurements will be requested from {recipientPhone}</p>
+                      ) : (
+                        <p className="text-xs text-amber-600 font-sans mt-1">⏱ Measurements to be provided — remind {recipientName}</p>
+                      )}
                     </div>
                   )}
 
@@ -1852,6 +2064,35 @@ const Wizard = () => {
                     <p className="text-sm text-foreground font-sans mt-1">
                       Delivery by: {deliveryDate ? format(new Date(deliveryDate + "T00:00:00"), "PPP") : "Not set"}{flexibleDate ? " (±3 days flexible)" : ""}
                     </p>
+                  </div>
+
+                  {/* Rush Order badge in Budget & Delivery section */}
+                  {isRushOrder && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-100 text-amber-800">⚡ Rush Order</span>
+                    </div>
+                  )}
+
+                  {/* Share Brief on WhatsApp */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <h3 className="font-sans font-semibold text-foreground text-sm mb-1">Want a second opinion before you pay?</h3>
+                    <p className="text-xs text-muted-foreground font-sans mb-3">Share your brief with family or your stylist on WhatsApp</p>
+                    {!briefShared ? (
+                      <button
+                        onClick={() => { window.open(`https://wa.me/?text=${buildShareText()}`, '_blank'); setBriefShared(true); }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-sans font-semibold text-sm text-white transition-colors"
+                        style={{ backgroundColor: '#25D366' }}
+                      >
+                        📲 Share on WhatsApp
+                      </button>
+                    ) : (
+                      <div>
+                        <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-sans font-semibold text-sm border border-green-500 text-green-700 bg-green-50">
+                          ✓ Brief shared — ready to pay?
+                        </button>
+                        <p className="text-xs text-muted-foreground font-sans mt-2">Shared to WhatsApp. Come back when you're ready.</p>
+                      </div>
+                    )}
                   </div>
 
                   <p className="text-xs text-muted-foreground font-sans mt-2">
@@ -2025,10 +2266,14 @@ const Wizard = () => {
                 } else {
                   setStep(1);
                 }
+              } else if (step === 1) {
+                setStep(0);
               } else if (step > 1) {
                 setStep(step - 1);
                 if (step === 4) setStep3Phase("budgetDelivery");
                 if (step === 3) setStep2Phase("measurements");
+              } else if (step === 0) {
+                navigate("/start");
               } else {
                 navigate("/");
               }
@@ -2084,6 +2329,8 @@ const Wizard = () => {
                   } else {
                     setStep(4);
                   }
+                } else if (step === 0) {
+                  setStep(1);
                 } else {
                   setStep(step + 1);
                 }
