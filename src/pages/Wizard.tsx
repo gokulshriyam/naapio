@@ -950,6 +950,7 @@ const Wizard = () => {
   // ── Gemini Vision Analysis for Inspiration Photo ──
   const analyseInspirationPhoto = async (photoFile: File) => {
     setAnalysisLoading(true);
+    let rawText = ''; // Declare outside try for catch block access
     
     try {
       // Convert file to base64
@@ -1001,18 +1002,46 @@ Return a JSON object with ONLY these fields, no other text:
       );
 
       const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts
+      rawText = data.candidates?.[0]?.content?.parts
         ?.filter((p: any) => p.text)
         ?.map((p: any) => p.text)
         ?.join('') || '';
 
-      // Strip markdown fences if present
-      const cleanText = rawText
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim();
+      // === FIX 2: Robust JSON Extraction ===
+      let cleanText = rawText || '';
+      // Strip markdown fences
+      cleanText = cleanText.replace(/```json\s*/gi, '');
+      cleanText = cleanText.replace(/```\s*/gi, '');
+      cleanText = cleanText.trim();
 
-      const analysis = JSON.parse(cleanText);
+      // If there's text before the JSON object, extract just the JSON
+      const jsonStart = cleanText.indexOf('{');
+      const jsonEnd = cleanText.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
+      }
+
+      let analysis;
+      try {
+        analysis = JSON.parse(cleanText);
+      } catch (parseErr) {
+        console.error('JSON parse failed. Raw text:', rawText);
+        // Fallback: try to extract values manually with regex
+        analysis = {
+          detectedGarment: extractField(rawText, 'detectedGarment'),
+          detectedColour: extractField(rawText, 'detectedColour'),
+          detectedFeel: extractField(rawText, 'detectedFeel'),
+          detectedSurfaces: extractArrayField(rawText, 'detectedSurfaces'),
+          detectedOccasion: extractField(rawText, 'detectedOccasion'),
+          confidence: extractField(rawText, 'confidence') || 'medium',
+        };
+      }
+
+      // === FIX 1: Debug Logging ===
+      console.log('=== GEMINI PHOTO ANALYSIS RESULT ===');
+      console.log('Raw response text:', rawText);
+      console.log('Parsed analysis:', analysis);
+      console.log('=====================================');
       
       setPhotoAnalysis({
         ...analysis,
@@ -1020,7 +1049,12 @@ Return a JSON object with ONLY these fields, no other text:
         analysisError: false,
       });
     } catch (err) {
-      console.error('Photo analysis failed:', err);
+      // === FIX 1 & 6: Logging + Fallback ===
+      console.error('Photo analysis parse/fetch error:', err);
+      console.log('Raw text that failed to parse:', rawText);
+      
+      // Silent fail — wizard continues normally
+      // No pre-fills, no error shown to customer
       setPhotoAnalysis({
         detectedGarment: '',
         detectedColour: '',
