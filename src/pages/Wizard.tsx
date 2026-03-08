@@ -429,7 +429,7 @@ const Wizard = () => {
     } catch (err: any) {
       console.error('Gemini error:', err);
       setVisualiserError(
-        "Visualisation unavailable right now — you can still proceed with your order."
+        `Error: ${err?.message || JSON.stringify(err)}`
       );
     } finally {
       setVisualiserLoading(false);
