@@ -692,6 +692,49 @@ const ActiveOrdersPage = () => {
             <div className="h-40 overflow-y-auto p-3 space-y-2 bg-card">
               {chatMessages.length === 0 && <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about progress, timeline, or changes.</p>}
               {chatMessages.map((m) => {
+                if (m.changeRequest) {
+                  const cr = m.changeRequest;
+                  return (
+                    <div key={m.id} className="mx-0 my-2 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">📋</span>
+                        <div>
+                          <p className="text-xs font-sans font-semibold text-foreground uppercase tracking-wide">Change Request from Artisan</p>
+                          <p className="text-sm font-sans text-foreground mt-1">{cr.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-muted-foreground font-sans">Additional cost</p>
+                          <p className="text-lg font-serif font-bold text-accent">+₹{cr.amount.toLocaleString('en-IN')}</p>
+                        </div>
+                        {cr.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-xs border-destructive/40 text-destructive"
+                              onClick={() => handleChangeRequestResponse(m.id, 'declined')}>
+                              Decline
+                            </Button>
+                            <Button size="sm" variant="gold" className="text-xs"
+                              onClick={() => handleChangeRequestResponse(m.id, 'accepted')}>
+                              Accept & Pay ₹{cr.amount.toLocaleString('en-IN')} →
+                            </Button>
+                          </div>
+                        )}
+                        {cr.status === 'accepted' && (
+                          <span className="text-xs font-sans text-success font-medium bg-success-light px-3 py-1.5 rounded-full">✓ Accepted & Paid</span>
+                        )}
+                        {cr.status === 'declined' && (
+                          <span className="text-xs font-sans text-muted-foreground bg-muted px-3 py-1.5 rounded-full">Declined</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-sans">
+                        🔒 Payment is escrow-protected. Funds release only after your final approval.
+                      </p>
+                      {/* TODO: PAYMENT_INTEGRATION — replace handleChangeRequestResponse with Razorpay trigger */}
+                      {/* TODO: ARTISAN_PORTAL — in production, vendor raises this card from their portal */}
+                    </div>
+                  );
+                }
                 if (m.from === 'system') {
                   return (
                     <div key={m.id} className="text-center my-2">
