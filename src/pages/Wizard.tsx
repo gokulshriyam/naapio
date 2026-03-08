@@ -590,7 +590,7 @@ const Wizard = () => {
     if (photoAnalysis.detectedColour && !selectedColourMood) {
       setSelectedColourMood(photoAnalysis.detectedColour);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'colour']));
-      console.log('Pre-filled colour:', photoAnalysis.detectedColour);
+      
     }
     
     // Pre-fill surfaces if detected and not already set
