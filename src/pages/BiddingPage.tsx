@@ -152,6 +152,19 @@ const BiddingPage = () => {
 
   const badgeStyle = ORDER_TYPE_STYLES[demoOrder.orderType] || ORDER_TYPE_STYLES["New Order"];
 
+  if (!lastOrder) {
+    return (
+      <div className="max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <span className="text-5xl mb-4">📋</span>
+        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">No active orders yet</h2>
+        <p className="text-muted-foreground font-sans mb-6">Start your first order to see it tracked here.</p>
+        <Button variant="gold" onClick={() => navigate("/start")}>
+          Start an Order →
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl space-y-6">
       {/* ══════ Measurements Reminder Banner ══════ */}
