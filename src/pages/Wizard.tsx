@@ -421,7 +421,6 @@ const Wizard = () => {
         rushOrder: isRushOrder,
         giftOrder, recipientName, recipientRelation, recipientPhone,
         timestamp: new Date().toISOString()
-        timestamp: new Date().toISOString()
       }));
       localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
