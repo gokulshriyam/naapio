@@ -21,7 +21,7 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
-
+import VendorDashboard from "./pages/VendorDashboard";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -41,6 +41,7 @@ const App = () => (
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/order/:id" element={<OrderDetailPage />} />
+            <Route path="/vendor" element={<VendorDashboard />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<BiddingPage />} />
               <Route path="view-bids" element={<ViewBidsPage />} />

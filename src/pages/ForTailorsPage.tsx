@@ -180,8 +180,12 @@ const ForTailorsPage = () => {
             <a href="/for-tailors" className="text-foreground font-medium">For Tailors</a>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-              Login
+            <Button variant="ghost" size="sm" onClick={() => {
+              const isVendor = !!localStorage.getItem('naapio_vendor');
+              if (isVendor) navigate('/vendor');
+              else navigate('/?vendor_login=1');
+            }}>
+              {localStorage.getItem('naapio_vendor') ? 'My Dashboard →' : 'Artisan Login'}
             </Button>
             <Button variant="gold" size="sm" onClick={() => navigate("/wizard")}>
               Get Started
