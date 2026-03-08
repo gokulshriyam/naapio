@@ -63,7 +63,24 @@ const ProfilePage = () => {
                 <Button variant="outline" size="sm" onClick={() => toast.info("PDF download started")}>
                   <Download className="w-3.5 h-3.5" /> PDF
                 </Button>
-                <Button variant={editing ? "gold" : "outline"} size="sm" onClick={() => { setEditing(!editing); if (editing) toast.success("Measurements saved!"); }}>
+                <Button variant={editing ? "gold" : "outline"} size="sm" onClick={() => {
+                  if (editing) {
+                    const updatedMeasurements: Record<string, string> = {};
+                    measurementFields.forEach((field, i) => {
+                      const input = document.querySelectorAll('.measurement-input')[i] as HTMLInputElement;
+                      if (input) updatedMeasurements[field] = input.value;
+                    });
+                    if (Object.keys(updatedMeasurements).length > 0) {
+                      localStorage.setItem('naapio_measurements', JSON.stringify({
+                        savedAt: new Date().toISOString(),
+                        measurements: updatedMeasurements,
+                        source: 'profile_edit',
+                      }));
+                    }
+                    toast.success("Measurements saved!");
+                  }
+                  setEditing(!editing);
+                }}>
                   {editing ? <><X className="w-3.5 h-3.5" /> Save</> : <><Edit className="w-3.5 h-3.5" /> Edit</>}
                 </Button>
               </div>
