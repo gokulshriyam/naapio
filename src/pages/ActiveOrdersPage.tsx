@@ -412,7 +412,8 @@ const ActiveOrdersPage = () => {
 
   const garmentConfig = resolveGarmentConfig(
     lastOrder?.selectedCategory || '',
-    lastOrder?.selectedSubCategory || ''
+    lastOrder?.selectedSubCategory || '',
+    gender
   );
   const garmentFields = garmentConfig.fields;
 
