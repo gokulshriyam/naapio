@@ -16,7 +16,7 @@ const StartPage = () => {
       title: "Alteration / Repair",
       description: "Fix, resize, shorten or repair an existing garment you already own.",
       color: "bg-orange-50 border-orange-200 hover:border-orange-400",
-      route: "/wizard?type=alteration",
+      route: "/alteration",
     },
     {
       emoji: "🧵",
