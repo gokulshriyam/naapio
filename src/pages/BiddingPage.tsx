@@ -669,21 +669,6 @@ const BiddingPage = () => {
         </Button>
       </div>
 
-      {/* Measurements Banner */}
-      {needsMeasurementsBanner && (
-        <div className="mb-5 p-4 bg-warning-light rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">📏</span>
-            <div>
-              <p className="font-sans font-semibold text-sm text-foreground">Measurements missing on one or more orders</p>
-              <p className="text-xs text-muted-foreground font-sans">Tailors cannot finalise bids without your measurements. Submit them now to avoid delays.</p>
-            </div>
-          </div>
-          <Button size="sm" variant="gold" className="shrink-0" onClick={() => navigate("/wizard")}>
-            Submit Measurements →
-          </Button>
-        </div>
-      )}
 
       {/* Tabs */}
       <Tabs defaultValue="active">
