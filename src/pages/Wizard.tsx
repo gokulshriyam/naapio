@@ -4306,8 +4306,11 @@ Important rules:
           )}
         </AnimatePresence>
 
-        {/* Navigation */}
-        <div className="flex justify-between mt-10 pt-6 border-t border-border">
+        {/* Spacer for mobile sticky button */}
+        <div className="h-24 sm:h-0" />
+
+        {/* Navigation — sticky on mobile */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border p-4 sm:static sm:bg-transparent sm:backdrop-blur-none sm:border-t-0 sm:p-0 sm:mt-10 sm:pt-6 sm:border-t sm:border-border flex justify-between">
           <Button
             variant="outline"
             onClick={() => {
