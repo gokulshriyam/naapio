@@ -2853,18 +2853,22 @@ Return a JSON object with ONLY these fields, no other text:
                             photoAnalysis.detectedFeel === feel.label;
                           const isSelected = selectedFeel === feel.label;
                           
-                          // Auto pre-select detected feel if nothing selected yet
-                          if (isDetected && !selectedFeel && !photoFromBadgeShown.has('feel')) {
-                            setTimeout(() => {
-                              setSelectedFeel(feel.label);
-                              setPhotoFromBadgeShown(prev => new Set(prev).add('feel'));
-                            }, 100);
-                          }
+                          const showPhotoIndicator = photoFromBadgeShown.has('feel') && isSelected && isDetected;
                           
                           return (
                             <button
                               key={feel.label}
-                              onClick={() => setSelectedFeel(feel.label)}
+                              onClick={() => {
+                                setSelectedFeel(feel.label);
+                                // Remove pre-fill indicator when user manually selects different option
+                                if (photoFromBadgeShown.has('feel') && !isDetected) {
+                                  setPhotoFromBadgeShown(prev => {
+                                    const next = new Set(prev);
+                                    next.delete('feel');
+                                    return next;
+                                  });
+                                }
+                              }}
                               className={`rounded-xl overflow-hidden text-left transition-all border-2 relative ${
                                 isSelected
                                   ? "border-accent ring-2 ring-accent/30"
@@ -2879,9 +2883,9 @@ Return a JSON object with ONLY these fields, no other text:
                                 </p>
                                 <p className="text-xs text-muted-foreground">{feel.desc}</p>
                               </div>
-                              {isDetected && isSelected && (
+                              {showPhotoIndicator && (
                                 <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                                  ✨ From photo
+                                  ✨ from photo
                                 </span>
                               )}
                             </button>
