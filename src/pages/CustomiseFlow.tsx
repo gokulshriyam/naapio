@@ -557,9 +557,12 @@ const CustomiseFlow = () => {
                           <Button variant="default" onClick={() => { setOtpSent(true); toast.info("OTP sent!"); }}>Send OTP</Button>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
-                          <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit OTP" maxLength={6} className="font-sans" />
-                          <Button variant="gold" onClick={() => { setOtpVerified(true); toast.success("Mobile verified!"); }}>Verify</Button>
+                        <div>
+                          <div className="flex gap-2">
+                            <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="4-digit OTP" maxLength={4} className="font-sans" />
+                            <Button variant="gold" onClick={() => { if (/^\d{4}$/.test(otp)) { setOtpVerified(true); toast.success("Mobile verified!"); } else { toast.error("Enter any 4 digits"); } }}>Verify OTP</Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground font-sans mt-2">Demo mode — enter any 4 digits to verify</p>
                         </div>
                       )}
                     </div>
