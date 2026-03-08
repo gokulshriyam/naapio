@@ -804,61 +804,87 @@ const CustomiseFlow = () => {
               {step === 3 && (
                 <motion.div key="c3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Where on the garment, and what should it look like?</h2>
-                  <p className="text-muted-foreground font-sans mb-6">Tap the zones you want customised</p>
+                  <p className="text-muted-foreground font-sans mb-6">Tap the zones you want customised on each view</p>
 
-                  {/* SVG Diagram */}
-                  <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-                    <GarmentDiagram />
-                    <p className="text-xs text-muted-foreground font-sans mt-3 text-center">📌 This diagram is for placement reference only — your artisan will work directly from your uploaded garment photos in Step C1.</p>
-                  </div>
-
-                  {/* Zone pills below SVG */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {["Back Panel", "Full Garment", "Custom Area"].map((zone) => {
-                      const selected = placementZones.includes(zone);
+                  {/* View selector tabs */}
+                  <div className="flex gap-2 mb-4 flex-wrap">
+                    {(['front-upper', 'back', 'lower'] as PlacementView[]).map(view => {
+                      const count = selectedZonesByView[view].length;
+                      const isActive = activeView === view;
                       return (
                         <button
-                          key={zone}
-                          onClick={() => {
-                            if (zone === "Custom Area") {
-                              toggleZone(zone);
-                            } else {
-                              toggleZone(zone);
-                            }
-                          }}
+                          key={view}
+                          onClick={() => setActiveView(view)}
                           className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
-                            selected
-                              ? "border-accent bg-accent text-accent-foreground font-medium"
-                              : "border-border bg-card text-foreground hover:border-accent/40"
+                            isActive
+                              ? "bg-accent text-accent-foreground border-accent font-medium"
+                              : "bg-card text-foreground border-border hover:border-accent/40"
                           }`}
                         >
-                          {selected && <Check className="w-3 h-3 inline mr-1" />}
-                          {zone}
+                          {viewLabels[view]} {count > 0 && <span className="ml-1 text-[10px] font-bold">({count})</span>}
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Custom Area note */}
-                  {placementZones.includes("Custom Area") && (
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-                      <Input
-                        value={placementCustomNote}
-                        onChange={(e) => setPlacementCustomNote(e.target.value)}
-                        placeholder="Describe the area — e.g. 'left cuff only' or 'pallu edge'"
-                        className="font-sans"
-                      />
-                    </motion.div>
+                  {/* SVG Diagram */}
+                  <div className="bg-card rounded-2xl border border-border p-6 mb-4">
+                    <GarmentDiagram />
+                    {activeView === 'front-upper' && (
+                      <p className="text-xs text-muted-foreground font-sans mt-3 text-center">
+                        Tip: Select Left Sleeve and Right Sleeve separately if you want different designs on each side.
+                      </p>
+                    )}
+                    {activeView === 'lower' && (
+                      <p className="text-xs text-muted-foreground font-sans mt-3 text-center">
+                        Back panels are not drawn but can be selected as zones below.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Non-drawable zone pills for lower view */}
+                  {activeView === 'lower' && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {lowerZones.filter(z => !z.d && z.id !== 'full-lower').map(zone => {
+                        const selected = selectedZonesByView.lower.includes(zone.id);
+                        return (
+                          <button
+                            key={zone.id}
+                            onClick={() => toggleZone(zone.id)}
+                            className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                              selected ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                            }`}
+                          >
+                            {selected && <Check className="w-3 h-3 inline mr-1" />}
+                            {zone.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
 
-                  {/* Selection summary */}
-                  <div className="mb-6">
-                    {placementZones.length > 0 ? (
-                      <p className="text-sm font-sans text-foreground">
-                        <span className="font-semibold">Selected:</span> {placementZones.join(", ")}
-                      </p>
+                  {/* Selection summary bar */}
+                  <div className="mb-4 p-3 bg-muted rounded-xl">
+                    {totalSelectedZones > 0 ? (
+                      <>
+                        <p className="text-sm font-sans font-medium text-foreground mb-2">
+                          {totalSelectedZones} zone{totalSelectedZones !== 1 ? 's' : ''} selected across {Object.values(selectedZonesByView).filter(v => v.length > 0).length} view{Object.values(selectedZonesByView).filter(v => v.length > 0).length !== 1 ? 's' : ''}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {allSelectedZones.map(zoneId => {
+                            const view = getViewForZone(zoneId);
+                            const viewIcon = view === 'front-upper' ? '👕' : view === 'back' ? '🔙' : '👖';
+                            return (
+                              <span key={zoneId} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-card border border-border text-[11px] font-sans text-foreground">
+                                {viewIcon} {getZoneLabelById(zoneId)}
+                                <button onClick={() => removeZone(zoneId)} className="hover:text-destructive ml-0.5">×</button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </>
                     ) : (
-                      <p className="text-sm font-sans text-muted-foreground">Tap zones above to select placement</p>
+                      <p className="text-sm font-sans text-muted-foreground text-center">Tap zones on the diagram to select placement areas</p>
                     )}
                   </div>
 
@@ -866,13 +892,60 @@ const CustomiseFlow = () => {
                     <p className="text-sm font-sans text-destructive mb-4">Please tap at least one zone to show where you want the work done</p>
                   )}
 
-                  {/* Reference photo upload */}
-                  <div className="bg-card rounded-xl border border-border p-5">
-                    <h3 className="font-sans font-semibold text-foreground mb-1">Upload a reference image</h3>
+                  {/* Per-zone reference & notes */}
+                  {totalSelectedZones > 0 && (
+                    <div className="space-y-3 mb-6">
+                      <h3 className="font-sans font-semibold text-foreground text-sm">Zone details & references</h3>
+                      {allSelectedZones.map(zoneId => (
+                        <div key={zoneId} className="p-4 bg-card rounded-xl border border-border">
+                          <p className="font-sans font-medium text-sm text-foreground mb-2">{getZoneLabelById(zoneId)} <span className="text-muted-foreground font-normal">({viewLabels[getViewForZone(zoneId)]})</span></p>
+                          
+                          {/* Photo upload */}
+                          <div className="mb-2">
+                            {zonePhotos[zoneId] ? (
+                              <div className="flex items-center gap-3">
+                                <img src={URL.createObjectURL(zonePhotos[zoneId]!)} alt={`Ref ${zoneId}`} className="w-16 h-16 rounded-lg object-cover border border-border" />
+                                <div>
+                                  <p className="text-xs text-success font-sans">✓ Reference added</p>
+                                  <button onClick={() => setZonePhotos(prev => ({ ...prev, [zoneId]: null }))} className="text-xs text-muted-foreground hover:text-foreground font-sans">Remove</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="flex items-center gap-2 cursor-pointer text-xs font-sans text-muted-foreground hover:text-accent">
+                                <Upload className="w-3.5 h-3.5" /> Add reference image →
+                                <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => {
+                                  const f = e.target.files?.[0] || null;
+                                  if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                                  setZonePhotos(prev => ({ ...prev, [zoneId]: f }));
+                                }} />
+                              </label>
+                            )}
+                            {totalSelectedZones > 2 && !zonePhotos[zoneId] && (
+                              <span className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-sans font-medium bg-warning-light text-warning">
+                                📸 Strongly recommended — multiple zones selected
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Notes */}
+                          <Input
+                            value={zoneNotes[zoneId] || ""}
+                            onChange={(e) => setZoneNotes(prev => ({ ...prev, [zoneId]: e.target.value }))}
+                            placeholder={`e.g. "Zardozi border only on cuff" or "Same as inspiration but in gold"`}
+                            className="font-sans text-xs h-8"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* General reference photo upload */}
+                  <div className="bg-card rounded-xl border border-border p-5 mb-4">
+                    <h3 className="font-sans font-semibold text-foreground mb-1">Upload a general reference image</h3>
                     <p className="text-xs text-muted-foreground font-sans mb-3">
                       Show the artisan a design, pattern, or artwork you like — even a rough sketch works
                     </p>
-                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-amber-100 text-amber-700 mb-3">
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-warning-light text-warning mb-3">
                       Optional but strongly recommended
                     </span>
                     {referenceArtPhoto ? (
@@ -886,22 +959,19 @@ const CustomiseFlow = () => {
                       <label className="flex items-center gap-3 cursor-pointer p-3 border-2 border-dashed border-border rounded-xl hover:border-accent/40 transition-all">
                         <Upload className="w-5 h-5 text-muted-foreground" />
                         <span className="font-sans text-sm text-muted-foreground">Click to upload</span>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png"
-                          className="hidden"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0] || null;
-                            if (f && f.size > 10 * 1024 * 1024) {
-                              toast.error("File must be under 10MB");
-                              return;
-                            }
-                            setReferenceArtPhoto(f);
-                          }}
-                        />
+                        <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => {
+                          const f = e.target.files?.[0] || null;
+                          if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                          setReferenceArtPhoto(f);
+                        }} />
                       </label>
                     )}
                   </div>
+
+                  {/* Disclaimer */}
+                  <p className="text-xs text-muted-foreground font-sans">
+                    📌 These diagrams are for placement reference only. Your artisan will work directly from your uploaded garment photos (added in Step C1) and your zone notes.
+                  </p>
                 </motion.div>
               )}
 
