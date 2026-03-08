@@ -219,7 +219,7 @@ const AlterationFlow = () => {
       return !!garmentPhotos.front;
     }
     if (step === 4) {
-      return !!alterationBudgetMin.trim() && !!alterationDeliveryDate;
+      return alterationBudgetRange[0] >= 1000 && !!alterationDeliveryDate;
     }
     if (showReview) {
       return otpVerified && termsAccepted;
