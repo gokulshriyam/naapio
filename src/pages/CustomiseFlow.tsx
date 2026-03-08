@@ -179,12 +179,28 @@ const CustomiseFlow = () => {
     return true;
   };
 
+  const generateOrderId = () => {
+    const num = Math.floor(10000 + Math.random() * 90000);
+    return `NP-2026-${num}`;
+  };
+
   const handlePay = () => {
     setLoading(true);
     setTimeout(() => {
-      toast.success("Payment confirmed! Your customisation request is now live.");
-      navigate("/dashboard");
-    }, 1500);
+      const newOrderId = generateOrderId();
+      setOrderId(newOrderId);
+      localStorage.setItem("naapio_last_order", JSON.stringify({
+        orderId: newOrderId,
+        orderType: "Customise",
+        garment: customisationTypes.join(", "),
+        occasion: "",
+        budgetRange: `₹${customiseBudgetMin} – ₹${customiseBudgetMax || "—"}`,
+        deliveryDate: customiseDeliveryDate,
+        timestamp: new Date().toISOString()
+      }));
+      setOrderSuccess(true);
+      window.scrollTo(0, 0);
+    }, 2000);
   };
 
   const progressLabel = showReview
