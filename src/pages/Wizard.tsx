@@ -1060,6 +1060,7 @@ const Wizard = () => {
                     </div>
                   </div>
                 </div>
+                </div>
               )}
 
             </motion.div>
