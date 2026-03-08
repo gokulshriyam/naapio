@@ -224,7 +224,7 @@ const Index = () => {
 
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between" style={{flexWrap:'nowrap', overflow:'visible'}}>
           <Link to="/" className="flex items-center gap-2 cursor-pointer">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
@@ -232,13 +232,11 @@ const Index = () => {
             <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">{t('nav.howItWorks')}</a>
-            <a href="/#categories" className="hover:text-foreground transition-colors">{t('nav.categories')}</a>
-            <Link to="/for-tailors" className="hover:text-foreground transition-colors">{t('nav.forTailors')}</Link>
+            <a href="#how-it-works" className="hover:text-foreground transition-colors whitespace-nowrap">{t('nav.howItWorks')}</a>
+            <a href="/#categories" className="hover:text-foreground transition-colors whitespace-nowrap">{t('nav.categories')}</a>
+            <Link to="/for-tailors" className="hover:text-foreground transition-colors whitespace-nowrap">{t('nav.forTailors')}</Link>
           </div>
-          <div className="hidden md:flex items-center gap-2">
-            <CitySelector />
-            <LanguageSelector />
+          <div className="flex items-center gap-1 flex-shrink-0 flex-nowrap hidden md:flex">
 
             {/* Customer avatar/menu */}
             {isLoggedIn && (
