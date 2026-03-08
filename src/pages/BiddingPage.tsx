@@ -380,17 +380,18 @@ const BiddingPage = () => {
           <p className="text-sm text-muted-foreground font-sans">Your tailor uploads proof at each stage — you approve before work continues</p>
         </div>
 
-        {/* TODO: remove demo button when backend connected */}
-        <button
-          onClick={() =>
-            setMilestones((prev) =>
-              prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
-            )
-          }
-          className="text-xs text-muted-foreground underline font-sans"
-        >
-          Demo: Simulate M1 Upload
-        </button>
+        {milestones.every((m) => m.status === "pending") && (
+          <button
+            onClick={() =>
+              setMilestones((prev) =>
+                prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
+              )
+            }
+            className="text-[11px] text-muted-foreground/60 font-sans hover:text-muted-foreground transition-colors"
+          >
+            Simulate tailor activity →
+          </button>
+        )}
 
         {/* Desktop: horizontal / Mobile: vertical */}
         {/* Vertical timeline (works for both, responsive) */}

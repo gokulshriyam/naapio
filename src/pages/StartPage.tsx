@@ -1,7 +1,25 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+
+const cities = ["Bangalore", "Chennai", "Mumbai"];
 
 const StartPage = () => {
   const navigate = useNavigate();
+  const [selectedCity, setSelectedCity] = useState<string>(() => {
+    return localStorage.getItem("naapio_city") || "";
+  });
+  const [showNotifyForm, setShowNotifyForm] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [notifySubmitted, setNotifySubmitted] = useState(false);
+
+  useEffect(() => {
+    if (selectedCity) {
+      localStorage.setItem("naapio_city", selectedCity);
+    }
+  }, [selectedCity]);
 
   const orderTypes = [
     {
@@ -38,6 +56,8 @@ const StartPage = () => {
     },
   ];
 
+  const isCitySelected = !!selectedCity;
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-16">
       <button
@@ -46,6 +66,68 @@ const StartPage = () => {
       >
         ← Back to Home
       </button>
+
+      {/* City Selector */}
+      <div className="w-full max-w-2xl mb-10">
+        <p className="text-xs text-muted-foreground font-sans mb-3">Currently live in:</p>
+        <div className="flex gap-2 flex-wrap mb-3">
+          {cities.map((city) => (
+            <button
+              key={city}
+              onClick={() => setSelectedCity(city)}
+              className={`px-5 py-2 rounded-full font-sans text-sm border transition-all ${
+                selectedCity === city
+                  ? "border-accent bg-accent text-accent-foreground font-medium"
+                  : "border-border bg-card text-foreground hover:border-accent/40"
+              }`}
+            >
+              {city}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground font-sans">
+          More cities coming soon —{" "}
+          {!showNotifyForm ? (
+            <button
+              onClick={() => setShowNotifyForm(true)}
+              className="text-accent hover:underline"
+            >
+              register your interest below
+            </button>
+          ) : (
+            "register your interest below"
+          )}
+        </p>
+
+        {showNotifyForm && !notifySubmitted && (
+          <div className="mt-3 flex gap-2 max-w-sm">
+            <Input
+              value={notifyEmail}
+              onChange={(e) => setNotifyEmail(e.target.value)}
+              placeholder="your@email.com"
+              type="email"
+              className="font-sans"
+            />
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                if (notifyEmail.trim()) {
+                  setNotifySubmitted(true);
+                  toast.success("Thanks! We'll notify you when we launch there.");
+                }
+              }}
+            >
+              Notify Me
+            </Button>
+          </div>
+        )}
+        {notifySubmitted && (
+          <p className="text-xs text-green-600 font-sans mt-2">
+            Thanks! We'll notify you when we launch there.
+          </p>
+        )}
+      </div>
 
       <div className="text-center mb-12">
         <h1 className="text-4xl font-serif font-bold text-foreground mb-3">
@@ -56,12 +138,16 @@ const StartPage = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl transition-opacity ${!isCitySelected ? "opacity-50 pointer-events-none" : ""}`}>
         {orderTypes.map((type) => (
           <button
             key={type.title}
-            onClick={() => navigate(type.route)}
-            className={`border-2 rounded-2xl overflow-hidden text-left transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${type.color}`}
+            onClick={() => {
+              if (isCitySelected) navigate(type.route);
+            }}
+            className={`border-2 rounded-2xl overflow-hidden text-left transition-all duration-200 ${
+              isCitySelected ? "hover:shadow-lg hover:scale-[1.02]" : "cursor-not-allowed"
+            } ${type.color}`}
           >
             <img
               src={type.img}
@@ -80,6 +166,12 @@ const StartPage = () => {
           </button>
         ))}
       </div>
+
+      {!isCitySelected && (
+        <p className="text-sm text-muted-foreground font-sans mt-6">
+          👆 Please select your city above to continue
+        </p>
+      )}
     </div>
   );
 };
