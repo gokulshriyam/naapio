@@ -258,7 +258,7 @@ const CustomiseFlow = () => {
       const otherValid = !customisationTypes.includes("Other") || !!customisationOther.trim();
       return hasOne && otherValid;
     }
-    if (step === 3) return placementZones.length > 0;
+    if (step === 3) return totalSelectedZones > 0;
     if (step === 4) return true;
     if (step === 5) return !!customiseBudgetMin.trim() && !!customiseDeliveryDate;
     return true;
