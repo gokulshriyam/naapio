@@ -1,3 +1,5 @@
+// TODO: I18N_NEEDED — extract all hardcoded strings to en.json
+// and replace with t() calls. Wizard strings not yet translated.
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
