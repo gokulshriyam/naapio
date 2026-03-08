@@ -340,12 +340,13 @@ const Wizard = () => {
         selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
         selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
         embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
+        isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
       };
       localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
     }
   }, [step, step2Phase, step3Phase, gender, selectedCategory,
       selectedOccasion, selectedFit, measurementType,
-      selectedFeel, selectedColourMood, budgetRange]);
+      selectedFeel, selectedColourMood, budgetRange, isRushOrder]);
 
 
   const canProceed = () => {
