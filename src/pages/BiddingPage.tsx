@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
   Clock, Edit, Eye, X as XIcon, Star, RotateCcw,
@@ -9,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { activeRequests, pastRequests } from "@/data/mockData";
+import redLehenga from "@/assets/red-lehenga.jpg";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import redLehenga from "@/assets/red-lehenga.jpg";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
