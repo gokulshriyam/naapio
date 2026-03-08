@@ -370,26 +370,44 @@ const AlterationFlow = () => {
                       <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Garment</span>
                       <button onClick={() => { setShowReview(false); setStep(1); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    <p className="text-sm text-foreground font-sans">{garmentDisplay}</p>
+                    <p className="text-sm text-foreground font-sans">{isMatchingPiece ? "Make a Matching Piece" : garmentDisplay}</p>
                   </div>
 
-                  {/* What Needs Fixing */}
-                  <div className="p-5 bg-card rounded-xl border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">What Needs Fixing</span>
-                      <button onClick={() => { setShowReview(false); setStep(2); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                  {/* Matching Piece Details OR What Needs Fixing */}
+                  {isMatchingPiece ? (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Matching Piece</span>
+                        <button onClick={() => { setShowReview(false); setStep(2); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                      </div>
+                      <div className="space-y-1.5">
+                        <p className="text-sm text-foreground font-sans"><span className="font-medium">Making:</span> {matchingPieceType}</p>
+                        <p className="text-sm text-foreground font-sans"><span className="font-medium">To match:</span> {matchingForGarment}</p>
+                        <p className="text-sm text-foreground font-sans"><span className="font-medium">Fabric:</span> {matchingFabricAvailable}</p>
+                        {matchingColourNote && <p className="text-sm text-foreground font-sans"><span className="font-medium">Notes:</span> {matchingColourNote}</p>}
+                        {matchingReferencePhoto && (
+                          <img src={URL.createObjectURL(matchingReferencePhoto)} alt="Reference" className="w-14 h-14 rounded-lg object-cover border border-border mt-2" />
+                        )}
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      {alterationFixes.map((fix) => (
-                        <div key={fix}>
-                          <p className="text-sm text-foreground font-sans font-medium">{fix}</p>
-                          {alterationFixNotes[fix] && (
-                            <p className="text-xs text-muted-foreground font-sans ml-4">"{alterationFixNotes[fix]}"</p>
-                          )}
-                        </div>
-                      ))}
+                  ) : (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">What Needs Fixing</span>
+                        <button onClick={() => { setShowReview(false); setStep(2); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                      </div>
+                      <div className="space-y-2">
+                        {alterationFixes.map((fix) => (
+                          <div key={fix}>
+                            <p className="text-sm text-foreground font-sans font-medium">{fix}</p>
+                            {alterationFixNotes[fix] && (
+                              <p className="text-xs text-muted-foreground font-sans ml-4">"{alterationFixNotes[fix]}"</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Photos */}
                   <div className="p-5 bg-card rounded-xl border border-border">
