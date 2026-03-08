@@ -574,7 +574,7 @@ const Wizard = () => {
         !selectedOccasion) {
       setSelectedOccasion(photoAnalysis.detectedOccasion);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'occasion']));
-      console.log('Pre-filled occasion:', photoAnalysis.detectedOccasion);
+      
     }
     
     // Pre-fill fabric feel if detected and not already set
