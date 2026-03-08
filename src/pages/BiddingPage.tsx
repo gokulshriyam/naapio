@@ -689,11 +689,11 @@ const BiddingPage = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="active">
-        <TabsList className="w-full grid grid-cols-2 mb-5">
-          <TabsTrigger value="active" className="text-sm font-sans">
+        <TabsList className="w-full grid grid-cols-2 mb-5 h-12">
+          <TabsTrigger value="active" className="text-sm font-sans h-12 min-h-[48px]">
             Active Requests <Badge className="ml-2 bg-accent/20 text-accent text-[10px]">{activeOrders.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="past" className="text-sm font-sans">
+          <TabsTrigger value="past" className="text-sm font-sans h-12 min-h-[48px]">
             Past Requests <Badge className="ml-2 bg-muted text-muted-foreground text-[10px]">{pastOrders.length}</Badge>
           </TabsTrigger>
         </TabsList>
