@@ -29,16 +29,67 @@ const customisationOptions = [
   { label: "Other", emoji: "➕" },
 ];
 
-const placementZoneOptions = [
-  "Collar / Neckline",
-  "Chest / Front Panel",
-  "Back Panel",
-  "Sleeves",
-  "Hem / Border",
-  "Waistband",
-  "Full Garment",
-  "Custom Area",
+type PlacementView = 'front-upper' | 'back' | 'lower';
+
+const frontUpperZones: { id: string; label: string; d: string }[] = [
+  { id: "neckline", label: "Neckline", d: "M 95,38 Q 120,28 150,30 Q 180,28 205,38 Q 195,50 150,52 Q 105,50 95,38 Z" },
+  { id: "left-shoulder", label: "L Shoulder", d: "M 68,48 L 95,38 L 95,65 L 72,62 Z" },
+  { id: "right-shoulder", label: "R Shoulder", d: "M 205,38 L 232,48 L 228,62 L 205,65 Z" },
+  { id: "chest-left", label: "Chest L", d: "M 90,55 L 148,55 L 148,115 L 90,115 Z" },
+  { id: "chest-right", label: "Chest R", d: "M 152,55 L 210,55 L 210,115 L 152,115 Z" },
+  { id: "left-sleeve", label: "L Sleeve", d: "M 30,55 L 88,55 L 88,125 L 30,105 Z" },
+  { id: "right-sleeve", label: "R Sleeve", d: "M 212,55 L 270,55 L 270,105 L 212,125 Z" },
+  { id: "waist-front", label: "Waist", d: "M 90,117 L 210,117 L 210,145 L 90,145 Z" },
+  { id: "abdomen", label: "Abdomen", d: "M 90,147 L 210,147 L 210,210 L 90,210 Z" },
+  { id: "hem-front", label: "Front Hem", d: "M 85,212 L 215,212 L 218,245 L 82,245 Z" },
 ];
+
+const backZones: { id: string; label: string; d: string }[] = [
+  { id: "back-neckline", label: "Back Neck", d: "M 95,38 Q 120,28 150,30 Q 180,28 205,38 Q 195,50 150,52 Q 105,50 95,38 Z" },
+  { id: "upper-back", label: "Upper Back", d: "M 90,55 L 210,55 L 210,115 L 90,115 Z" },
+  { id: "mid-back", label: "Mid Back", d: "M 90,117 L 210,117 L 210,175 L 90,175 Z" },
+  { id: "lower-back", label: "Lower Back", d: "M 90,177 L 210,177 L 210,220 L 90,220 Z" },
+  { id: "back-left-sleeve", label: "L Sleeve", d: "M 30,55 L 88,55 L 88,125 L 30,105 Z" },
+  { id: "back-right-sleeve", label: "R Sleeve", d: "M 212,55 L 270,55 L 270,105 L 212,125 Z" },
+  { id: "hem-back", label: "Back Hem", d: "M 85,222 L 215,222 L 218,250 L 82,250 Z" },
+  { id: "back-full", label: "Select All", d: "" },
+];
+
+const lowerZones: { id: string; label: string; d: string }[] = [
+  { id: "waistband", label: "Waistband", d: "M 70,20 L 230,20 L 230,50 L 70,50 Z" },
+  { id: "front-left-panel", label: "Front L", d: "M 75,52 L 148,52 L 140,200 L 65,200 Z" },
+  { id: "front-right-panel", label: "Front R", d: "M 152,52 L 225,52 L 235,200 L 160,200 Z" },
+  { id: "back-left-panel", label: "Back L", d: "" },
+  { id: "back-right-panel", label: "Back R", d: "" },
+  { id: "left-side-seam", label: "L Seam", d: "M 63,52 L 73,52 L 63,200 L 53,200 Z" },
+  { id: "right-side-seam", label: "R Seam", d: "M 227,52 L 237,52 L 247,200 L 237,200 Z" },
+  { id: "left-hem-lower", label: "L Hem", d: "M 53,202 L 142,202 L 142,230 L 53,230 Z" },
+  { id: "right-hem-lower", label: "R Hem", d: "M 158,202 L 247,202 L 247,230 L 158,230 Z" },
+  { id: "full-lower", label: "Select All", d: "" },
+];
+
+const viewLabels: Record<PlacementView, string> = {
+  'front-upper': 'Front & Upper Body',
+  'back': 'Back Body',
+  'lower': 'Lower Body',
+};
+
+const getZonesForView = (view: PlacementView) => {
+  if (view === 'front-upper') return frontUpperZones;
+  if (view === 'back') return backZones;
+  return lowerZones;
+};
+
+const getZoneLabelById = (id: string): string => {
+  const all = [...frontUpperZones, ...backZones, ...lowerZones];
+  return all.find(z => z.id === id)?.label || id;
+};
+
+const getViewForZone = (zoneId: string): PlacementView => {
+  if (frontUpperZones.some(z => z.id === zoneId)) return 'front-upper';
+  if (backZones.some(z => z.id === zoneId)) return 'back';
+  return 'lower';
+};
 
 const getMinDeliveryDays = (types: string[]): number => {
   if (types.includes("Hand Painting / Fabric Art")) return 7;
