@@ -246,12 +246,14 @@ const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActive
       <p className="text-xs font-sans font-semibold text-foreground">Brief Summary</p>
 
       {order.inspirationPhoto && (
-        <img
-          src={order.inspirationPhoto}
-          alt=""
-          className="w-full h-36 object-cover object-top rounded-xl mt-2 cursor-pointer"
-          onClick={() => onZoomImage?.(order.inspirationPhoto!)}
-        />
+        <div className="w-full h-36 rounded-xl overflow-hidden flex-shrink-0 mt-2">
+          <img
+            src={order.inspirationPhoto}
+            alt="Inspiration"
+            className="w-full h-full object-cover object-top cursor-zoom-in"
+            onClick={() => onZoomImage?.(order.inspirationPhoto!)}
+          />
+        </div>
       )}
 
       <SectionHeader title="Order Details" />
