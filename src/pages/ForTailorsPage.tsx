@@ -744,7 +744,7 @@ const ArtisanSection = () => {
                       key={craft}
                       type="button"
                       onClick={() => toggleCraft(craft)}
-                      className={`px-4 py-2 rounded-full text-sm font-sans border transition-all ${
+                      className={`px-4 py-2.5 rounded-full text-sm font-sans border transition-all min-h-[44px] ${
                         artisanCrafts.includes(craft)
                           ? "bg-purple-100 border-purple-400 text-purple-800 dark:bg-purple-900/30 dark:border-purple-500 dark:text-purple-300"
                           : "bg-card border-border text-foreground hover:border-purple-300"
