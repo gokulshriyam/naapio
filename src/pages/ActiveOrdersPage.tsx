@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, Lock, ArrowLeft, Star, Play, Package, Scissors, Video, Ruler, Truck, Shield,
+  Copy, ExternalLink, MessageSquare, AlertTriangle, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,26 +11,299 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
+import {
+  Collapsible, CollapsibleContent, CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { customer } from "@/data/mockData";
 import redLehenga from "@/assets/red-lehenga.jpg";
-import royalSilkImg from "@/assets/fabrics/royalsilk.jpg";
-import brocadeGoldImg from "@/assets/fabrics/brocadegold.jpg";
-import velvetNavyImg from "@/assets/fabrics/velvetnavy.jpg";
 import virtualTrialCover from "@/assets/virtualtrialcover.jpg";
 
-const MEASUREMENT_FIELDS = [
-  "Chest","Waist","Hips","Shoulder Width","Sleeve Length","Back Length",
-  "Front Length","Neck","Bicep","Forearm","Wrist","Thigh","Knee","Calf",
-  "Ankle","Torso","Cross Back","Cross Front","Armhole","Rise","Inseam",
+// ═══════════════════════════════════════
+// Measurement Config System (Spec v2.0)
+// ═══════════════════════════════════════
+
+type MeasurementField = {
+  field: string;
+  unit: 'inches';
+  description: string;
+  videoTip: string;
+};
+
+type GarmentMeasurementConfig = {
+  supportsStandard: boolean;
+  heightRequired: boolean;
+  fields: MeasurementField[];
+  noMeasurementNeeded?: boolean;
+  noMeasurementMessage?: string;
+};
+
+const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
+  'Saree (fabric only)': {
+    supportsStandard: false, heightRequired: false, noMeasurementNeeded: true,
+    noMeasurementMessage: "Saree is unstitched fabric — no measurements needed. If adding a blouse, select Saree + Custom Blouse.",
+    fields: [],
+  },
+  'Saree Blouse': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest part of chest', videoTip: 'Measure around the fullest part of your chest, tape parallel to floor.' },
+      { field: 'Under-bust', unit: 'inches', description: 'Just below bust', videoTip: 'Measure just below your bust where a bra band sits.' },
+      { field: 'Waist (blouse)', unit: 'inches', description: 'Natural waist', videoTip: 'Narrowest part of your natural waist.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder seam to seam', videoTip: 'Across back, from one shoulder edge to the other.' },
+      { field: 'Armhole circumference', unit: 'inches', description: 'Around the arm opening', videoTip: 'Around the armhole — relaxed, not tight.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder point to desired end', videoTip: 'From shoulder point to where you want the sleeve to end.' },
+      { field: 'Sleeve end circumference', unit: 'inches', description: 'Around wrist or sleeve end', videoTip: 'Around your wrist, or where sleeve ends.' },
+      { field: 'Blouse length front', unit: 'inches', description: 'Front neckline to blouse hem', videoTip: 'From front neckline to where you want the blouse to end.' },
+      { field: 'Blouse length back', unit: 'inches', description: 'Back neckline to blouse hem', videoTip: 'From back neckline to blouse hem.' },
+      { field: 'Front neck depth', unit: 'inches', description: 'Depth of front neckline', videoTip: 'From shoulder neckline to the lowest point of front neckline.' },
+      { field: 'Back neck depth', unit: 'inches', description: 'Depth of back neckline', videoTip: 'From shoulder neckline to lowest point of back neckline.' },
+    ],
+  },
+  'Nauvari / 9-Yard Saree': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist measurement.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hip measurement.' },
+      { field: 'Length (waist to floor)', unit: 'inches', description: 'Waist to floor', videoTip: 'From natural waist straight down to floor.' },
+    ],
+  },
+  'Lehenga Skirt': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hips', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips, approx 8 inches below waist.' },
+      { field: 'Length (waist to floor)', unit: 'inches', description: 'Waist to floor', videoTip: 'From waist straight to floor.' },
+    ],
+  },
+  'Lehenga': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest (for choli)', videoTip: 'Fullest chest measurement.' },
+      { field: 'Under-bust', unit: 'inches', description: 'Below bust (for choli)', videoTip: 'Just below bust.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hip measurement.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back, shoulder to shoulder.' },
+      { field: 'Armhole circumference', unit: 'inches', description: 'Around arm opening', videoTip: 'Around armhole, relaxed.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'From shoulder to desired sleeve end.' },
+      { field: 'Sleeve end circumference', unit: 'inches', description: 'Around sleeve end', videoTip: 'Around wrist or sleeve end.' },
+      { field: 'Blouse length front', unit: 'inches', description: 'Front neck to blouse hem', videoTip: 'Front neckline to blouse hem.' },
+      { field: 'Blouse length back', unit: 'inches', description: 'Back neck to blouse hem', videoTip: 'Back neckline to blouse hem.' },
+      { field: 'Front neck depth', unit: 'inches', description: 'Front neckline depth', videoTip: 'Depth of front neckline.' },
+      { field: 'Back neck depth', unit: 'inches', description: 'Back neckline depth', videoTip: 'Depth of back neckline.' },
+      { field: 'Skirt length (waist to floor)', unit: 'inches', description: 'Waist to floor for skirt', videoTip: 'From waist to floor.' },
+    ],
+  },
+  'Bridal Lehenga': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
+      { field: 'Under-bust', unit: 'inches', description: 'Below bust', videoTip: 'Below bust.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Armhole circumference', unit: 'inches', description: 'Around arm opening', videoTip: 'Around armhole.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to sleeve end.' },
+      { field: 'Sleeve end circumference', unit: 'inches', description: 'Around sleeve end', videoTip: 'Around wrist.' },
+      { field: 'Blouse length front', unit: 'inches', description: 'Front neck to hem', videoTip: 'Front neckline to hem.' },
+      { field: 'Blouse length back', unit: 'inches', description: 'Back neck to hem', videoTip: 'Back neckline to hem.' },
+      { field: 'Front neck depth', unit: 'inches', description: 'Front neckline depth', videoTip: 'Depth of front neckline.' },
+      { field: 'Back neck depth', unit: 'inches', description: 'Back neckline depth', videoTip: 'Depth of back neckline.' },
+      { field: 'Skirt length (waist to floor)', unit: 'inches', description: 'Waist to floor', videoTip: 'Waist to floor.' },
+      { field: 'Heel height preference', unit: 'inches', description: 'Heel height for length calibration', videoTip: 'Height of heels you will wear with this lehenga.' },
+    ],
+  },
+  'Chaniya Choli': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Waist (chaniya)', unit: 'inches', description: 'Waist for skirt', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Chaniya length', unit: 'inches', description: 'Waist to hem', videoTip: 'From waist to desired hem.' },
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest (for choli)', videoTip: 'Fullest chest.' },
+      { field: 'Under-bust', unit: 'inches', description: 'Below bust (for choli)', videoTip: 'Below bust.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Blouse length back', unit: 'inches', description: 'Back neck to hem', videoTip: 'Back neckline to blouse hem.' },
+    ],
+  },
+  'Salwar Kameez': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Kameez length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired hem.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to desired sleeve end.' },
+      { field: 'Sleeve width', unit: 'inches', description: 'Around upper arm', videoTip: 'Around the fullest part of upper arm.' },
+      { field: 'Neck depth', unit: 'inches', description: 'Neckline depth', videoTip: 'Depth of neckline from shoulder.' },
+    ],
+  },
+  'Anarkali': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Anarkali length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired length.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to sleeve end.' },
+    ],
+  },
+  'Kurti': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Kurti length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired length.' },
+    ],
+  },
+  'Gown': {
+    supportsStandard: true, heightRequired: true,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
+      { field: 'Under-bust', unit: 'inches', description: 'Below bust', videoTip: 'Below bust.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Gown length', unit: 'inches', description: 'Shoulder to floor', videoTip: 'Shoulder to floor or desired length.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to sleeve end.' },
+      { field: 'Heel height preference', unit: 'inches', description: 'Heels worn with gown', videoTip: 'Height of heels you will wear.' },
+    ],
+  },
+  'Mermaid/Fishtail Gown': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
+      { field: 'Under-bust', unit: 'inches', description: 'Below bust', videoTip: 'Below bust.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Thigh', unit: 'inches', description: 'Fullest thigh', videoTip: 'Fullest part of thigh.' },
+      { field: 'Knee', unit: 'inches', description: 'Around knee', videoTip: 'Around the knee.' },
+      { field: 'Ankle', unit: 'inches', description: 'Around ankle', videoTip: 'Around ankle bone.' },
+      { field: 'Total length', unit: 'inches', description: 'Shoulder to floor', videoTip: 'Shoulder to floor.' },
+    ],
+  },
+  'Kurta': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back, shoulder to shoulder.' },
+      { field: 'Kurta length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired length.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist, arm slightly bent.' },
+    ],
+  },
+  'Sherwani': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
+      { field: 'Chest 2 (relaxed)', unit: 'inches', description: 'Chest relaxed', videoTip: 'Chest measured while relaxed (not fully exhaled).' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips/seat', videoTip: 'Fullest part of hips or seat.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back, shoulder to shoulder.' },
+      { field: 'Sherwani length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From highest shoulder point to desired hem.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist bone.' },
+      { field: 'Sleeve width (bicep)', unit: 'inches', description: 'Around upper arm', videoTip: 'Around fullest part of upper arm.' },
+      { field: 'Bicep circumference', unit: 'inches', description: 'Fullest bicep', videoTip: 'Around the fullest part of your bicep.' },
+    ],
+  },
+  'Bandhgala': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
+      { field: 'Chest 2 (relaxed)', unit: 'inches', description: 'Chest relaxed', videoTip: 'Chest relaxed.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips/seat', videoTip: 'Fullest seat.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Jacket length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'Shoulder to desired hem.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist.' },
+      { field: 'Bicep circumference', unit: 'inches', description: 'Fullest bicep', videoTip: 'Around fullest bicep.' },
+    ],
+  },
+  'Suit/Blazer': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest over shirt.' },
+      { field: 'Chest 2 (relaxed)', unit: 'inches', description: 'Chest relaxed', videoTip: 'Chest relaxed.' },
+      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips/seat', videoTip: 'Fullest seat.' },
+      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
+      { field: 'Jacket length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'Centre back to hem.' },
+      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist bone.' },
+      { field: 'Bicep circumference', unit: 'inches', description: 'Fullest bicep', videoTip: 'Around fullest bicep.' },
+    ],
+  },
+  'Salwar / Pyjama / Churidar': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Waist', unit: 'inches', description: 'Waist where salwar sits', videoTip: 'Waist where salwar waistband sits.' },
+      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
+      { field: 'Thigh', unit: 'inches', description: 'Fullest thigh', videoTip: 'Fullest part of thigh.' },
+      { field: 'Knee', unit: 'inches', description: 'Around knee', videoTip: 'Around the knee.' },
+      { field: 'Ankle', unit: 'inches', description: 'Around ankle', videoTip: 'Around ankle.' },
+      { field: 'Inseam', unit: 'inches', description: 'Crotch to ankle inside', videoTip: 'Inside leg from crotch to ankle.' },
+      { field: 'Total length', unit: 'inches', description: 'Waist to ankle', videoTip: 'From waist to ankle.' },
+    ],
+  },
+};
+
+const resolveGarmentConfig = (category: string, subCategory: string): GarmentMeasurementConfig => {
+  if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
+  if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
+  return MEASUREMENT_CONFIG['Kurti'];
+};
+
+// ═══════════════════════════════════════
+// Size Reference Tables
+// ═══════════════════════════════════════
+
+const WOMEN_SIZES = [
+  { size: 'XS', chest: '31–32"', waist: '24–25"', hips: '34–35"', eu: '34', us: '2', uk: '6' },
+  { size: 'S', chest: '33–34"', waist: '26–27"', hips: '36–37"', eu: '36', us: '4', uk: '8' },
+  { size: 'M', chest: '35–36"', waist: '28–29"', hips: '38–39"', eu: '38', us: '6', uk: '10' },
+  { size: 'L', chest: '37–39"', waist: '30–32"', hips: '40–42"', eu: '40', us: '8', uk: '12' },
+  { size: 'XL', chest: '40–42"', waist: '33–35"', hips: '43–45"', eu: '42', us: '10', uk: '14' },
+  { size: 'XXL', chest: '43–45"', waist: '36–38"', hips: '46–48"', eu: '44', us: '12', uk: '16' },
+  { size: 'XXXL', chest: '46–48"', waist: '39–41"', hips: '49–51"', eu: '46', us: '14', uk: '18' },
 ];
 
+const MEN_SIZES = [
+  { size: 'XS', chest: '34–35"', waist: '28–29"', shoulder: '16"', eu: '44', usuk: '34' },
+  { size: 'S', chest: '36–37"', waist: '30–31"', shoulder: '17"', eu: '46', usuk: '36' },
+  { size: 'M', chest: '38–39"', waist: '32–33"', shoulder: '18"', eu: '48', usuk: '38' },
+  { size: 'L', chest: '40–41"', waist: '34–35"', shoulder: '19"', eu: '50', usuk: '40' },
+  { size: 'XL', chest: '42–43"', waist: '36–37"', shoulder: '20"', eu: '52', usuk: '42' },
+  { size: 'XXL', chest: '44–45"', waist: '38–39"', shoulder: '21"', eu: '54', usuk: '44' },
+  { size: 'XXXL', chest: '46–48"', waist: '40–42"', shoulder: '22"', eu: '56', usuk: '46' },
+];
+
+// ═══════════════════════════════════════
+// Tip emoji helper
+// ═══════════════════════════════════════
+
+const getTipEmoji = (field: string): string => {
+  const f = field.toLowerCase();
+  if (f.includes('chest') || f.includes('bust')) return '📏';
+  if (f.includes('waist')) return '〰️';
+  if (f.includes('shoulder')) return '🫱';
+  if (f.includes('length') || f.includes('height')) return '📐';
+  if (f.includes('sleeve') || f.includes('bicep')) return '💪';
+  if (f.includes('hip') || f.includes('ankle') || f.includes('thigh') || f.includes('knee')) return '🧍';
+  return '📏';
+};
+
+// ═══════════════════════════════════════
+// Constants
+// ═══════════════════════════════════════
+
 const MILESTONES = [
-  { id: 1, title: "Fit & Measurement Confirmation", icon: Ruler },
+  { id: 1, title: "Measurements", icon: Ruler },
   { id: 2, title: "Fabric Approval", icon: Scissors },
-  { id: 3, title: "Stitching in Progress", icon: Scissors },
-  { id: 4, title: "Virtual Trial", icon: Video },
-  { id: 5, title: "Final Approval & Dispatch", icon: Package },
+  { id: 3, title: "Stitching", icon: Scissors },
+  { id: 4, title: "Fitting Video", icon: Video },
+  { id: 5, title: "Delivery", icon: Package },
 ];
 
 const TIER_COLORS: Record<string, string> = {
@@ -38,19 +312,74 @@ const TIER_COLORS: Record<string, string> = {
   Bronze: "bg-amber-700 text-amber-50",
 };
 
+const TIER_BORDER_COLORS: Record<string, string> = {
+  Gold: "border-amber-400",
+  Silver: "border-slate-300",
+  Bronze: "border-amber-700",
+};
+
 const slideVariants = {
   enter: { opacity: 0, x: 60 },
   center: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -60 },
 };
 
+const stitchStages = [
+  { icon: '✂️', label: 'Pattern marked & cut', detail: 'Fabric cut precisely to your measurements', day: 'Day 1' },
+  { icon: '🪡', label: 'Stitching begun', detail: 'Main seams joined, garment taking shape', day: 'Day 2–3' },
+  { icon: '🧵', label: 'Assembly & detailing', detail: 'Lining, finishing, embellishment applied', day: 'Day 4–6' },
+  { icon: '✅', label: 'Quality check complete', detail: 'Final inspection done, ready for your review', day: 'Day 7' },
+];
+
+const stitchQuotes = [
+  "Every great outfit starts with a precise cut.",
+  "The needle and thread are working their magic.",
+  "The details make the difference.",
+  "Almost ready. Worth the wait.",
+];
+
+const fabricOptions = [
+  {
+    id: 'F1', name: 'Royal Silk — Deep Crimson', type: 'Pure Silk', weight: 'Heavy (180 GSM)',
+    drape: 'Excellent', priceTag: 'Premium',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
+    note: 'Best match for your colour preference. Premium drape for the occasion.',
+  },
+  {
+    id: 'F2', name: 'Georgette — Jewel Burgundy', type: 'Georgette', weight: 'Medium (120 GSM)',
+    drape: 'Good', priceTag: 'Mid-range',
+    image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=300&h=200&fit=crop',
+    note: 'Lighter option, good for embroidery. Comfortable for long events.',
+  },
+  {
+    id: 'F3', name: 'Velvet — Midnight Ruby', type: 'Velvet', weight: 'Heavy (220 GSM)',
+    drape: 'Structured', priceTag: 'Luxury',
+    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=200&fit=crop',
+    note: 'Luxurious texture. Ideal for rich embellishment work.',
+  },
+];
+
+// ═══════════════════════════════════════
+// Contact masking
+// ═══════════════════════════════════════
+const maskContactInfo = (text: string): string => {
+  let masked = text.replace(/(\+91[\s-]?)?[6-9]\d{9}/g, '📵 [contact hidden]');
+  masked = masked.replace(/\b\d{7,}\b/g, '[number hidden]');
+  masked = masked.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '📵 [email hidden]');
+  return masked;
+};
+
+// ═══════════════════════════════════════
+// Component
+// ═══════════════════════════════════════
+
 const ActiveOrdersPage = () => {
   const navigate = useNavigate();
-  const [activeMilestone, setActiveMilestone] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
+  const [activeMilestone, setActiveMilestone] = useState(1);
 
-  // ── Dynamic order data from localStorage ──
+  // Data from localStorage
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [lastOrder, setLastOrder] = useState<any>(null);
 
@@ -64,12 +393,12 @@ const ActiveOrdersPage = () => {
     setTimeout(() => setLoading(false), 300);
   }, []);
 
-  // Derived display values
+  // Derived
   const orderId = activeOrder?.orderId || lastOrder?.orderId || lastOrder?.id || 'NP-2026-00001';
   const garmentLabel = lastOrder
-    ? [lastOrder.gender, lastOrder.selectedCategory, lastOrder.selectedSubCategory].filter(Boolean).join(' · ')
+    ? [lastOrder.gender === 'men' ? "Men's" : "Women's", lastOrder.selectedCategory, lastOrder.selectedSubCategory].filter(Boolean).join(' · ')
     : 'Custom Garment';
-  const artisanLabel = activeOrder?.artisanAlias || 'Your Artisan';
+  const artisanRealName = activeOrder?.artisanRealName || 'Your Artisan';
   const artisanTier = activeOrder?.artisanTier || 'Gold';
   const artisanRating = activeOrder?.artisanRating || '4.8';
   const artisanCompletionRate = activeOrder?.artisanCompletionRate || 'N/A';
@@ -77,69 +406,91 @@ const ActiveOrdersPage = () => {
   const bidAmount = activeOrder?.bidAmount || 0;
   const netPayable = activeOrder?.netPayable || 0;
   const deliveryDays = activeOrder?.deliveryDays || 18;
+  const gender = lastOrder?.gender || 'women';
 
-  // Artisan initials
-  const artisanInitials = artisanLabel.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+  const artisanInitials = artisanRealName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
-  // M1 state — pre-fill from profile
-  const profileMeasurements = Object.values(customer.measurements);
-  const initialMeasurements: Record<string, string> = {};
-  MEASUREMENT_FIELDS.forEach((f, i) => {
-    initialMeasurements[f] = String(profileMeasurements[i] || "");
-  });
-  const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements);
+  const garmentConfig = resolveGarmentConfig(
+    lastOrder?.selectedCategory || '',
+    lastOrder?.selectedSubCategory || ''
+  );
+  const garmentFields = garmentConfig.fields;
+
+  // ── M1 state ──
+  const savedMeasurements = (() => {
+    try {
+      const s = localStorage.getItem('naapio_measurements');
+      return s ? JSON.parse(s).measurements || {} : {};
+    } catch { return {}; }
+  })();
+  const hasPrefill = Object.keys(savedMeasurements).length > 0;
+
+  const initialM: Record<string, string> = {};
+  garmentFields.forEach(f => { initialM[f.field] = savedMeasurements[f.field] || ''; });
+  const [measurements, setMeasurements] = useState<Record<string, string>>(initialM);
+  const [heightValue, setHeightValue] = useState(savedMeasurements['Height'] || '');
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
+  const [m1Locked, setM1Locked] = useState(false);
 
-  // Smart pre-fill from wizard measurements
-  const hasSavedMeasurements = !!localStorage.getItem('naapio_measurements');
+  // Reinitialise measurements when garmentFields change (after lastOrder loads)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('naapio_measurements');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.measurements) {
-          const prefilled: Record<string, string> = {};
-          MEASUREMENT_FIELDS.forEach(f => {
-            prefilled[f] = parsed.measurements[f] || String(initialMeasurements[f] || '');
-          });
-          setMeasurements(prefilled);
-        }
-      }
-    } catch {}
-  }, []);
+    if (garmentFields.length > 0 && !m1Locked) {
+      const m: Record<string, string> = {};
+      garmentFields.forEach(f => { m[f.field] = savedMeasurements[f.field] || ''; });
+      setMeasurements(m);
+    }
+  }, [garmentFields.length]);
 
-  // M2 state
-  const [selectedSwatches, setSelectedSwatches] = useState<Set<string>>(new Set());
+  // M1 tip modal
+  const [tipField, setTipField] = useState<MeasurementField | null>(null);
 
-  // M3 state
-  const [stitchProgress, setStitchProgress] = useState(0);
+  // M1 size chart
+  const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
-  // M4 state
-  const [trialChecks, setTrialChecks] = useState<Record<string, boolean>>({});
+  // ── M2 state ──
+  const [selectedFabrics, setSelectedFabrics] = useState<Set<string>>(new Set());
+  const [fabricChangeRequest, setFabricChangeRequest] = useState(false);
+  const [fabricChangeText, setFabricChangeText] = useState('');
 
-  // M5 state
-  const [shippingForm, setShippingForm] = useState({ name: "", addr1: "", addr2: "", city: "", state: "", pincode: "", phone: "" });
-  const [dispatched, setDispatched] = useState(false);
-  const [delivered, setDelivered] = useState(false);
-  const [review, setReview] = useState({ quality: 0, communication: 0, timeliness: 0, value: 0, text: "" });
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  // ── M3 state ──
+  const [stitchStage, setStitchStage] = useState(0);
+
+  // ── M4 state ──
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [verifiedFields, setVerifiedFields] = useState<Record<string, boolean>>({});
+  const [m4AlterationOpen, setM4AlterationOpen] = useState(false);
+  const [m4AlterationText, setM4AlterationText] = useState('');
+
+  // ── M5 state ──
+  const [m5Phase, setM5Phase] = useState<'address' | 'awb' | 'review'>('address');
+  const [shippingForm, setShippingForm] = useState({
+    name: '', addr1: '', addr2: '', city: '', state: '', pincode: '',
+    phone: (() => { try { return JSON.parse(localStorage.getItem('naapio_user') || '{}').phone || ''; } catch { return ''; } })(),
+  });
+  const [review, setReview] = useState({ quality: 0, communication: 0, timeliness: 0, value: 0, comment: '' });
+  const [orderComplete, setOrderComplete] = useState(false);
+
+  // ── Chat state ──
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ text: string; from: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
 
   // M3 auto-advance
   useEffect(() => {
     if (activeMilestone !== 3) return;
-    setStitchProgress(0);
-    const interval = setInterval(() => {
-      setStitchProgress((p) => {
-        if (p >= 100) { clearInterval(interval); return 100; }
-        return p + 2;
+    setStitchStage(0);
+    const iv = setInterval(() => {
+      setStitchStage(prev => {
+        if (prev >= 3) {
+          clearInterval(iv);
+          setTimeout(() => advance(4), 1500);
+          return 3;
+        }
+        return prev + 1;
       });
-    }, 100);
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-      setActiveMilestone(4);
-    }, 5000);
-    return () => { clearInterval(interval); clearTimeout(timeout); };
+    }, 1400);
+    return () => clearInterval(iv);
   }, [activeMilestone]);
 
   const advance = (next: number) => {
@@ -148,16 +499,70 @@ const ActiveOrdersPage = () => {
     contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const m1Valid = MEASUREMENT_FIELDS.every((f) => measurements[f]?.trim()) && dpdp1 && dpdp2;
-  const m4Valid = MEASUREMENT_FIELDS.every((f) => trialChecks[f]);
-  const m5ShipValid = Object.entries(shippingForm).every(([k, v]) => k === "addr2" || v.trim());
+  // Validation
+  const m1Valid = (() => {
+    if (garmentConfig.noMeasurementNeeded) return true;
+    const allFilled = garmentFields.every(f => measurements[f.field]?.trim());
+    const heightOk = !garmentConfig.heightRequired || heightValue.trim();
+    return allFilled && heightOk && dpdp1 && dpdp2;
+  })();
+
+  const confirmedMeasurements = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('naapio_confirmed_measurements') || '{}').measurements || {};
+    } catch { return {}; }
+  })();
+  const confirmedKeys = Object.keys(confirmedMeasurements);
+  const verifiedCount = Object.values(verifiedFields).filter(Boolean).length;
+  const totalVerifyCount = confirmedKeys.length;
+
+  const m5ShipValid = ['name', 'addr1', 'city', 'state', 'pincode', 'phone'].every(k => (shippingForm as any)[k]?.trim());
 
   const progressPercent = ((activeMilestone - 1) / 5) * 100;
 
-  // Estimated delivery date
   const deliveryDate = activeOrder?.acceptedAt
     ? new Date(new Date(activeOrder.acceptedAt).getTime() + deliveryDays * 86400000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })
     : 'TBD';
+
+  const awbNumber = `DTDC${new Date().getFullYear()}${orderId?.slice(-5) || '00001'}`;
+
+  const handleM1Confirm = () => {
+    const confirmedAt = new Date().toISOString();
+    localStorage.setItem('naapio_confirmed_measurements', JSON.stringify({
+      orderId, garment: garmentLabel, confirmedAt, measurements, dpdpConsentAt: confirmedAt, consentGiven: true,
+    }));
+    setM1Locked(true);
+    advance(2);
+    toast.success(`Measurements confirmed ✓ — ${artisanRealName} has been notified.`);
+  };
+
+  const handleSendChat = () => {
+    if (!chatInput.trim()) return;
+    const masked = m5Phase === 'review' ? chatInput : maskContactInfo(chatInput);
+    setChatMessages(prev => [...prev, { text: masked, from: 'you' }]);
+    setChatInput('');
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { text: 'Thank you for your message. I\'ll review and respond shortly.', from: 'artisan' }]);
+    }, 1000);
+  };
+
+  const handleSubmitReview = () => {
+    const avg = (review.quality + review.communication + review.timeliness + review.value) / 4;
+    const history = JSON.parse(localStorage.getItem('naapio_order_history') || '[]');
+    history.push({
+      orderId, garmentLabel, artisanRealName, artisanTier,
+      finalAmount: bidAmount,
+      rating: Math.round(avg * 10) / 10,
+      completedAt: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+      status: 'completed',
+    });
+    localStorage.setItem('naapio_order_history', JSON.stringify(history));
+    setOrderComplete(true);
+  };
+
+  // ═══════════════════════════════════════
+  // Loading state
+  // ═══════════════════════════════════════
 
   if (loading) {
     return (
@@ -179,6 +584,61 @@ const ActiveOrdersPage = () => {
     );
   }
 
+  // ═══════════════════════════════════════
+  // Order Complete celebration
+  // ═══════════════════════════════════════
+
+  if (orderComplete) {
+    const avg = (review.quality + review.communication + review.timeliness + review.value) / 4;
+    return (
+      <div className="max-w-lg mx-auto text-center py-12 relative overflow-hidden">
+        {/* CSS confetti */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 rounded-full animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `-${Math.random() * 20}%`,
+                backgroundColor: ['#e11d48', '#f59e0b', '#10b981', '#6366f1', '#ec4899'][i % 5],
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${1.5 + Math.random() * 2}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}>
+          <div className="w-20 h-20 rounded-full bg-success mx-auto flex items-center justify-center mb-6">
+            <Check className="w-10 h-10 text-success-foreground" />
+          </div>
+        </motion.div>
+
+        <h1 className="text-2xl font-serif font-bold text-foreground mb-2">🎉 Your order is complete!</h1>
+        <p className="text-muted-foreground font-sans mb-1">{garmentLabel} crafted by {artisanRealName}</p>
+        <p className="text-muted-foreground font-sans mb-4">⭐ You rated: {(Math.round(avg * 10) / 10).toFixed(1)}/5.0</p>
+        <p className="text-sm text-muted-foreground font-sans mb-8">Thank you for your review. {artisanRealName}'s profile has been updated.</p>
+
+        <div className="space-y-3">
+          <Button variant="gold" className="w-full" onClick={() => {
+            localStorage.setItem('naapio_wizard_draft', JSON.stringify({ isReorder: true }));
+            navigate('/wizard');
+          }}>
+            🔄 Reorder this design →
+          </Button>
+          <Button variant="outline" className="w-full" onClick={() => navigate('/dashboard')}>
+            ← Back to My Orders
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════
+  // Main render
+  // ═══════════════════════════════════════
+
   return (
     <div className="max-w-4xl" ref={contentRef}>
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
@@ -186,9 +646,9 @@ const ActiveOrdersPage = () => {
       </button>
 
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
-      <p className="text-muted-foreground font-sans mb-6">{garmentLabel} • {artisanLabel}</p>
+      <p className="text-muted-foreground font-sans mb-6">{garmentLabel} • {artisanRealName}</p>
 
-      {/* Top progress */}
+      {/* Progress bar */}
       <div className="mb-8">
         <div className="flex justify-between text-xs font-sans text-muted-foreground mb-2">
           <span>Milestone {Math.min(activeMilestone, 5)} of 5</span>
@@ -197,18 +657,17 @@ const ActiveOrdersPage = () => {
         <Progress value={progressPercent} className="h-2" />
       </div>
 
-      {/* Milestone indicators — scroll on small screens */}
+      {/* Milestone indicators */}
       <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2 -mx-2 px-2">
         {MILESTONES.map((ms, i) => {
           const completed = ms.id < activeMilestone;
           const active = ms.id === activeMilestone;
-          const locked = ms.id > activeMilestone;
           return (
             <div key={ms.id} className="flex items-center gap-1 flex-shrink-0">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-sans font-bold transition-all ${
                 completed ? "bg-success text-success-foreground" : active ? "bg-accent text-accent-foreground ring-4 ring-accent/20" : "bg-muted text-muted-foreground"
               }`}>
-                {completed ? <Check className="w-4 h-4" /> : locked ? <Lock className="w-3.5 h-3.5" /> : ms.id}
+                {completed ? <Check className="w-4 h-4" /> : ms.id > activeMilestone ? <Lock className="w-3.5 h-3.5" /> : ms.id}
               </div>
               {i < MILESTONES.length - 1 && (
                 <div className={`w-4 sm:w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
@@ -218,33 +677,68 @@ const ActiveOrdersPage = () => {
         })}
       </div>
 
-      {/* Artisan confirmation panel */}
-      <div className="mb-8 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold font-sans shrink-0 ${TIER_COLORS[artisanTier] || 'bg-muted text-muted-foreground'}`}>
-          {artisanInitials}
+      {/* ═══ ARTISAN PANEL (Section 10) ═══ */}
+      <div className={`mb-8 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border-l-4 ${TIER_BORDER_COLORS[artisanTier] || 'border-accent'} border border-amber-200 dark:border-amber-800/40`}>
+        <div className="flex items-center gap-4">
+          <div className={`w-13 h-13 min-w-[52px] min-h-[52px] rounded-full flex items-center justify-center text-sm font-bold font-sans shrink-0 ${TIER_COLORS[artisanTier] || 'bg-muted text-muted-foreground'}`}>
+            {artisanInitials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-sans font-semibold text-foreground">{artisanRealName}</p>
+            <p className="text-xs font-sans text-muted-foreground">{artisanTier} Verified Artisan</p>
+            <p className="text-xs font-sans text-muted-foreground mt-0.5">
+              ⭐ {artisanRating} · ✅ {artisanCompletionRate}% · 🛡️ {artisanDisputeRate}%
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-serif font-bold text-foreground">₹{bidAmount.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] font-sans text-success flex items-center gap-1 justify-end">
+              🔒 Escrow protected
+            </p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-sans font-bold text-foreground text-sm">{artisanLabel}</p>
-          <p className="text-xs font-sans text-muted-foreground">
-            {artisanTier} Artisan · ⭐ {artisanRating} · ✅ {artisanCompletionRate}% · 🛡️ {artisanDisputeRate}%
-          </p>
+        <div className="mt-3">
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => setChatOpen(!chatOpen)}>
+            💬 Message {artisanRealName}
+          </Button>
         </div>
-        <div className="text-right shrink-0">
-          <p className="font-serif font-bold text-foreground">₹{bidAmount.toLocaleString('en-IN')}</p>
-          <p className="text-[10px] font-sans text-muted-foreground flex items-center gap-1 justify-end">
-            <Shield className="w-3 h-3" /> Escrow protected
-          </p>
-        </div>
+
+        {/* Chat panel */}
+        {chatOpen && (
+          <div className="mt-3 border border-border rounded-xl overflow-hidden">
+            {m5Phase !== 'review' && (
+              <div className="px-3 py-2 bg-warning-light border-b border-warning/20">
+                <p className="text-[10px] text-foreground font-sans">🔒 Contact details are masked until order is delivered.</p>
+              </div>
+            )}
+            <div className="h-40 overflow-y-auto p-3 space-y-2 bg-card">
+              {chatMessages.length === 0 && <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about progress, timeline, or changes.</p>}
+              {chatMessages.map((m, i) => (
+                <div key={i} className={`flex ${m.from === 'you' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${m.from === 'you' ? 'bg-accent text-accent-foreground' : 'bg-muted text-foreground'}`}>
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 p-2 border-t border-border">
+              <Input value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Type a message..." className="h-8 text-xs" onKeyDown={e => e.key === 'Enter' && handleSendChat()} />
+              <Button size="sm" variant="gold" className="h-8 px-3" onClick={handleSendChat}>
+                <MessageSquare className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8">
-        {/* Sidebar order card — not sticky on mobile */}
+        {/* Sidebar order card */}
         <div className="bg-card rounded-2xl border border-border p-5 h-fit md:sticky md:top-24">
           <img src={redLehenga} alt="Order" className="w-full h-40 object-cover rounded-xl mb-4" />
           <div className="space-y-2 text-sm font-sans">
             <div className="flex justify-between"><span className="text-muted-foreground">Order</span><span className="font-medium text-foreground">#{orderId}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Garment</span><span className="font-medium text-foreground truncate ml-2">{garmentLabel}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Artisan</span><span className="font-medium text-foreground">{artisanLabel}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Artisan</span><span className="font-medium text-foreground">{artisanRealName}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="px-2 py-0.5 rounded-full text-xs font-medium bg-info-light text-info">IN PROGRESS</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span className="font-medium text-foreground">{deliveryDate}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Bid</span><span className="font-serif font-bold text-lg text-foreground">₹{bidAmount.toLocaleString('en-IN')}</span></div>
@@ -253,204 +747,437 @@ const ActiveOrdersPage = () => {
           <div className="mt-4 flex items-center justify-center gap-2 py-2 px-4 bg-success-light rounded-full text-success text-xs font-sans font-medium">
             <Check className="w-3 h-3" /> ₹{bidAmount.toLocaleString('en-IN')} in Escrow
           </div>
-          <Button variant="default" className="w-full mt-4" size="sm" onClick={() => navigate("/dashboard/chat")}>💬 Chat with {artisanLabel}</Button>
         </div>
 
         {/* Milestone content */}
         <div className="min-h-[400px]">
           <AnimatePresence mode="wait">
-            {/* ========== MILESTONE 1 ========== */}
+
+            {/* ═══════ MILESTONE 1 — MEASUREMENTS ═══════ */}
             {activeMilestone === 1 && (
               <motion.div key="m1" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
-                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Fit & Measurement Confirmation</h2>
-                <p className="text-sm text-muted-foreground font-sans mb-4">Enter your 21-point measurements (in inches) so the tailor can begin.</p>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">M1 — Fit & Measurement Confirmation</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-4">{artisanRealName} needs your measurements to begin.</p>
 
-                {/* Measurement pre-fill banner */}
-                {hasSavedMeasurements ? (
-                  <div className="mb-6 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/40">
-                    <p className="text-sm font-sans text-foreground">📏 We've pre-filled your measurements from your wizard submission. Review and confirm everything looks correct before approving.</p>
+                {garmentConfig.noMeasurementNeeded ? (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-info-light border border-info/20">
+                      <p className="text-sm font-sans text-foreground">{garmentConfig.noMeasurementMessage}</p>
+                    </div>
+                    <Button variant="gold" onClick={() => advance(2)}>No measurements required → Proceed</Button>
                   </div>
                 ) : (
-                  <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
-                    <p className="text-sm font-sans text-foreground">📏 Please enter your measurements carefully — your artisan will cut fabric based on these values.</p>
-                  </div>
-                )}
+                  <>
+                    {/* Pre-fill banner */}
+                    {hasPrefill ? (
+                      <div className="mb-6 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/40">
+                        <p className="text-sm font-sans text-foreground">📏 We've pre-filled measurements from your wizard submission. Please review and confirm everything is correct.</p>
+                      </div>
+                    ) : (
+                      <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
+                        <p className="text-sm font-sans text-foreground">📏 Please enter your measurements carefully. Your artisan will cut fabric based on these values.</p>
+                      </div>
+                    )}
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {MEASUREMENT_FIELDS.map((f) => (
-                    <div key={f}>
-                      <Label className="text-xs font-sans text-muted-foreground">{f}</Label>
-                      <Input
-                        type="number"
-                        placeholder="in"
-                        value={measurements[f] || ""}
-                        onChange={(e) => setMeasurements({ ...measurements, [f]: e.target.value })}
-                        className="mt-1 h-9 text-sm"
-                      />
+                    {/* Standard size chart (Section 3) */}
+                    {garmentConfig.supportsStandard && (
+                      <Collapsible open={sizeChartOpen} onOpenChange={setSizeChartOpen} className="mb-6">
+                        <CollapsibleTrigger className="flex items-center gap-2 text-sm font-sans text-accent hover:underline mb-2">
+                          📐 View standard size chart {sizeChartOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="overflow-x-auto border border-border rounded-xl">
+                            {gender === 'men' ? (
+                              <table className="w-full text-xs font-sans">
+                                <thead><tr className="bg-muted"><th className="p-2 text-left">Size</th><th className="p-2">Chest</th><th className="p-2">Waist</th><th className="p-2">Shoulder</th><th className="p-2">EU</th><th className="p-2">US/UK</th></tr></thead>
+                                <tbody>{MEN_SIZES.map(s => <tr key={s.size} className="border-t border-border"><td className="p-2 font-medium">{s.size}</td><td className="p-2 text-center">{s.chest}</td><td className="p-2 text-center">{s.waist}</td><td className="p-2 text-center">{s.shoulder}</td><td className="p-2 text-center">{s.eu}</td><td className="p-2 text-center">{s.usuk}</td></tr>)}</tbody>
+                              </table>
+                            ) : (
+                              <table className="w-full text-xs font-sans">
+                                <thead><tr className="bg-muted"><th className="p-2 text-left">Size</th><th className="p-2">Chest</th><th className="p-2">Waist</th><th className="p-2">Hips</th><th className="p-2">EU</th><th className="p-2">US</th><th className="p-2">UK</th></tr></thead>
+                                <tbody>{WOMEN_SIZES.map(s => <tr key={s.size} className="border-t border-border"><td className="p-2 font-medium">{s.size}</td><td className="p-2 text-center">{s.chest}</td><td className="p-2 text-center">{s.waist}</td><td className="p-2 text-center">{s.hips}</td><td className="p-2 text-center">{s.eu}</td><td className="p-2 text-center">{s.us}</td><td className="p-2 text-center">{s.uk}</td></tr>)}</tbody>
+                              </table>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-sans mt-2">Standard sizes are for reference only. Your artisan works to the exact measurements you confirm below.</p>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+
+                    {/* Height field */}
+                    {garmentConfig.heightRequired && (
+                      <div className="mb-4 p-3 rounded-xl bg-secondary">
+                        <Label className="text-sm font-sans font-semibold text-foreground">Your Height (required for length calibration)</Label>
+                        <Input type="number" placeholder="e.g. 65" value={heightValue} onChange={e => setHeightValue(e.target.value)} className="mt-2 h-10" />
+                      </div>
+                    )}
+
+                    {/* Measurement form */}
+                    <div className="space-y-3 mb-6">
+                      {garmentFields.map(f => {
+                        const prefilled = savedMeasurements[f.field];
+                        return (
+                          <div key={f.field} className="flex items-start gap-3 p-3 rounded-xl bg-card border border-border">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-sans font-semibold text-foreground">{f.field}</span>
+                                {prefilled && <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-sans">From wizard ✓</span>}
+                              </div>
+                              <p className="text-xs text-muted-foreground font-sans">{f.description}</p>
+                            </div>
+                            <Input
+                              type="number"
+                              placeholder="e.g. 36"
+                              value={measurements[f.field] || ''}
+                              onChange={e => setMeasurements({ ...measurements, [f.field]: e.target.value })}
+                              className="w-20 h-9 text-sm shrink-0"
+                              readOnly={m1Locked}
+                            />
+                            <button onClick={() => setTipField(f)} className="text-xs font-sans text-accent hover:underline shrink-0 mt-2">▶ How to measure</button>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-                <div className="space-y-3 mb-6 p-4 bg-secondary rounded-xl">
-                  <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground">DPDP Act 2023 Consent</p>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <Checkbox checked={dpdp1} onCheckedChange={(v) => setDpdp1(!!v)} />
-                    <span className="text-xs font-sans text-foreground leading-relaxed">I consent to my measurement data being stored securely and shared only with my accepted vendor per Naapio's Privacy Policy (DPDP Act 2023)</span>
-                  </label>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <Checkbox checked={dpdp2} onCheckedChange={(v) => setDpdp2(!!v)} />
-                    <span className="text-xs font-sans text-foreground leading-relaxed">I understand my data will be deleted upon request within 72 hours</span>
-                  </label>
-                </div>
-                <Button variant="gold" disabled={!m1Valid} onClick={() => advance(2)} className="w-full sm:w-auto">
-                  Confirm Measurements
-                </Button>
+
+                    {/* DPDP Consent */}
+                    <div className="space-y-3 mb-6 p-4 bg-secondary rounded-xl">
+                      <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground">DPDP Act 2023 Consent</p>
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <Checkbox checked={dpdp1} onCheckedChange={v => setDpdp1(!!v)} />
+                        <span className="text-xs font-sans text-foreground leading-relaxed">
+                          I confirm these measurements are accurate and consent to sharing them with {artisanRealName} for this garment order only.
+                        </span>
+                      </label>
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <Checkbox checked={dpdp2} onCheckedChange={v => setDpdp2(!!v)} />
+                        <span className="text-xs font-sans text-foreground leading-relaxed">
+                          I acknowledge my measurement data is stored securely under Naapio's{' '}
+                          <a href="/privacy" target="_blank" className="text-accent underline">Privacy Policy</a>{' '}
+                          and the Digital Personal Data Protection Act, 2023.
+                        </span>
+                      </label>
+                    </div>
+
+                    <Button variant="gold" disabled={!m1Valid} onClick={handleM1Confirm} className="w-full sm:w-auto">
+                      Confirm Measurements & Proceed →
+                    </Button>
+                  </>
+                )}
               </motion.div>
             )}
 
-            {/* ========== MILESTONE 2 ========== */}
+            {/* ═══════ MILESTONE 2 — FABRIC APPROVAL ═══════ */}
             {activeMilestone === 2 && (
               <motion.div key="m2" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
-                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Fabric Approval</h2>
-                <p className="text-sm text-muted-foreground font-sans mb-6">Your tailor has sent 3 fabric swatches for your approval.</p>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  {[
-                    { name: "Royal Silk #1", image: royalSilkImg },
-                    { name: "Brocade Gold", image: brocadeGoldImg },
-                    { name: "Velvet Navy", image: velvetNavyImg },
-                  ].map((s) => {
-                    const isSelected = selectedSwatches.has(s.name);
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">M2 — Fabric Approval</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-4">{artisanRealName} has selected fabric options based on your preferences. Review and approve.</p>
+
+                {/* Brief preferences reference */}
+                <Collapsible className="mb-6">
+                  <CollapsibleTrigger className="text-xs font-sans text-accent hover:underline flex items-center gap-1">
+                    Your fabric preferences from brief <ChevronDown className="w-3 h-3" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs font-sans text-foreground">
+                      {lastOrder?.fabricFeel && <p>Feel: {lastOrder.fabricFeel}</p>}
+                      {lastOrder?.colourMood && <p>Colour mood: {lastOrder.colourMood}</p>}
+                      {lastOrder?.selectedSurfaces?.length > 0 && <p>Surfaces: {lastOrder.selectedSurfaces.join(', ')}</p>}
+                      {!lastOrder?.fabricFeel && !lastOrder?.colourMood && <p>As per your brief.</p>}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                {/* Fabric option cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  {fabricOptions.map(fab => {
+                    const sel = selectedFabrics.has(fab.id);
                     return (
-                      <div key={s.name} className="text-center cursor-pointer" onClick={() => {
-                        const next = new Set(selectedSwatches);
-                        if (next.has(s.name)) next.delete(s.name); else next.add(s.name);
-                        setSelectedSwatches(next);
+                      <div key={fab.id} className={`bg-card rounded-xl border overflow-hidden cursor-pointer transition-all ${sel ? 'ring-2 ring-accent border-accent' : 'border-border hover:shadow-md'}`} onClick={() => {
+                        const n = new Set(selectedFabrics);
+                        if (n.has(fab.id)) n.delete(fab.id); else n.add(fab.id);
+                        setSelectedFabrics(n);
                       }}>
-                        <div className={`rounded-xl overflow-hidden shadow-md hover:scale-105 transition-all relative ${isSelected ? "ring-3 ring-accent" : ""}`} style={{ aspectRatio: '1 / 1' }}>
-                          <img src={s.image} alt={s.name} className="w-full h-full object-cover object-center" />
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center">
-                              <Check className="w-4 h-4 text-accent-foreground" />
-                            </div>
-                          )}
+                        <div className="h-40 overflow-hidden relative">
+                          <img src={fab.image} alt={fab.name} className="w-full h-full object-cover" />
+                          {sel && <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center"><Check className="w-4 h-4 text-accent-foreground" /></div>}
                         </div>
-                        <span className="text-xs font-sans text-muted-foreground mt-2 block">{s.name}</span>
+                        <div className="p-3">
+                          <p className="font-sans font-semibold text-sm text-foreground">{fab.name}</p>
+                          <p className="text-[10px] text-muted-foreground font-sans">{fab.type} · {fab.weight}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-muted-foreground font-sans">Drape: {fab.drape}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-sans font-medium">{fab.priceTag}</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-sans italic mt-2">{fab.note}</p>
+                          <label className="flex items-center gap-2 mt-2 text-xs font-sans text-foreground cursor-pointer" onClick={e => e.stopPropagation()}>
+                            <Checkbox checked={sel} onCheckedChange={() => {
+                              const n = new Set(selectedFabrics);
+                              if (n.has(fab.id)) n.delete(fab.id); else n.add(fab.id);
+                              setSelectedFabrics(n);
+                            }} />
+                            Select this fabric
+                          </label>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-                <div className="p-4 bg-secondary rounded-xl mb-6">
-                  <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for your garment."</p>
-                  <p className="text-xs text-muted-foreground font-sans mt-1">— {artisanLabel}</p>
+
+                {/* TODO: ARTISAN_PORTAL — replace mock fabric cards with real photos uploaded by artisan */}
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" size="sm" onClick={() => setFabricChangeRequest(!fabricChangeRequest)}>Request Different Options</Button>
+                  <Button variant="gold" size="sm" disabled={selectedFabrics.size === 0} onClick={() => {
+                    advance(3);
+                    toast.success(`Fabric approved! ${artisanRealName} will proceed with stitching.`);
+                  }}>
+                    Approve Selected Fabric →
+                  </Button>
                 </div>
-                <div className="flex gap-3">
-                  <Button variant="outline" size="sm" onClick={() => toast.info("Alteration request sent to tailor.")}>Request Change</Button>
-                  <Button variant="gold" size="sm" disabled={selectedSwatches.size === 0} onClick={() => advance(3)}>Approve Fabric</Button>
-                </div>
+
+                {fabricChangeRequest && (
+                  <div className="mt-4 space-y-2">
+                    <Textarea placeholder="Describe what you want..." value={fabricChangeText} onChange={e => setFabricChangeText(e.target.value)} className="font-sans text-sm" />
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setFabricChangeRequest(false);
+                      setFabricChangeText('');
+                      toast.info(`Request sent to ${artisanRealName}`);
+                    }}>Submit Request</Button>
+                  </div>
+                )}
               </motion.div>
             )}
 
-            {/* ========== MILESTONE 3 ========== */}
+            {/* ═══════ MILESTONE 3 — STITCHING ═══════ */}
             {activeMilestone === 3 && (
               <motion.div key="m3" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
-                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Stitching in Progress</h2>
-                <p className="text-sm text-muted-foreground font-sans mb-6">No action required — sit back while your garment is crafted.</p>
-                <div className="p-8 bg-card border border-border rounded-2xl text-center space-y-6">
-                  <Scissors className="w-12 h-12 mx-auto text-accent animate-pulse" />
-                  <p className="font-sans text-foreground font-medium">Your garment is being stitched by the artisan.</p>
-                  <Progress value={stitchProgress} className="h-3 max-w-md mx-auto" />
-                  <p className="text-xs text-muted-foreground font-sans">Estimated completion in a few moments…</p>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">M3 — Stitching in Progress</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-6">Sit back — {artisanRealName} is crafting your {garmentLabel}. No action needed.</p>
+
+                {/* 4-stage vertical timeline */}
+                <div className="space-y-0 mb-6">
+                  {stitchStages.map((stage, idx) => {
+                    const completed = idx < stitchStage;
+                    const active = idx === stitchStage;
+                    const pending = idx > stitchStage;
+                    return (
+                      <div key={idx} className="flex gap-3">
+                        {/* Left timeline */}
+                        <div className="flex flex-col items-center">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 transition-all ${
+                            completed ? 'bg-success text-success-foreground' : active ? 'bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-400 animate-pulse' : 'bg-muted text-muted-foreground/50'
+                          }`}>
+                            {completed ? <Check className="w-5 h-5" /> : stage.icon}
+                          </div>
+                          {idx < stitchStages.length - 1 && <div className={`w-0.5 h-12 ${completed ? 'bg-success' : active ? 'bg-amber-400' : 'bg-transparent'}`} />}
+                        </div>
+                        {/* Right content */}
+                        <div className="pb-6">
+                          <p className={`font-sans text-sm ${active ? 'font-bold text-foreground' : completed ? 'text-foreground' : 'text-muted-foreground/50'}`}>
+                            {stage.label} <span className="text-[10px] text-muted-foreground ml-2">{stage.day}</span>
+                          </p>
+                          {!pending && <p className="text-xs text-muted-foreground font-sans">{stage.detail}{active && '...'}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+
+                <div className="p-4 rounded-xl bg-muted mb-4">
+                  <p className="text-sm font-sans text-foreground">🗓️ Estimated delivery: {deliveryDate}</p>
+                </div>
+
+                <p className="text-sm font-sans text-muted-foreground italic text-center">"{stitchQuotes[stitchStage]}"</p>
+
+                {/* TODO: ARTISAN_PORTAL — in production, stitchStage is set by artisan. Remove auto-advance interval. */}
               </motion.div>
             )}
 
-            {/* ========== MILESTONE 4 ========== */}
+            {/* ═══════ MILESTONE 4 — FITTING VIDEO ═══════ */}
             {activeMilestone === 4 && (
               <motion.div key="m4" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
-                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Virtual Trial</h2>
-                <p className="text-sm text-muted-foreground font-sans mb-6">Review the garment on a mannequin and verify each measurement checkpoint.</p>
-                <div className="aspect-video rounded-2xl overflow-hidden relative mb-6 cursor-pointer border border-border group">
-                  <img src={virtualTrialCover} alt="Virtual trial" className="w-full h-full object-cover object-center" />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                    <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center">
-                      <Play className="w-7 h-7 text-accent-foreground ml-1" />
-                    </div>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">M4 — Final Fitting Verification</h2>
+                <p className="text-sm text-muted-foreground font-sans mb-6">{artisanRealName} has uploaded a video of your completed {garmentLabel}. Watch and verify measurements.</p>
+
+                {/* Video card */}
+                <div className="aspect-video rounded-2xl overflow-hidden relative mb-6 cursor-pointer border border-border group" onClick={() => setIsPlaying(!isPlaying)}>
+                  <img src={virtualTrialCover} alt="Fitting video" className="w-full h-full object-cover object-center" />
+                  <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center group-hover:bg-black/40 transition-colors">
+                    {isPlaying ? (
+                      <p className="text-white font-sans text-sm">▶ Playing... 3:24</p>
+                    ) : (
+                      <>
+                        <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center mb-2">
+                          <Play className="w-7 h-7 text-accent-foreground ml-1" />
+                        </div>
+                        <p className="text-white font-sans text-xs">{artisanRealName} · Final Fitting Video</p>
+                        <p className="text-white/60 font-sans text-[10px]">Uploaded: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                      </>
+                    )}
                   </div>
-                  <span className="absolute top-3 right-3 text-xs font-sans text-white/80 bg-black/50 px-2 py-1 rounded">Recorded: Today, 10:00 AM</span>
+                  {/* TODO: VIDEO_INTEGRATION — replace with <video> element from artisan upload */}
                 </div>
-                <p className="text-sm font-sans font-semibold text-foreground mb-3">Measurement Checkpoints</p>
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  {MEASUREMENT_FIELDS.map((f, i) => (
-                    <label key={f} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-secondary transition-colors">
-                      <Checkbox checked={!!trialChecks[f]} onCheckedChange={(v) => setTrialChecks({ ...trialChecks, [f]: !!v })} />
-                      <span className="text-xs font-sans text-foreground">{f}: {profileMeasurements[i]}"</span>
+
+                {/* Measurement verification checklist */}
+                <h3 className="text-sm font-sans font-semibold text-foreground mb-1">Verify measurements shown in video</h3>
+                <p className="text-xs text-muted-foreground font-sans mb-3">Tick each measurement as you see it demonstrated by {artisanRealName}.</p>
+
+                <div className="space-y-2 mb-4">
+                  {confirmedKeys.map(key => (
+                    <label key={key} className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${verifiedFields[key] ? 'bg-success-light' : 'hover:bg-secondary'}`}>
+                      <Checkbox checked={!!verifiedFields[key]} onCheckedChange={v => setVerifiedFields({ ...verifiedFields, [key]: !!v })} />
+                      <span className="text-xs font-sans text-foreground flex-1">{key}: {confirmedMeasurements[key]}"</span>
+                      {verifiedFields[key] && <span className="text-[10px] font-sans text-success font-medium">Verified ✓</span>}
                     </label>
                   ))}
+                  {confirmedKeys.length === 0 && (
+                    <p className="text-xs text-muted-foreground font-sans">No confirmed measurements found. Proceed if video looks correct.</p>
+                  )}
                 </div>
-                <div className="flex gap-3">
-                  <Button variant="outline" size="sm" onClick={() => toast.info("Alteration request sent.")}>Request Alteration</Button>
-                  <Button variant="gold" size="sm" disabled={!m4Valid} onClick={() => advance(5)}>Approve Trial</Button>
-                </div>
+
+                {/* Progress bar */}
+                {totalVerifyCount > 0 && (
+                  <div className="mb-6">
+                    <div className="flex justify-between text-xs font-sans text-muted-foreground mb-1">
+                      <span>{verifiedCount} of {totalVerifyCount} measurements verified</span>
+                    </div>
+                    <Progress value={(verifiedCount / totalVerifyCount) * 100} className="h-2" />
+                  </div>
+                )}
+
+                {/* Approval section — show after 50% verified or if no measurements to verify */}
+                {(totalVerifyCount === 0 || verifiedCount >= Math.ceil(totalVerifyCount * 0.5)) && (
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setM4AlterationOpen(!m4AlterationOpen)}>
+                      Request Alteration
+                    </Button>
+                    <Button variant="gold" size="sm" onClick={() => {
+                      advance(5);
+                      toast.success(`Approved! ${artisanRealName} will now prepare dispatch.`);
+                    }}>
+                      Approve & Proceed to Dispatch →
+                    </Button>
+                  </div>
+                )}
+
+                {m4AlterationOpen && (
+                  <div className="mt-4 space-y-2">
+                    <Textarea placeholder="Describe what needs adjusting..." value={m4AlterationText} onChange={e => setM4AlterationText(e.target.value)} className="font-sans text-sm" />
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setM4AlterationOpen(false);
+                      setM4AlterationText('');
+                      toast.info(`Alteration request sent to ${artisanRealName}`);
+                    }}>Submit Request</Button>
+                  </div>
+                )}
               </motion.div>
             )}
 
-            {/* ========== MILESTONE 5 ========== */}
+            {/* ═══════ MILESTONE 5 — DELIVERY ═══════ */}
             {activeMilestone === 5 && (
               <motion.div key="m5" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
-                <h2 className="font-serif font-bold text-xl text-foreground mb-1">Final Approval & Dispatch</h2>
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">M5 — Final Approval & Dispatch</h2>
 
-                {reviewSubmitted ? (
-                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-8 bg-success-light rounded-2xl text-center mt-6">
-                    <Check className="w-14 h-14 mx-auto text-success mb-4" />
-                    <h3 className="font-serif font-bold text-xl text-foreground mb-2">Thank You!</h3>
-                    <p className="text-sm font-sans text-muted-foreground">Your review has been submitted. We appreciate your feedback.</p>
-                  </motion.div>
-                ) : delivered ? (
+                {/* Phase: Address */}
+                {m5Phase === 'address' && (
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground font-sans mb-4">Confirm your delivery address.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                      {([
+                        ['name', 'Full Name'], ['addr1', 'Address Line 1'], ['addr2', 'Address Line 2 (optional)'],
+                        ['city', 'City'], ['state', 'State'], ['pincode', 'Pincode'], ['phone', 'Phone'],
+                      ] as const).map(([k, label]) => (
+                        <div key={k} className={k === 'addr1' || k === 'addr2' ? 'sm:col-span-2' : ''}>
+                          <Label className="text-xs font-sans text-muted-foreground">{label}</Label>
+                          <Input value={(shippingForm as any)[k]} onChange={e => setShippingForm({ ...shippingForm, [k]: e.target.value })} className="mt-1 h-10 text-sm" />
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="gold" disabled={!m5ShipValid} onClick={() => {
+                      setM5Phase('awb');
+                      toast.success(`Address confirmed! ${artisanRealName} will dispatch within 24 hours.`);
+                    }}>
+                      Confirm Address →
+                    </Button>
+                  </div>
+                )}
+
+                {/* Phase: AWB Tracking */}
+                {m5Phase === 'awb' && (
                   <div className="mt-4 space-y-5">
-                    <p className="text-sm font-sans text-muted-foreground">Rate your experience with {artisanLabel}.</p>
-                    {(["Quality","Communication","Timeliness","Value for Money"] as const).map((cat) => {
-                      const rKey = (cat === "Value for Money" ? "value" : cat.toLowerCase()) as keyof typeof review;
+                    <h3 className="font-sans font-semibold text-lg text-foreground">Your Order is On Its Way! 📦</h3>
+
+                    <div className="p-4 rounded-xl bg-success-light border border-success/20">
+                      <p className="font-sans font-medium text-foreground text-sm">{artisanRealName} has shipped your {garmentLabel}.</p>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-sans text-muted-foreground">Tracking Number (AWB)</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input value={awbNumber} readOnly className="bg-muted font-mono text-sm flex-1" />
+                        <Button size="icon" variant="outline" className="shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(awbNumber);
+                          toast.success('AWB copied to clipboard');
+                        }}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <a href="#" target="_blank" className="text-sm font-sans text-accent hover:underline flex items-center gap-1">
+                      Track on courier website → <ExternalLink className="w-3 h-3" />
+                    </a>
+                    {/* TODO: ARTISAN_PORTAL — AWB number from vendor portal */}
+
+                    <p className="text-sm font-sans text-muted-foreground">
+                      Estimated delivery: {new Date(Date.now() + 3 * 86400000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+
+                    <div className="border-t border-border pt-4">
+                      <Button variant="outline-gold" onClick={() => {
+                        setM5Phase('review');
+                        toast.success("Great! Let us know how it went.");
+                      }}>
+                        Mark as Delivered
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Phase: Review */}
+                {m5Phase === 'review' && (
+                  <div className="mt-4 space-y-5">
+                    <p className="text-sm font-sans text-muted-foreground">Rate your experience with {artisanRealName}</p>
+
+                    {(['Quality of Work', 'Communication', 'Timeliness', 'Value for Money'] as const).map(cat => {
+                      const rKey = cat === 'Quality of Work' ? 'quality' : cat === 'Value for Money' ? 'value' : cat.toLowerCase() as keyof typeof review;
                       return (
                         <div key={cat} className="flex items-center gap-3">
-                          <span className="text-sm font-sans text-foreground w-36">{cat}</span>
+                          <span className="text-sm font-sans text-foreground w-40">{cat}</span>
                           <div className="flex gap-1">
-                            {[1,2,3,4,5].map((s) => (
-                              <Star key={s} className={`w-5 h-5 cursor-pointer transition-colors ${s <= (review[rKey] as number) ? "fill-accent text-accent" : "text-border hover:text-accent/40"}`}
+                            {[1,2,3,4,5].map(s => (
+                              <Star key={s} className={`w-5 h-5 cursor-pointer transition-colors ${s <= (review[rKey] as number) ? 'fill-accent text-accent' : 'text-border hover:text-accent/40'}`}
                                 onClick={() => setReview({ ...review, [rKey]: s })} />
                             ))}
                           </div>
                         </div>
                       );
                     })}
-                    <Textarea placeholder="Additional comments…" value={review.text} onChange={(e) => setReview({ ...review, text: e.target.value })} className="font-sans" />
-                    <Button variant="gold" onClick={() => { setReviewSubmitted(true); toast.success("Review submitted!"); }}>Submit Review</Button>
-                  </div>
-                ) : dispatched ? (
-                  <div className="mt-4 space-y-4">
-                    <div className="p-6 bg-success-light rounded-2xl text-center">
-                      <Truck className="w-10 h-10 mx-auto text-success mb-3" />
-                      <p className="font-sans font-semibold text-foreground">Your garment will be dispatched soon!</p>
+
+                    <div className="relative">
+                      <Textarea
+                        placeholder="Share your experience — your review helps other customers find great artisans on Naapio."
+                        value={review.comment}
+                        onChange={e => setReview({ ...review, comment: e.target.value.slice(0, 500) })}
+                        className="font-sans"
+                        maxLength={500}
+                      />
+                      <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{review.comment.length}/500</span>
                     </div>
-                    <div>
-                      <Label className="text-xs font-sans text-muted-foreground">AWB Tracking Number</Label>
-                      <Input value="DTDC1234567890" readOnly className="mt-1 bg-muted font-mono text-sm" />
-                    </div>
-                    <Button variant="gold" onClick={() => { setDelivered(true); toast.success("Marked as delivered!"); }}>Mark as Delivered</Button>
-                  </div>
-                ) : (
-                  <div className="mt-4">
-                    <p className="text-sm text-muted-foreground font-sans mb-4">Confirm your shipping address for dispatch.</p>
-                    <div className="grid grid-cols-1 gap-3 mb-6">
-                      {([
-                        ["name","Full Name"],["addr1","Address Line 1"],["addr2","Address Line 2 (optional)"],
-                        ["city","City"],["state","State"],["pincode","Pincode"],["phone","Phone"],
-                      ] as const).map(([k, label]) => (
-                        <div key={k} className={k === "addr1" || k === "addr2" ? "sm:col-span-2" : ""}>
-                          <Label className="text-xs font-sans text-muted-foreground">{label}</Label>
-                          <Input value={shippingForm[k]} onChange={(e) => setShippingForm({ ...shippingForm, [k]: e.target.value })} className="mt-1 h-9 text-sm" />
-                        </div>
-                      ))}
-                    </div>
-                    <Button variant="gold" disabled={!m5ShipValid} onClick={() => { setDispatched(true); toast.success("Dispatch confirmed!"); }}>Confirm Dispatch</Button>
+
+                    <Button variant="gold" disabled={review.quality === 0} onClick={handleSubmitReview}>
+                      Submit Review →
+                    </Button>
                   </div>
                 )}
               </motion.div>
@@ -463,7 +1190,7 @@ const ActiveOrdersPage = () => {
       {activeMilestone > 1 && (
         <div className="mt-10 space-y-2">
           <p className="text-xs font-sans font-semibold uppercase tracking-wider text-muted-foreground mb-3">Completed Milestones</p>
-          {MILESTONES.filter((ms) => ms.id < activeMilestone).map((ms) => (
+          {MILESTONES.filter(ms => ms.id < activeMilestone).map(ms => (
             <div key={ms.id} className="flex items-center gap-3 p-3 bg-success-light/50 rounded-xl">
               <div className="w-7 h-7 rounded-full bg-success flex items-center justify-center"><Check className="w-4 h-4 text-success-foreground" /></div>
               <span className="text-sm font-sans text-foreground font-medium">{ms.title}</span>
@@ -471,6 +1198,28 @@ const ActiveOrdersPage = () => {
           ))}
         </div>
       )}
+
+      {/* ═══ Measurement Tip Modal (Section 4) ═══ */}
+      <Dialog open={!!tipField} onOpenChange={() => setTipField(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-sans">How to measure: {tipField?.field}</DialogTitle>
+            <DialogDescription className="sr-only">Measurement instructions</DialogDescription>
+          </DialogHeader>
+          {tipField && (
+            <div className="space-y-4">
+              <div className="text-4xl text-center">{getTipEmoji(tipField.field)}</div>
+              <p className="text-sm font-sans text-foreground">{tipField.description}</p>
+              <p className="text-sm font-sans text-muted-foreground">{tipField.videoTip}</p>
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
+                <p className="text-xs font-sans text-foreground">💡 Measure over regular undergarments. Keep tape snug but comfortable — you should be able to breathe easily.</p>
+              </div>
+              {/* TODO: VIDEO_INTEGRATION — replace with embedded measurement tutorial video per field */}
+              <Button variant="gold" className="w-full" onClick={() => setTipField(null)}>Got it ✓</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
