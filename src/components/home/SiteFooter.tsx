@@ -34,9 +34,9 @@ const SiteFooter = () => {
             <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.company')}</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
               <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/for-tailors")}>{t('footer.forTailors')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.faq')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.terms')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.privacy')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => { const el = document.getElementById('faq'); if (el) el.scrollIntoView({ behavior: 'smooth' }); else navigate('/'); }}>{t('footer.faq')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/terms")}>{t('footer.terms')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/privacy")}>{t('footer.privacy')}</li>
             </ul>
           </div>
           <div>
