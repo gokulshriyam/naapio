@@ -239,7 +239,7 @@ const Wizard = () => {
   const [selectedSleeve, setSelectedSleeve] = useState("");
   const [selectedDupatta, setSelectedDupatta] = useState("");
   const [selectedLining, setSelectedLining] = useState("");
-  const [measurementType, setMeasurementType] = useState<"standard" | "custom" | "later">("standard");
+  const [measurementType, setMeasurementType] = useState<"standard" | "custom" | "later" | "saved">("standard");
   const [standardSize, setStandardSize] = useState("M");
   const [sizeRegion, setSizeRegion] = useState("UK");
   const [measurements, setMeasurements] = useState<Record<string, string>>({});
@@ -276,6 +276,9 @@ const Wizard = () => {
   const [draftRestored, setDraftRestored] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState<any>(null);
   const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
+  const [isReorder, setIsReorder] = useState(false);
+  const [reorderFrom, setReorderFrom] = useState('');
+  const [reorderMode, setReorderMode] = useState<'same' | 'changes' | ''>('');
 
   // Rush Order
   const [isRushOrder, setIsRushOrder] = useState(false);
@@ -373,7 +376,25 @@ const Wizard = () => {
     if (saved) {
       try {
         const draft = JSON.parse(saved);
-        if (draft.step && draft.step > 1) {
+        if (draft.isReorder) {
+          // Auto-restore reorder drafts without asking
+          setIsReorder(true);
+          setReorderFrom(draft.reorderFrom || '');
+          setReorderMode(draft.reorderMode || 'same');
+          if (draft.step) setStep(draft.step);
+          if (draft.step2Phase) setStep2Phase(draft.step2Phase);
+          if (draft.step3Phase) setStep3Phase(draft.step3Phase);
+          if (draft.gender) setGender(draft.gender);
+          if (draft.selectedCategory) setSelectedCategory(draft.selectedCategory);
+          if (draft.selectedSubCategory) setSelectedSubCategory(draft.selectedSubCategory);
+          if (draft.selectedOccasion) setSelectedOccasion(draft.selectedOccasion);
+          if (draft.selectedFit) setSelectedFit(draft.selectedFit);
+          if (draft.selectedNeckline) setSelectedNeckline(draft.selectedNeckline);
+          if (draft.selectedSleeve) setSelectedSleeve(draft.selectedSleeve);
+          if (draft.measurementType) setMeasurementType(draft.measurementType);
+          if (draft.budgetRange) setBudgetRange(draft.budgetRange);
+          localStorage.removeItem("naapio_wizard_draft");
+        } else if (draft.step && draft.step > 1) {
           setDraftRestored(true);
           setRestoredDraft(draft);
         }
@@ -493,6 +514,8 @@ const Wizard = () => {
         orderType: isOwnFabric ? "Own Fabric" : "New Order",
         garment: `${gender === "women" ? "Women's" : "Men's"} · ${selectedCategory} · ${selectedSubCategory}`,
         occasion: selectedOccasion,
+        gender, selectedCategory, selectedSubCategory, selectedOccasion, selectedFit,
+        selectedNeckline, selectedSleeve, measurementType,
         budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
         deliveryDate,
         rushOrder: isRushOrder,
@@ -502,6 +525,24 @@ const Wizard = () => {
         ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
         timestamp: new Date().toISOString()
       }));
+      // Save measurements for reorder
+      if (measurementType === 'custom' && Object.keys(measurements).some(k => measurements[k])) {
+        localStorage.setItem('naapio_measurements', JSON.stringify({
+          savedAt: new Date().toISOString(),
+          garment: selectedCategory,
+          measurements,
+          standardSize,
+          sizeRegion,
+        }));
+      } else if (measurementType === 'standard') {
+        localStorage.setItem('naapio_measurements', JSON.stringify({
+          savedAt: new Date().toISOString(),
+          garment: selectedCategory,
+          measurements: {},
+          standardSize,
+          sizeRegion,
+        }));
+      }
       localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);
@@ -800,6 +841,16 @@ const Wizard = () => {
               transition={{ duration: 0.4 }}
             />
           </div>
+          {isReorder && reorderMode === 'same' && step >= 3 && (
+            <div className="flex gap-1 mt-2">
+              {["Who", "Garment", "Details"].map((label, i) => (
+                <div key={label} className="flex items-center gap-1 text-[10px] font-sans text-green-600">
+                  <span className="w-3.5 h-3.5 rounded-full bg-green-500 text-white flex items-center justify-center text-[8px]">✓</span>
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -817,6 +868,26 @@ const Wizard = () => {
         <div className="bg-amber-50 border-b border-amber-200">
           <div className="container mx-auto px-6 py-2">
             <p className="font-sans text-xs text-amber-800">👯 Group order — {groupSize} pieces</p>
+          </div>
+        </div>
+      )}
+
+      {/* Reorder banner */}
+      {isReorder && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-2 flex items-center justify-between">
+            <p className="font-sans text-xs text-amber-800">
+              {reorderMode === 'same'
+                ? `🔄 Reordering your ${selectedCategory} — same design, same measurements. Just pick your new colour and fabric below.`
+                : `✏️ Reordering with changes — your previous details are pre-filled. Update anything you'd like to change.`
+              }
+            </p>
+            <button
+              onClick={() => { setIsReorder(false); setReorderMode(''); setStep(1); }}
+              className="text-xs text-accent font-sans hover:underline whitespace-nowrap ml-3"
+            >
+              Change Design instead →
+            </button>
           </div>
         </div>
       )}
@@ -1582,6 +1653,31 @@ const Wizard = () => {
                       </div>
                     )}
                   </div>
+
+                {/* Saved measurements card for reorder */}
+                {isReorder && measurementType === 'saved' && (() => {
+                  const savedMeasurements = localStorage.getItem("naapio_measurements");
+                  if (!savedMeasurements) return null;
+                  const parsed = JSON.parse(savedMeasurements);
+                  return (
+                    <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">📏</span>
+                        <div className="flex-1">
+                          <p className="font-sans font-semibold text-foreground text-sm">Using your saved measurements</p>
+                          <p className="text-xs text-muted-foreground font-sans mt-0.5">From your previous order {reorderFrom}</p>
+                          {parsed.standardSize && (
+                            <p className="text-xs text-foreground font-sans mt-1">Size: {parsed.standardSize} ({parsed.sizeRegion})</p>
+                          )}
+                          <div className="flex gap-2 mt-2">
+                            <Button size="sm" variant="default" onClick={() => { /* use as-is */ }}>Use these measurements ✓</Button>
+                            <Button size="sm" variant="outline" onClick={() => setMeasurementType('custom')}>Update measurements →</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div>
