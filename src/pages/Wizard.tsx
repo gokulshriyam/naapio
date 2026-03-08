@@ -1019,7 +1019,7 @@ const Wizard = () => {
 
   // ── Gemini Vision Analysis for Inspiration Photo ──
   const analyseInspirationPhoto = async (photoFile: File) => {
-    console.log('=== analyseInspirationPhoto STARTED ===', photoFile?.name);
+    
     setAnalysisLoading(true);
     let rawText = ''; // Declare outside try for catch block access
     
@@ -1048,7 +1048,7 @@ Return a JSON object with ONLY these fields, no other text:
 
       const apiKey = "AIzaSyBTMDZOq0B2x7xEgVX6Sis-U80jgXohICg"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1071,10 +1071,9 @@ Return a JSON object with ONLY these fields, no other text:
           })
         }
       );
-      console.log('=== FETCH RESPONSE STATUS ===', response.status);
 
       const data = await response.json();
-      console.log('=== RAW DATA ===', JSON.stringify(data).substring(0, 500));
+
 
       // Try multiple possible response paths
       rawText = 
@@ -1148,7 +1147,6 @@ Return a JSON object with ONLY these fields, no other text:
 
   // Handle inspiration photo upload
   const handleInspirationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('=== PHOTO UPLOAD HANDLER FIRED ===');
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
@@ -1157,8 +1155,6 @@ Return a JSON object with ONLY these fields, no other text:
     }
     setInspirationPhoto(file);
     setUploaded(true);
-    console.log('=== FILE SET:', file?.name, file?.type, file?.size);
-    console.log('=== CALLING analyseInspirationPhoto ===');
     analyseInspirationPhoto(file);
   };
 
