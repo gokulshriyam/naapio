@@ -125,6 +125,52 @@ const AlterationFlow = () => {
   const [briefShared, setBriefShared] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [showExitWarning, setShowExitWarning] = useState(false);
+
+  const alterationGuidance: Record<string, string> = {
+    'Saree Blouse': 'Typical alteration: ₹200 – ₹800',
+    'Lehenga': 'Typical alteration: ₹500 – ₹3,000',
+    'Salwar Kameez': 'Typical alteration: ₹300 – ₹1,500',
+    'Suit Jacket': 'Typical alteration: ₹800 – ₹4,000',
+    'Trousers': 'Typical alteration: ₹150 – ₹600',
+    'Sherwani': 'Typical alteration: ₹600 – ₹3,000',
+    'Matching Piece': 'Typical range: ₹500 – ₹5,000',
+  };
+
+  const getDeliveryDayCount = (dateStr: string) => {
+    if (!dateStr) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const getDeliveryDayMessage = (days: number) => {
+    if (days < 7) return { text: `That's ${days} days — very tight. Consider enabling Rush Order.`, color: 'text-destructive' };
+    if (days <= 14) return { text: `That's ${days} days — tight but possible for simple garments.`, color: 'text-amber-600' };
+    if (days <= 30) return { text: `That's ${days} days — good timeline.`, color: 'text-green-600' };
+    return { text: `That's ${days} days — comfortable timeline.`, color: 'text-muted-foreground' };
+  };
+
+  // Popstate handler for Android back button
+  useEffect(() => {
+    if (step >= 1) {
+      window.history.pushState({ altStep: step }, '');
+    }
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (showReview) {
+        setShowReview(false);
+      } else if (step > 1) {
+        setStep((step - 1) as 1 | 2 | 3 | 4);
+      } else {
+        setShowExitWarning(true);
+      }
+      window.history.pushState({ altStep: step }, '');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [step, showReview]);
 
   const handlePhotoUpload = (slot: keyof typeof garmentPhotos, file: File | null) => {
     if (file && file.size > 10 * 1024 * 1024) {
