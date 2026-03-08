@@ -173,10 +173,11 @@ const AlterationFlow = () => {
       localStorage.setItem("naapio_last_order", JSON.stringify({
         orderId: newOrderId,
         orderType: "Alteration",
-        garment: garmentDisplay,
+        garment: isMatchingPiece ? `Matching Piece: ${matchingPieceType}` : garmentDisplay,
         occasion: "",
         budgetRange: `₹${alterationBudgetMin} – ₹${alterationBudgetMax || "—"}`,
         deliveryDate: alterationDeliveryDate,
+        matchingPieceType, matchingForGarment, matchingFabricAvailable, matchingColourNote,
         timestamp: new Date().toISOString()
       }));
       setOrderSuccess(true);
@@ -189,7 +190,7 @@ const AlterationFlow = () => {
     : step === 1
     ? "A1 — Garment Type"
     : step === 2
-    ? "A2 — What Needs Fixing"
+    ? isMatchingPiece ? "A2 — Matching Piece Details" : "A2 — What Needs Fixing"
     : step === 3
     ? "A3 — Upload Photos"
     : "A4 — Budget & Delivery";
