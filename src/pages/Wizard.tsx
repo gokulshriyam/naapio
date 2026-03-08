@@ -454,9 +454,12 @@ const Wizard = () => {
                       <button
                         key={cat}
                         onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
-                        className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                        className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                       >
-                        {cat}
+                        {categoryImages[cat] && (
+                          <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
+                        )}
+                        <span className="block p-3">{cat}</span>
                       </button>
                     ))}
                   </div>
