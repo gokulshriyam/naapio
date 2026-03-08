@@ -3075,13 +3075,7 @@ Return a JSON object with ONLY these fields, no other text:
                             !photoAnalysis?.analysisError && 
                             photoAnalysis.detectedSurfaces?.includes(sopt.label);
                           
-                          // Auto pre-select detected surfaces if nothing selected yet
-                          if (isDetected && selectedSurfaces.length === 0 && !photoFromBadgeShown.has('surfaces')) {
-                            setTimeout(() => {
-                              setSelectedSurfaces(photoAnalysis.detectedSurfaces || []);
-                              setPhotoFromBadgeShown(prev => new Set(prev).add('surfaces'));
-                            }, 100);
-                          }
+                          const showPhotoIndicator = photoFromBadgeShown.has('surfaces') && isSelected && isDetected;
                           
                           return (
                             <button
@@ -3095,6 +3089,14 @@ Return a JSON object with ONLY these fields, no other text:
                                     return without.includes(sopt.label)
                                       ? without.filter((s) => s !== sopt.label)
                                       : [...without, sopt.label];
+                                  });
+                                }
+                                // Remove pre-fill indicator when user manually changes selection
+                                if (photoFromBadgeShown.has('surfaces')) {
+                                  setPhotoFromBadgeShown(prev => {
+                                    const next = new Set(prev);
+                                    next.delete('surfaces');
+                                    return next;
                                   });
                                 }
                               }}
@@ -3119,9 +3121,9 @@ Return a JSON object with ONLY these fields, no other text:
                                   {sopt.label}
                                 </p>
                               </div>
-                              {isDetected && isSelected && (
+                              {showPhotoIndicator && (
                                 <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                                  ✨ From photo
+                                  ✨ from photo
                                 </span>
                               )}
                             </button>
