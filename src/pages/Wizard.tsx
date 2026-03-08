@@ -1801,7 +1801,7 @@ Important rules:
         </div>
       )}
 
-      <div className="container mx-auto px-6 py-10 max-w-5xl">
+      <div className="container mx-auto px-6 py-10 max-w-5xl" style={{ opacity: stepTransitioning ? 0 : 1, transition: 'opacity 0.15s ease' }}>
         <AnimatePresence mode="wait">
           {/* STEP 0: Who are you ordering for? */}
           {step === 0 && (
