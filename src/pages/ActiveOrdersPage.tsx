@@ -1074,20 +1074,35 @@ const ActiveOrdersPage = () => {
                   </div>
                 )}
 
-                {/* Approval section — show after 50% verified or if no measurements to verify */}
-                {(totalVerifyCount === 0 || verifiedCount >= Math.ceil(totalVerifyCount * 0.5)) && (
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setM4AlterationOpen(!m4AlterationOpen)}>
-                      Request Alteration
-                    </Button>
-                    <Button variant="gold" size="sm" onClick={() => {
+                {/* Approval section — show always but disable approve until 100% verified */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => {
+                    // Pre-populate alteration text with unchecked measurements
+                    const unchecked = confirmedKeys
+                      .filter(k => !verifiedFields[k])
+                      .map(k => `• ${k}: ${confirmedMeasurements[k]}"`)
+                      .join('\n');
+                    if (unchecked) {
+                      setM4AlterationText(`Measurements not verified on video:\n${unchecked}\n\nPlease re-record or adjust these points.`);
+                    }
+                    setM4AlterationOpen(!m4AlterationOpen);
+                  }}>
+                    Request Alteration
+                  </Button>
+                  <div className="relative group">
+                    <Button variant="gold" size="sm" disabled={totalVerifyCount > 0 && verifiedCount !== totalVerifyCount} onClick={() => {
                       advance(5);
                       toast.success(`Approved! ${artisanRealName} will now prepare dispatch.`);
                     }}>
                       Approve & Proceed to Dispatch →
                     </Button>
+                    {totalVerifyCount > 0 && verifiedCount !== totalVerifyCount && (
+                      <div className="absolute bottom-full left-0 mb-2 px-3 py-1.5 rounded-lg bg-foreground text-background text-[10px] font-sans whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Verify all measurements in the video before approving
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {m4AlterationOpen && (
                   <div className="mt-4 space-y-2">
