@@ -779,7 +779,12 @@ const BiddingPage = () => {
                         {whileYouWaitOpen === order.id && (
                           <div className="mt-2 space-y-2 pl-4">
                             {!order.measurementsSubmitted ? (
-                              <button onClick={() => navigate("/wizard")} className="text-xs font-sans text-accent hover:underline block">📏 Submit measurements</button>
+                              <span
+                                className="text-xs font-sans text-muted-foreground block cursor-default"
+                                title="Measurements will be collected at M1 after you accept a bid."
+                              >
+                                📏 Measurements — collected at M1 after you accept a bid ℹ️
+                              </span>
                             ) : (
                               <span className="text-xs font-sans text-success block">✓ Measurements submitted</span>
                             )}
