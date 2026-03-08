@@ -15,6 +15,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ForTailorsPage from "./pages/ForTailorsPage";
 import StartPage from "./pages/StartPage";
 import AlterationFlow from "./pages/AlterationFlow";
+import CustomiseFlow from "./pages/CustomiseFlow";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/start" element={<StartPage />} />
           <Route path="/wizard" element={<Wizard />} />
           <Route path="/alteration" element={<AlterationFlow />} />
+          <Route path="/customise" element={<CustomiseFlow />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<BiddingPage />} />
             <Route path="view-bids" element={<ViewBidsPage />} />
