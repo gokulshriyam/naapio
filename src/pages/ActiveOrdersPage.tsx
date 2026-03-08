@@ -1350,17 +1350,7 @@ const ActiveOrdersPage = () => {
       </Dialog>
 
       {/* Dispute Modal */}
-      <Dialog open={disputeOpen} onOpenChange={setDisputeOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-serif">Raise a Dispute — #{orderId}</DialogTitle>
-            <DialogDescription className="font-sans">
-              Naapio will review and respond within 24 hours.
-            </DialogDescription>
-          </DialogHeader>
-          <DisputeForm orderId={orderId} onClose={() => setDisputeOpen(false)} />
-        </DialogContent>
-      </Dialog>
+      <DisputeModalInline open={disputeOpen} onClose={() => setDisputeOpen(false)} orderId={orderId} />
     </div>
   );
 };
