@@ -2170,26 +2170,29 @@ Return a JSON object with ONLY these fields, no other text:
                         !photoAnalysis?.analysisError && 
                         photoAnalysis.detectedOccasion === occ.label;
                       const isSelected = selectedOccasion === occ.label;
-                      
-                      // Auto pre-select detected occasion if nothing selected yet
-                      if (isDetected && !selectedOccasion && !photoFromBadgeShown.has('occasion')) {
-                        setTimeout(() => {
-                          setSelectedOccasion(occ.label);
-                          setPhotoFromBadgeShown(prev => new Set(prev).add('occasion'));
-                        }, 100);
-                      }
+                      const showPhotoIndicator = photoFromBadgeShown.has('occasion') && isSelected && isDetected;
                       
                       return (
                         <button
                           key={occ.label}
-                          onClick={() => setSelectedOccasion(occ.label)}
+                          onClick={() => {
+                            setSelectedOccasion(occ.label);
+                            // Remove pre-fill indicator when user manually selects different option
+                            if (photoFromBadgeShown.has('occasion') && !isDetected) {
+                              setPhotoFromBadgeShown(prev => {
+                                const next = new Set(prev);
+                                next.delete('occasion');
+                                return next;
+                              });
+                            }
+                          }}
                           className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                         >
                           <span className="text-2xl block mb-2">{occ.emoji}</span>
                           <span className="leading-tight block">{occ.label}</span>
-                          {isDetected && isSelected && (
+                          {showPhotoIndicator && (
                             <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                              ✨ From photo
+                              ✨ from photo
                             </span>
                           )}
                         </button>
