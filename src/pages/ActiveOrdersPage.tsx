@@ -378,7 +378,7 @@ const ActiveOrdersPage = () => {
                   <span className="absolute top-3 right-3 text-xs font-sans text-white/80 bg-black/50 px-2 py-1 rounded">Recorded: Today, 10:00 AM</span>
                 </div>
                 <p className="text-sm font-sans font-semibold text-foreground mb-3">Measurement Checkpoints</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+                <div className="grid grid-cols-2 gap-2 mb-6">
                   {MEASUREMENT_FIELDS.map((f, i) => (
                     <label key={f} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-secondary transition-colors">
                       <Checkbox checked={!!trialChecks[f]} onCheckedChange={(v) => setTrialChecks({ ...trialChecks, [f]: !!v })} />
