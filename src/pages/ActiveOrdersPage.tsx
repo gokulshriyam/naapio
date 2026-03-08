@@ -602,6 +602,19 @@ const ActiveOrdersPage = () => {
   // Loading state
   // ═══════════════════════════════════════
 
+  if (!loading && !activeOrder && !lastOrder) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-24 flex flex-col items-center gap-4">
+        <span className="text-6xl">🧵</span>
+        <h2 className="text-xl font-serif font-bold text-foreground">No active order yet</h2>
+        <p className="text-sm text-muted-foreground font-sans max-w-xs">
+          Accept a bid from your dashboard to start tracking your order here.
+        </p>
+        <Button variant="gold" onClick={() => navigate('/dashboard')}>← Back to My Orders</Button>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="max-w-4xl animate-pulse">
