@@ -39,6 +39,26 @@ const categoryBudgetRanges: Record<string, { min: number; max: number; label: st
 
 const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
 
+const formatBudget = (value: number): string => {
+  if (value >= 100000) return `₹${(value/100000).toFixed(1).replace('.0','')}L`;
+  if (value >= 1000) return `₹${(value/1000).toFixed(1).replace('.0','')}K`;
+  return `₹${value}`;
+};
+
+const budgetIntelligence: Record<string, {avg: number, low: number, high: number, tip: string}> = {
+  'Saree Blouse': { avg: 1500, low: 800, high: 8000, tip: 'Blouse prices vary widely by embroidery work. Plain blouse: ₹800–₹2K. Heavy work: ₹3K–₹8K.' },
+  'Kurti': { avg: 1200, low: 600, high: 4000, tip: 'Simple cotton kurti starts at ₹600. Designer with embroidery up to ₹4K.' },
+  'Salwar Kameez': { avg: 3500, low: 1500, high: 10000, tip: 'Including dupatta. Basic: ₹1.5K–₹3K. Embroidered/formal: ₹4K–₹10K.' },
+  'Anarkali': { avg: 5000, low: 2000, high: 18000, tip: 'Floor-length anarkali with lining. Simple: ₹2K–₹5K. Embellished: ₹6K–₹18K.' },
+  'Lehenga': { avg: 12000, low: 5000, high: 200000, tip: 'Party lehenga: ₹5K–₹20K. Semi-bridal: ₹15K–₹50K. Full bridal: ₹50K–₹2L.' },
+  'Gown': { avg: 8000, low: 3000, high: 40000, tip: 'Indo-western gown. Simple: ₹3K–₹6K. Embellished/trail: ₹8K–₹40K.' },
+  'Kurta': { avg: 1800, low: 800, high: 6000, tip: 'Men\'s kurta. Plain cotton: ₹800–₹2K. Designer/embroidered: ₹3K–₹6K.' },
+  'Sherwani': { avg: 15000, low: 6000, high: 80000, tip: 'Occasion sherwani: ₹6K–₹20K. Wedding grade with zari: ₹25K–₹80K.' },
+  'Bandhgala': { avg: 8000, low: 4000, high: 35000, tip: 'Formal bandhgala/jodhpuri. Basic: ₹4K–₹8K. Embroidered: ₹10K–₹35K.' },
+  'Suit/Blazer': { avg: 12000, low: 5000, high: 50000, tip: 'Tailored suit. Basic single piece: ₹5K–₹12K. Full suit with lining: ₹15K–₹50K.' },
+  'Chaniya Choli': { avg: 8000, low: 3000, high: 40000, tip: 'Garba/festival wear: ₹3K–₹8K. Heavy embellished: ₹10K–₹40K.' },
+};
+
 const budgetGuidance: Record<string, string> = {
   'Saree Blouse': 'Typical range: ₹800 – ₹5,000',
   'Kurti': 'Typical range: ₹600 – ₹3,000',
