@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Inbox, Tag, Package, Wallet, User, LogOut, ArrowLeftRight } from "lucide-react";
+import { Inbox, Tag, Package, Wallet, User, LogOut, ArrowLeftRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { mockVendor } from "../data/vendorMockData";
+import VendorNotificationBell from "../components/VendorNotificationBell";
 
 const navItems = [
   { label: 'Leads', icon: Inbox, path: '/vendor' },
@@ -37,19 +39,22 @@ const VendorLayout = () => {
     <div className="min-h-screen flex bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card fixed inset-y-0 left-0 z-30">
-        {/* Logo */}
+        {/* Logo + notification */}
         <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-xl text-foreground cursor-pointer" onClick={() => navigate('/')}>
-              Naapio
-            </span>
-            <span className="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-              Artisan Portal
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-serif font-bold text-xl text-foreground cursor-pointer" onClick={() => navigate('/')}>
+                Naapio
+              </span>
+              <span className="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                Artisan Portal
+              </span>
+            </div>
+            <VendorNotificationBell />
           </div>
         </div>
 
-        {/* Vendor avatar */}
+        {/* Vendor avatar + stats */}
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center font-serif font-bold text-sm">
@@ -58,9 +63,16 @@ const VendorLayout = () => {
             <div className="flex-1 min-w-0">
               <p className="font-sans font-semibold text-sm text-foreground truncate">{vendor.name || 'Artisan'}</p>
               <span className="text-[10px] font-sans font-semibold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">
-                Gold Tier
+                {mockVendor.tier} Tier
               </span>
             </div>
+          </div>
+          {/* Compact stats row */}
+          <div className="flex items-center gap-3 mt-3 text-[10px] font-sans text-muted-foreground">
+            <span className="flex items-center gap-0.5">
+              <Star className="w-3 h-3 text-amber-500 fill-amber-500" /> {mockVendor.rating}
+            </span>
+            <span>📦 {mockVendor.ordersCompleted} orders</span>
           </div>
         </div>
 
@@ -104,19 +116,19 @@ const VendorLayout = () => {
 
       {/* Main content */}
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
-        <div className="px-6 py-8 max-w-5xl mx-auto">
+        <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto">
           <Outlet />
         </div>
       </main>
 
       {/* Mobile bottom tabs */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card border-t border-border flex items-center justify-around h-16 px-2">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card border-t border-border flex items-center justify-around h-16 px-1">
         {navItems.map(item => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
             className={cn(
-              "flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-sans transition-colors min-w-[52px]",
+              "flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] font-sans transition-colors min-w-[44px] min-h-[44px] justify-center",
               isActive(item.path)
                 ? "text-accent font-semibold"
                 : "text-muted-foreground"
@@ -126,6 +138,10 @@ const VendorLayout = () => {
             {item.label}
           </button>
         ))}
+        {/* Notification in mobile tab bar */}
+        <div className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center">
+          <VendorNotificationBell />
+        </div>
       </nav>
     </div>
   );
