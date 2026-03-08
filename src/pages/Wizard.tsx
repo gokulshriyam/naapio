@@ -804,6 +804,13 @@ const Wizard = () => {
 
   // Measurement tab & tip modal state
   const [measurementTab, setMeasurementTab] = useState<'standard' | 'custom' | 'later'>('custom');
+  // C6: Default measurement tab to correct value per garment config
+  useEffect(() => {
+    const gc = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
+    if (gc) {
+      setMeasurementTab(gc.supportsStandard ? 'standard' : 'custom');
+    }
+  }, [selectedCategory, selectedSubCategory]);
   const [activeTip, setActiveTip] = useState<MeasurementField | null>(null);
   const [heightFeet, setHeightFeet] = useState('');
   const [heightInches, setHeightInches] = useState('');
