@@ -294,6 +294,7 @@ const Wizard = () => {
     !selectedSurfaces.every((s) => s === "Plain / No Embellishment" || s === "No Preference");
 
   const getMinDeliveryDays = () => {
+    if (isRushOrder) return 7;
     const bridal = ["Lehenga", "Saree Blouse"];
     const formal = ["Sherwani", "Suit", "Bandhgala"];
     if (bridal.includes(selectedCategory)) return 21;
@@ -310,7 +311,7 @@ const Wizard = () => {
   useEffect(() => {
     const min = getMinDeliveryDate();
     setDeliveryDate(min.toISOString().split("T")[0]);
-  }, [selectedCategory]);
+  }, [selectedCategory, isRushOrder]);
 
   // Restore draft on mount
   useEffect(() => {
