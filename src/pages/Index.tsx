@@ -295,17 +295,17 @@ const Index = () => {
 
             {/* Login/CTA buttons when not logged in */}
             {!isLoggedIn && !isVendorLoggedInState && (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)} className="text-sm">
+              <div className="flex items-center gap-1 flex-shrink-0 flex-nowrap">
+                <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)} className="text-sm whitespace-nowrap">
                   Customer Login
                 </Button>
                 <button
                   onClick={() => setVendorLoginOpen(true)}
-                  className="text-sm text-accent hover:text-accent/80 font-sans font-medium px-2 py-1 transition-colors"
+                  className="text-sm text-accent hover:text-accent/80 font-sans font-medium px-2 py-1 transition-colors whitespace-nowrap"
                 >
                   ✂️ Artisan Login
                 </button>
-                <Button variant="gold" size="sm" onClick={() => navigate("/start")} className="ml-2">
+                <Button variant="gold" size="sm" onClick={() => navigate("/start")} className="ml-2 whitespace-nowrap">
                   Start an Order
                 </Button>
               </div>
