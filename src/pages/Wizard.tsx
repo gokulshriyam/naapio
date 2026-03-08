@@ -1654,6 +1654,31 @@ const Wizard = () => {
                     )}
                   </div>
 
+                {/* Saved measurements card for reorder */}
+                {isReorder && measurementType === 'saved' && (() => {
+                  const savedMeasurements = localStorage.getItem("naapio_measurements");
+                  if (!savedMeasurements) return null;
+                  const parsed = JSON.parse(savedMeasurements);
+                  return (
+                    <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">📏</span>
+                        <div className="flex-1">
+                          <p className="font-sans font-semibold text-foreground text-sm">Using your saved measurements</p>
+                          <p className="text-xs text-muted-foreground font-sans mt-0.5">From your previous order {reorderFrom}</p>
+                          {parsed.standardSize && (
+                            <p className="text-xs text-foreground font-sans mt-1">Size: {parsed.standardSize} ({parsed.sizeRegion})</p>
+                          )}
+                          <div className="flex gap-2 mt-2">
+                            <Button size="sm" variant="default" onClick={() => { /* use as-is */ }}>Use these measurements ✓</Button>
+                            <Button size="sm" variant="outline" onClick={() => setMeasurementType('custom')}>Update measurements →</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements</h2>
