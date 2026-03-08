@@ -210,6 +210,17 @@ const CountdownTimer = ({ deadline, postedAt }: { deadline: Date; postedAt: Date
   const daysLeft = tl.days;
   const barColor = daysLeft > 3 ? "bg-success" : daysLeft >= 1 ? "bg-warning" : "bg-destructive";
 
+  // Render countdown based on remaining time
+  const renderCountdown = () => {
+    if (tl.days > 0) {
+      return `${tl.days}d ${tl.hours}h ${tl.minutes}m remaining`;
+    } else if (tl.hours > 0) {
+      return `${tl.hours}h ${tl.minutes}m remaining`;
+    } else {
+      return `${tl.minutes}m ${tl.seconds}s remaining`;
+    }
+  };
+
   return (
     <div className="mt-3">
       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -217,7 +228,7 @@ const CountdownTimer = ({ deadline, postedAt }: { deadline: Date; postedAt: Date
       </div>
       <div className="flex justify-between mt-1.5 text-xs font-sans text-muted-foreground">
         <span>Posted {elapsed} day{elapsed !== 1 ? "s" : ""} ago</span>
-        <span className="font-medium">{tl.days}d {tl.hours}h {tl.minutes}m remaining</span>
+        <span className="font-medium">{renderCountdown()}</span>
       </div>
     </div>
   );
