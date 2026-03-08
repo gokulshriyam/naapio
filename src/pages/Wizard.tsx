@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info, CalendarIcon } from "lucide-react";
+import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info, CalendarIcon, Lock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1201,116 +1201,244 @@ const Wizard = () => {
             </motion.div>
           )}
 
-          {/* STEP 4: Summary & Payment */}
+          {/* STEP 4: Review & Payment */}
           {step === 4 && (
             <motion.div key="s4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
-              <h2 className="text-3xl font-serif font-bold text-foreground mb-8">Review & Pay</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Summary */}
+              <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Review Your Order</h2>
+              <p className="text-muted-foreground font-sans mb-8">Check everything below — once you pay, your brief goes live to tailors</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-8">
+                {/* LEFT COLUMN: Order Summary */}
                 <div className="space-y-4">
+
+                  {/* ORDER TYPE */}
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-sans font-semibold text-foreground">Inspiration</h3>
-                      <button onClick={() => setStep(1)} className="text-accent font-sans text-sm font-medium">Edit</button>
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Order Type</span>
+                      <button onClick={() => { navigate("/start"); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    <div className="flex gap-3">
-                      <img src={redLehenga} alt="Inspiration" className="w-16 h-16 rounded-lg object-cover" />
-                      <p className="text-sm text-muted-foreground font-sans">{description || "Red lehenga with gold embroidery"}</p>
-                    </div>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-semibold ${
+                      orderType === "own-fabric" ? "bg-blue-100 text-blue-800" :
+                      orderType === "alteration" ? "bg-amber-100 text-amber-800" :
+                      orderType === "customise" ? "bg-purple-100 text-purple-800" :
+                      "bg-rose-100 text-rose-800"
+                    }`}>
+                      {orderType === "own-fabric" ? "Own Fabric" : orderType === "alteration" ? "Alteration" : orderType === "customise" ? "Customise" : "New Order"}
+                    </span>
                   </div>
+
+                  {/* INSPIRATION */}
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-sans font-semibold text-foreground">Category & Measurements</h3>
-                      <button onClick={() => setStep(2)} className="text-accent font-sans text-sm font-medium">Edit</button>
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspiration Photos</span>
+                      <button onClick={() => { setStep(1); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    <p className="text-sm text-muted-foreground font-sans">
-                      {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory || "Lehenga"}
-                    </p>
-                    <p className="text-sm text-muted-foreground font-sans mt-1">
-                      {selectedOccasion} {selectedFit && `• ${selectedFit}`}
-                    </p>
-                    {(selectedNeckline || selectedSleeve || selectedDupatta || selectedLining) && (
-                      <p className="text-sm text-muted-foreground font-sans mt-1">
-                        {[selectedNeckline, selectedSleeve, selectedDupatta, selectedLining].filter(Boolean).join(" · ")}
-                      </p>
+                    {uploaded ? (
+                      <div className="flex gap-3 items-start">
+                        <img src={redLehenga} alt="Inspiration" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                        <p className="text-sm text-muted-foreground font-sans">{description || "Red lehenga with gold embroidery"}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground font-sans">No photos uploaded</p>
                     )}
-                    <p className="text-sm text-muted-foreground font-sans mt-1">
-                      {measurementType === "standard" ? `Size ${standardSize} (${sizeRegion})` : measurementType === "custom" ? "Custom measurements" : "Will provide later"}
-                    </p>
                   </div>
+
+                  {/* GARMENT */}
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-sans font-semibold text-foreground">Fabric & Surface</h3>
-                      <button onClick={() => { setStep(3); setStep3Phase("feel"); }} className="text-accent font-sans text-sm font-medium">Edit</button>
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Garment</span>
+                      <button onClick={() => { setStep(2); setStep2Phase("category"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                    </div>
+                    <p className="text-sm text-foreground font-sans">
+                      {gender === "women" ? "Women's" : "Men's"} · {selectedCategory}{selectedSubCategory ? ` · ${selectedSubCategory}` : ""}
+                    </p>
+                  </div>
+
+                  {/* OCCASION */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Occasion</span>
+                      <button onClick={() => { setStep(2); setStep2Phase("occasion"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                    </div>
+                    <p className="text-sm text-foreground font-sans">{selectedOccasion || "Not specified"}</p>
+                  </div>
+
+                  {/* FIT PREFERENCE */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fit</span>
+                      <button onClick={() => { setStep(2); setStep2Phase("fit"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                    </div>
+                    <p className="text-sm text-foreground font-sans">{selectedFit || "Not specified"}</p>
+                  </div>
+
+                  {/* DESIGN DETAILS */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Design Details</span>
+                      <button onClick={() => { setStep(2); setStep2Phase("design"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                    </div>
+                    {(selectedNeckline || selectedSleeve || selectedDupatta || selectedLining) ? (
+                      <p className="text-sm text-foreground font-sans">
+                        {[selectedNeckline, selectedSleeve, selectedDupatta, selectedLining].filter(Boolean).join(", ")}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground font-sans">Standard (tailor to advise)</p>
+                    )}
+                  </div>
+
+                  {/* MEASUREMENTS */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Measurements</span>
+                      <button onClick={() => { setStep(2); setStep2Phase("measurements"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                    </div>
+                    {measurementType === "custom" ? (
+                      <p className="text-sm text-foreground font-sans">Custom measurements provided</p>
+                    ) : measurementType === "standard" ? (
+                      <p className="text-sm text-foreground font-sans">Standard size {standardSize} ({sizeRegion})</p>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-100 text-amber-800">
+                        ⏱ Provide within 48 hrs of order going live
+                      </span>
+                    )}
+                  </div>
+
+                  {/* FABRIC */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {isOwnFabric ? "Your Fabric" : "Fabric Preferences"}
+                      </span>
+                      <button onClick={() => {
+                        if (isOwnFabric) { setStep(3); setShowOwnFabricInput(true); }
+                        else { setStep(3); setStep3Phase("feel"); }
+                        window.scrollTo(0, 0);
+                      }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
                     {isOwnFabric ? (
-                      <p className="text-sm text-muted-foreground font-sans">Own fabric: {ownFabricDescription || "Not described"}</p>
+                      <p className="text-sm text-foreground font-sans">{ownFabricDescription || "Not described"}</p>
                     ) : (
-                      <>
-                        <p className="text-sm text-muted-foreground font-sans">
-                          Feel: {selectedFeel || "No preference"}
-                        </p>
-                        <p className="text-sm text-muted-foreground font-sans mt-1">
-                          Fabric: {selectedFabricTypes.length > 0 ? selectedFabricTypes.join(", ") : "No preference"}
-                        </p>
-                        <p className="text-sm text-muted-foreground font-sans mt-1">
-                          Colour: {selectedColourMood || "Not selected"}{colourNote ? ` · Note: ${colourNote}` : ""}
-                        </p>
-                        <p className="text-sm text-muted-foreground font-sans mt-1">
-                          Surface: {selectedSurfaces.length > 0 ? selectedSurfaces.join(", ") : "No preference"}
-                        </p>
-                        <p className="text-sm text-muted-foreground font-sans mt-1">
-                          Blend: {selectedBlend || "No preference"}
-                        </p>
-                        <p className="text-sm text-muted-foreground font-sans mt-1">
-                          Brand: {(Array.isArray(selectedBrand) && selectedBrand.length > 0) ? selectedBrand.join(", ") : "No preference"}
-                        </p>
-                        <p className="text-sm text-muted-foreground font-sans mt-1">
-                          Fabric Budget: {fabricBudgetBand || "Not specified"}
-                        </p>
-                        {hasEmbellishment && (
-                          <p className="text-sm text-muted-foreground font-sans mt-1">
-                            Embellishment Budget: {embellishmentBudget || "Not specified"}
-                          </p>
-                        )}
-                        {selectedSurfaces.every((s) => s === "Plain / No Embellishment") && selectedSurfaces.length > 0 && (
-                          <p className="text-sm text-muted-foreground font-sans mt-1">
-                            Embellishment Budget: N/A — Plain finish
-                          </p>
-                        )}
-                      </>
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                        <p className="text-xs text-muted-foreground font-sans">Feel</p>
+                        <p className="text-sm text-foreground font-sans">{selectedFeel || "No preference"}</p>
+                        <p className="text-xs text-muted-foreground font-sans">Type</p>
+                        <p className="text-sm text-foreground font-sans">{selectedFabricTypes.length > 0 ? selectedFabricTypes.join(", ") : "No preference"}</p>
+                        <p className="text-xs text-muted-foreground font-sans">Colour</p>
+                        <div>
+                          <p className="text-sm text-foreground font-sans">{selectedColourMood || "Not selected"}{colourNote ? ` · ${colourNote}` : ""}</p>
+                          {colourReferencePhoto && (
+                            <div className="mt-1">
+                              <img src={URL.createObjectURL(colourReferencePhoto)} alt="Colour reference" className="w-12 h-12 rounded-lg object-cover border border-border" />
+                              <p className="text-xs text-muted-foreground font-sans mt-0.5">Colour reference photo</p>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans">Surface</p>
+                        <p className="text-sm text-foreground font-sans">{selectedSurfaces.length > 0 ? selectedSurfaces.join(", ") : "No preference"}</p>
+                        <p className="text-xs text-muted-foreground font-sans">Blend</p>
+                        <p className="text-sm text-foreground font-sans">{selectedBlend || "No preference"}</p>
+                        <p className="text-xs text-muted-foreground font-sans">Brand</p>
+                        <p className="text-sm text-foreground font-sans">{(Array.isArray(selectedBrand) && selectedBrand.length > 0) ? selectedBrand.join(", ") : "No preference"}</p>
+                        <p className="text-xs text-muted-foreground font-sans">Fabric Budget</p>
+                        <p className="text-sm text-foreground font-sans">{fabricBudgetBand || "Not specified"}</p>
+                      </div>
                     )}
                   </div>
+
+                  {/* EMBELLISHMENT BUDGET — only if applicable */}
+                  {hasEmbellishment && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Embellishment Budget</span>
+                        <button onClick={() => { setStep(3); setStep3Phase("embellishment"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                      </div>
+                      <p className="text-sm text-foreground font-sans">{embellishmentBudget || "Not specified"}</p>
+                    </div>
+                  )}
+                  {!hasEmbellishment && selectedSurfaces.length > 0 && selectedSurfaces.every((s) => s === "Plain / No Embellishment") && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Embellishment Budget</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-sans">N/A — Plain finish</p>
+                    </div>
+                  )}
+
+                  {/* BUDGET & DELIVERY */}
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-sans font-semibold text-foreground">Budget & Delivery</h3>
-                      <button onClick={() => { setStep(3); setStep3Phase("budgetDelivery"); }} className="text-accent font-sans text-sm font-medium">Edit</button>
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget & Delivery</span>
+                      <button onClick={() => { setStep(3); setStep3Phase("budgetDelivery"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    <p className="text-sm text-muted-foreground font-sans">
-                      {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])}
+                    <p className="text-sm text-foreground font-sans">
+                      Budget: {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])}
                     </p>
-                    <p className="text-sm text-muted-foreground font-sans mt-1">
-                      Delivery: {deliveryDate}{flexibleDate ? " (±3 days flexible)" : ""}
+                    <p className="text-sm text-foreground font-sans mt-1">
+                      Delivery by: {deliveryDate ? format(new Date(deliveryDate + "T00:00:00"), "PPP") : "Not set"}{flexibleDate ? " (±3 days flexible)" : ""}
                     </p>
                   </div>
+
+                  <p className="text-xs text-muted-foreground font-sans mt-2">
+                    Tap any Edit → link above to update a section without losing your other answers.
+                  </p>
                 </div>
 
-                {/* Payment */}
-                <div className="space-y-6">
+                {/* RIGHT COLUMN: Payment Panel */}
+                <div className="space-y-5 md:sticky md:top-24 md:self-start">
+
+                  {/* Order Type Badge */}
+                  <div className="text-center">
+                    <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-sans font-bold ${
+                      orderType === "own-fabric" ? "bg-blue-100 text-blue-800" :
+                      orderType === "alteration" ? "bg-amber-100 text-amber-800" :
+                      orderType === "customise" ? "bg-purple-100 text-purple-800" :
+                      "bg-rose-100 text-rose-800"
+                    }`}>
+                      Order Type: {orderType === "own-fabric" ? "Own Fabric" : orderType === "alteration" ? "Alteration" : orderType === "customise" ? "Customise" : "New Order"}
+                    </span>
+                  </div>
+
+                  {/* Pricing Card */}
                   <div className="p-6 bg-card rounded-2xl border-2 border-accent/30 shadow-lg">
                     <div className="text-center mb-4">
-                      <span className="text-3xl font-serif font-bold text-accent">₹499</span>
-                      <p className="font-sans font-semibold text-foreground mt-1">Posting Fee — Escrow Protected</p>
+                      <span className="text-4xl font-serif font-bold text-accent">₹499</span>
+                      <p className="font-sans font-semibold text-foreground mt-1">Order Posting Fee</p>
+                      <p className="text-xs text-muted-foreground font-sans mt-1">Deducted from your final payment when you confirm a tailor</p>
                     </div>
-                    <ul className="space-y-3 text-sm font-sans text-muted-foreground">
-                      <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success mt-0.5 flex-shrink-0" /> 100% refundable — deducted from your final order payment</li>
-                      <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success mt-0.5 flex-shrink-0" /> Serious inquiries only — ensures quality responses from vendors</li>
-                      <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success mt-0.5 flex-shrink-0" /> Full refund if no vendor bids within 7 days</li>
-                    </ul>
-                    <div className="mt-4 p-3 bg-gold-light rounded-lg">
-                      <p className="text-xs font-sans text-foreground font-medium">What happens next:</p>
-                      <p className="text-xs font-sans text-muted-foreground mt-1">Your request goes live to 500+ verified vendors → Receive bids within 24-48 hours → Chat, compare, and accept the best bid</p>
+
+                    {/* Escrow Trust Badge */}
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 mb-4">
+                      <Lock className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      <div>
+                        <p className="font-sans text-sm font-semibold text-green-800">100% Escrow Protected</p>
+                        <p className="font-sans text-xs text-green-700">Your money is held safely until you approve every milestone</p>
+                      </div>
                     </div>
+
+                    {/* What Happens Next Accordion */}
+                    <details className="group mb-4">
+                      <summary className="flex items-center justify-between cursor-pointer font-sans text-sm font-semibold text-foreground py-2 hover:text-accent transition-colors">
+                        What happens next?
+                        <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+                      </summary>
+                      <div className="mt-3 space-y-4 pl-1">
+                        {[
+                          { num: "1", title: "Your brief goes live", sub: "Tailors in your city review your brief and submit bids within 7 days" },
+                          { num: "2", title: "You choose your tailor", sub: "Review bids, tailor profiles, and ratings — then confirm your pick" },
+                          { num: "3", title: "5 milestone approvals", sub: "Measurement → Fabric → Stitching → Virtual Trial → Final — you approve each step" },
+                          { num: "4", title: "Delivery", sub: "Tailor delivers by your requested date. Final payment releases from escrow." },
+                        ].map((item) => (
+                          <div key={item.num} className="flex gap-3">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold font-sans">{item.num}</span>
+                            <div>
+                              <p className="font-sans text-sm font-semibold text-foreground">{item.title}</p>
+                              <p className="font-sans text-xs text-muted-foreground mt-0.5">{item.sub}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
                   </div>
 
                   {/* OTP */}
@@ -1330,12 +1458,13 @@ const Wizard = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="p-4 bg-success-light rounded-xl flex items-center gap-3">
-                      <Check className="w-5 h-5 text-success" />
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+                      <Check className="w-5 h-5 text-green-600" />
                       <span className="font-sans text-sm font-medium text-foreground">Mobile number verified</span>
                     </div>
                   )}
 
+                  {/* Terms */}
                   <div className="flex items-start gap-3">
                     <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(!!v)} />
                     <label htmlFor="terms" className="text-sm font-sans text-muted-foreground cursor-pointer">
@@ -1343,6 +1472,7 @@ const Wizard = () => {
                     </label>
                   </div>
 
+                  {/* Pay Button */}
                   <Button
                     variant="gold"
                     size="hero"
@@ -1350,7 +1480,7 @@ const Wizard = () => {
                     disabled={!canProceed() || loading}
                     onClick={handlePay}
                   >
-                    {loading ? "Processing..." : "Pay ₹499 & Go Live"}
+                    {loading ? "Processing..." : "Pay ₹499 & Post Brief"}
                   </Button>
                 </div>
               </div>
