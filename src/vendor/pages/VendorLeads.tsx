@@ -4,9 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { X } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { mockLeads, mockVendor, type Lead } from "../data/vendorMockData";
+import { mockLeads, mockMyBids, mockVendor, type Lead } from "../data/vendorMockData";
 import VendorBidModal from "../components/VendorBidModal";
 
 const formatCountdown = (date: Date) => {
