@@ -2266,6 +2266,8 @@ const Wizard = () => {
                 } else {
                   setStep(1);
                 }
+              } else if (step === 1) {
+                setStep(0);
               } else if (step > 1) {
                 setStep(step - 1);
                 if (step === 4) setStep3Phase("budgetDelivery");
