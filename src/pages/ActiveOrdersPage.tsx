@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Check, Lock, ArrowLeft, Star, Play, Package, Scissors, Video, Ruler, Truck,
+  Check, Lock, ArrowLeft, Star, Play, Package, Scissors, Video, Ruler, Truck, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +32,12 @@ const MILESTONES = [
   { id: 5, title: "Final Approval & Dispatch", icon: Package },
 ];
 
+const TIER_COLORS: Record<string, string> = {
+  Gold: "bg-amber-400 text-amber-950",
+  Silver: "bg-slate-300 text-slate-800",
+  Bronze: "bg-amber-700 text-amber-50",
+};
+
 const slideVariants = {
   enter: { opacity: 0, x: 60 },
   center: { opacity: 1, x: 0 },
@@ -43,6 +49,36 @@ const ActiveOrdersPage = () => {
   const [activeMilestone, setActiveMilestone] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // ── Dynamic order data from localStorage ──
+  const [activeOrder, setActiveOrder] = useState<any>(null);
+  const [lastOrder, setLastOrder] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('naapio_active_order');
+      if (raw) setActiveOrder(JSON.parse(raw));
+      const raw2 = localStorage.getItem('naapio_last_order');
+      if (raw2) setLastOrder(JSON.parse(raw2));
+    } catch {}
+  }, []);
+
+  // Derived display values
+  const orderId = activeOrder?.orderId || lastOrder?.orderId || lastOrder?.id || 'NP-2026-00001';
+  const garmentLabel = lastOrder
+    ? [lastOrder.gender, lastOrder.selectedCategory, lastOrder.selectedSubCategory].filter(Boolean).join(' · ')
+    : 'Custom Garment';
+  const artisanLabel = activeOrder?.artisanAlias || 'Your Artisan';
+  const artisanTier = activeOrder?.artisanTier || 'Gold';
+  const artisanRating = activeOrder?.artisanRating || '4.8';
+  const artisanCompletionRate = activeOrder?.artisanCompletionRate || 'N/A';
+  const artisanDisputeRate = activeOrder?.artisanDisputeRate || 'N/A';
+  const bidAmount = activeOrder?.bidAmount || 0;
+  const netPayable = activeOrder?.netPayable || 0;
+  const deliveryDays = activeOrder?.deliveryDays || 18;
+
+  // Artisan initials
+  const artisanInitials = artisanLabel.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+
   // M1 state — pre-fill from profile
   const profileMeasurements = Object.values(customer.measurements);
   const initialMeasurements: Record<string, string> = {};
@@ -52,6 +88,24 @@ const ActiveOrdersPage = () => {
   const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements);
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
+
+  // Smart pre-fill from wizard measurements
+  const hasSavedMeasurements = !!localStorage.getItem('naapio_measurements');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('naapio_measurements');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.measurements) {
+          const prefilled: Record<string, string> = {};
+          MEASUREMENT_FIELDS.forEach(f => {
+            prefilled[f] = parsed.measurements[f] || String(initialMeasurements[f] || '');
+          });
+          setMeasurements(prefilled);
+        }
+      }
+    } catch {}
+  }, []);
 
   // M2 state
   const [selectedSwatches, setSelectedSwatches] = useState<Set<string>>(new Set());
@@ -98,14 +152,19 @@ const ActiveOrdersPage = () => {
 
   const progressPercent = ((activeMilestone - 1) / 5) * 100;
 
+  // Estimated delivery date
+  const deliveryDate = activeOrder?.acceptedAt
+    ? new Date(new Date(activeOrder.acceptedAt).getTime() + deliveryDays * 86400000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'TBD';
+
   return (
     <div className="max-w-4xl" ref={contentRef}>
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
-        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        <ArrowLeft className="w-4 h-4" /> ← My Orders
       </button>
 
-      <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#12346</span></h1>
-      <p className="text-muted-foreground font-sans mb-6">Women's Lehenga • Artisan #3</p>
+      <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
+      <p className="text-muted-foreground font-sans mb-6">{garmentLabel} • {artisanLabel}</p>
 
       {/* Top progress */}
       <div className="mb-8">
@@ -117,7 +176,7 @@ const ActiveOrdersPage = () => {
       </div>
 
       {/* Milestone indicators */}
-      <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-2">
+      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2">
         {MILESTONES.map((ms, i) => {
           const completed = ms.id < activeMilestone;
           const active = ms.id === activeMilestone;
@@ -137,19 +196,42 @@ const ActiveOrdersPage = () => {
         })}
       </div>
 
+      {/* Artisan confirmation panel */}
+      <div className="mb-8 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold font-sans shrink-0 ${TIER_COLORS[artisanTier] || 'bg-muted text-muted-foreground'}`}>
+          {artisanInitials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-sans font-bold text-foreground text-sm">{artisanLabel}</p>
+          <p className="text-xs font-sans text-muted-foreground">
+            {artisanTier} Artisan · ⭐ {artisanRating} · ✅ {artisanCompletionRate}% · 🛡️ {artisanDisputeRate}%
+          </p>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="font-serif font-bold text-foreground">₹{bidAmount.toLocaleString('en-IN')}</p>
+          <p className="text-[10px] font-sans text-muted-foreground flex items-center gap-1 justify-end">
+            <Shield className="w-3 h-3" /> Escrow protected
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8">
         {/* Sidebar order card */}
         <div className="bg-card rounded-2xl border border-border p-5 h-fit sticky top-24">
           <img src={redLehenga} alt="Order" className="w-full h-40 object-cover rounded-xl mb-4" />
           <div className="space-y-2 text-sm font-sans">
+            <div className="flex justify-between"><span className="text-muted-foreground">Order</span><span className="font-medium text-foreground">#{orderId}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Garment</span><span className="font-medium text-foreground truncate ml-2">{garmentLabel}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Artisan</span><span className="font-medium text-foreground">{artisanLabel}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="px-2 py-0.5 rounded-full text-xs font-medium bg-info-light text-info">IN PROGRESS</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span className="font-medium text-foreground">April 20, 2026</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Price</span><span className="font-serif font-bold text-lg text-foreground">₹20,000</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span className="font-medium text-foreground">{deliveryDate}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Bid</span><span className="font-serif font-bold text-lg text-foreground">₹{bidAmount.toLocaleString('en-IN')}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Net Payable</span><span className="font-serif font-bold text-accent">₹{netPayable.toLocaleString('en-IN')}</span></div>
           </div>
           <div className="mt-4 flex items-center justify-center gap-2 py-2 px-4 bg-success-light rounded-full text-success text-xs font-sans font-medium">
-            <Check className="w-3 h-3" /> ₹20k in Escrow
+            <Check className="w-3 h-3" /> ₹{bidAmount.toLocaleString('en-IN')} in Escrow
           </div>
-          <Button variant="default" className="w-full mt-4" size="sm" onClick={() => navigate("/dashboard/chat")}>💬 Chat with Tailor</Button>
+          <Button variant="default" className="w-full mt-4" size="sm" onClick={() => navigate("/dashboard/chat")}>💬 Chat with {artisanLabel}</Button>
         </div>
 
         {/* Milestone content */}
@@ -159,7 +241,19 @@ const ActiveOrdersPage = () => {
             {activeMilestone === 1 && (
               <motion.div key="m1" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">Fit & Measurement Confirmation</h2>
-                <p className="text-sm text-muted-foreground font-sans mb-6">Enter your 21-point measurements (in inches) so the tailor can begin.</p>
+                <p className="text-sm text-muted-foreground font-sans mb-4">Enter your 21-point measurements (in inches) so the tailor can begin.</p>
+
+                {/* Measurement pre-fill banner */}
+                {hasSavedMeasurements ? (
+                  <div className="mb-6 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/40">
+                    <p className="text-sm font-sans text-foreground">📏 We've pre-filled your measurements from your wizard submission. Review and confirm everything looks correct before approving.</p>
+                  </div>
+                ) : (
+                  <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
+                    <p className="text-sm font-sans text-foreground">📏 Please enter your measurements carefully — your artisan will cut fabric based on these values.</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                   {MEASUREMENT_FIELDS.map((f) => (
                     <div key={f}>
@@ -223,8 +317,8 @@ const ActiveOrdersPage = () => {
                   })}
                 </div>
                 <div className="p-4 bg-secondary rounded-xl mb-6">
-                  <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for your Lehenga."</p>
-                  <p className="text-xs text-muted-foreground font-sans mt-1">— Studio Vastra</p>
+                  <p className="text-sm font-sans text-foreground italic">"I've selected these three fabrics based on your preferences. The Royal Silk has the best drape for your garment."</p>
+                  <p className="text-xs text-muted-foreground font-sans mt-1">— {artisanLabel}</p>
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" size="sm" onClick={() => toast.info("Alteration request sent to tailor.")}>Request Change</Button>
@@ -252,7 +346,6 @@ const ActiveOrdersPage = () => {
               <motion.div key="m4" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">Virtual Trial</h2>
                 <p className="text-sm text-muted-foreground font-sans mb-6">Review the garment on a mannequin and verify each measurement checkpoint.</p>
-                {/* Video placeholder */}
                 <div className="aspect-video rounded-2xl overflow-hidden relative mb-6 cursor-pointer border border-border group">
                   <img src={virtualTrialCover} alt="Virtual trial" className="w-full h-full object-cover object-center" />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
@@ -290,9 +383,8 @@ const ActiveOrdersPage = () => {
                     <p className="text-sm font-sans text-muted-foreground">Your review has been submitted. We appreciate your feedback.</p>
                   </motion.div>
                 ) : delivered ? (
-                  /* Rating form */
                   <div className="mt-4 space-y-5">
-                    <p className="text-sm font-sans text-muted-foreground">Rate your experience with Studio Vastra.</p>
+                    <p className="text-sm font-sans text-muted-foreground">Rate your experience with {artisanLabel}.</p>
                     {(["Quality","Communication","Timeliness","Value for Money"] as const).map((cat) => {
                       const rKey = (cat === "Value for Money" ? "value" : cat.toLowerCase()) as keyof typeof review;
                       return (
@@ -311,7 +403,6 @@ const ActiveOrdersPage = () => {
                     <Button variant="gold" onClick={() => { setReviewSubmitted(true); toast.success("Review submitted!"); }}>Submit Review</Button>
                   </div>
                 ) : dispatched ? (
-                  /* Post-dispatch */
                   <div className="mt-4 space-y-4">
                     <div className="p-6 bg-success-light rounded-2xl text-center">
                       <Truck className="w-10 h-10 mx-auto text-success mb-3" />
@@ -324,7 +415,6 @@ const ActiveOrdersPage = () => {
                     <Button variant="gold" onClick={() => { setDelivered(true); toast.success("Marked as delivered!"); }}>Mark as Delivered</Button>
                   </div>
                 ) : (
-                  /* Shipping form */
                   <div className="mt-4">
                     <p className="text-sm text-muted-foreground font-sans mb-4">Confirm your shipping address for dispatch.</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">

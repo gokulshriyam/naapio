@@ -616,9 +616,27 @@ const BiddingPage = () => {
       prev.map((o) => (o.id === acceptOrderId ? { ...o, status: "tailor_selected" } : o))
     );
     toast.success(`✓ ${acceptBid.alias} selected! Order milestones are now active.`);
+
+    // Save accepted bid details to localStorage
+    localStorage.setItem('naapio_active_order', JSON.stringify({
+      orderId: acceptOrderId,
+      artisanAlias: acceptBid.alias,
+      artisanTier: acceptBid.tier,
+      artisanRating: acceptBid.rating,
+      artisanCompletionRate: acceptBid.completionRate,
+      artisanDisputeRate: acceptBid.disputeRate,
+      bidAmount: acceptBid.bidAmount,
+      netPayable: acceptBid.bidAmount - 499,
+      deliveryDays: acceptBid.deliveryDays,
+      acceptedAt: new Date().toISOString(),
+    }));
+    // TODO: PAYMENT_INTEGRATION — before launch, trigger
+    // Razorpay payment here. On success callback:
+    // save to naapio_active_order then navigate.
+
     setAcceptBid(null);
     setAcceptOrderId(null);
-    navigate(`/order/${acceptOrderId}`);
+    navigate('/dashboard/active-orders');
   };
 
   const handleReorder = (order: PastOrder | ActiveOrder, mode: "same" | "changes") => {

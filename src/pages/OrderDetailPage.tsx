@@ -65,6 +65,11 @@ const OrderDetailPage = () => {
       const raw = localStorage.getItem("naapio_last_order");
       if (raw) {
         const parsed = JSON.parse(raw);
+        // Redirect active orders to the richer ActiveOrdersPage
+        if (parsed.status === 'tailor_selected' || parsed.status === 'in_progress') {
+          navigate('/dashboard/active-orders');
+          return;
+        }
         if (parsed.orderId === id || !id) {
           setOrder(parsed);
           // If tailor was selected, set M1 to awaiting
@@ -77,7 +82,7 @@ const OrderDetailPage = () => {
       }
     } catch {}
     setLoading(false);
-  }, [id]);
+  }, [id, navigate]);
 
   const handleApprove = (milestoneId: number) => {
     setMilestones((prev) => {
