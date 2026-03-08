@@ -414,7 +414,7 @@ const ForTailorsPage = () => {
               viewport={{ once: true }}
               className="bg-card rounded-2xl border border-border p-8 md:p-10 shadow-sm space-y-6"
             >
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name *</Label>
                   <Input
