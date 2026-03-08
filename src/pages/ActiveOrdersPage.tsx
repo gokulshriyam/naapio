@@ -1081,7 +1081,7 @@ const ActiveOrdersPage = () => {
             <div className="space-y-4">
               <div className="text-4xl text-center">{getTipEmoji(tipField.field)}</div>
               <p className="text-sm font-sans text-foreground">{tipField.description}</p>
-              <p className="text-sm font-sans text-muted-foreground">{tipField.videoTip}</p>
+              <p className="text-sm font-sans text-muted-foreground">{tipField.videoTip || tipField.tip}</p>
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
                 <p className="text-xs font-sans text-foreground">💡 Measure over regular undergarments. Keep tape snug but comfortable — you should be able to breathe easily.</p>
               </div>
