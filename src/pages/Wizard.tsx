@@ -675,7 +675,7 @@ const Wizard = () => {
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-accent rounded-full"
-              animate={{ width: `${(step / 4) * 100}%` }}
+              animate={{ width: `${(Math.max(step, 0) / 4) * 100}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
