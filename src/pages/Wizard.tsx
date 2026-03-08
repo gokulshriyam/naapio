@@ -804,6 +804,13 @@ const Wizard = () => {
 
   // Measurement tab & tip modal state
   const [measurementTab, setMeasurementTab] = useState<'standard' | 'custom' | 'later'>('custom');
+  // C6: Default measurement tab to correct value per garment config
+  useEffect(() => {
+    const gc = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
+    if (gc) {
+      setMeasurementTab(gc.supportsStandard ? 'standard' : 'custom');
+    }
+  }, [selectedCategory, selectedSubCategory]);
   const [activeTip, setActiveTip] = useState<MeasurementField | null>(null);
   const [heightFeet, setHeightFeet] = useState('');
   const [heightInches, setHeightInches] = useState('');
@@ -1085,9 +1092,12 @@ const Wizard = () => {
     }
 
     const avg = Math.round(base * multiplier / 500) * 500;
-    const min = Math.max(1000, Math.round(avg * 0.65 / 500) * 500);
-    const max = Math.round(avg * 1.65 / 500) * 500;
-    return { min, max, avg, explanation: factors.filter(Boolean) };
+    const computedMin = Math.max(1000, Math.round(avg * 0.65 / 500) * 500);
+    const computedMax = Math.round(avg * 1.65 / 500) * 500;
+    // Safety guard — min < max, both >= 1000, never inverted
+    const safeMin = Math.max(1000, Math.min(computedMin, computedMax - 500));
+    const safeMax = Math.max(safeMin + 500, computedMax);
+    return { min: safeMin, max: safeMax, avg, explanation: factors.filter(Boolean) };
   };
 
   const budgetIntelligenceData = useMemo(
@@ -1274,7 +1284,10 @@ const Wizard = () => {
       phases.push('brand');
     }
     
-    phases.push('fabricBudget');
+    // Skip fabric budget for own-fabric orders
+    if (orderType !== 'own-fabric') {
+      phases.push('fabricBudget');
+    }
     
     if (showAdvancedFabric && 
         selectedSurfaces.length > 0 && 
@@ -1430,7 +1443,7 @@ const Wizard = () => {
         occasion: selectedOccasion,
         gender, selectedCategory, selectedSubCategory, selectedOccasion, selectedFit,
         selectedNeckline, selectedSleeve, measurementType,
-        budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
+        budgetRange: [budgetRange[0], budgetRange[1]],
         deliveryDate,
         rushOrder: isRushOrder,
         giftOrder, recipientName, recipientRelation, recipientPhone,
@@ -3094,7 +3107,7 @@ Important rules:
                 const garmentConfig = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
                 const garmentLabel = selectedSubCategory || selectedCategory;
                 const garmentFields = garmentConfig.fields;
-                const defaultTab = garmentConfig.supportsStandard ? 'standard' : 'custom';
+                // defaultTab removed — handled by useEffect on measurementTab
                 
                 // Pre-fill from localStorage
                 const savedMeasData = (() => {
@@ -4008,7 +4021,7 @@ Important rules:
                   )}
 
                   {/* STEP 3g: FABRIC BUDGET BAND */}
-                  {step3Phase === "fabricBudget" && (
+                  {step3Phase === "fabricBudget" && orderType !== 'own-fabric' && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your fabric budget per metre?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Helps your tailor source within your range</p>
@@ -4031,6 +4044,17 @@ Important rules:
                             <p className="text-xs text-muted-foreground">{fb.desc}</p>
                           </button>
                         ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* OWN FABRIC: skip fabric budget, show info */}
+                  {step3Phase === "fabricBudget" && orderType === 'own-fabric' && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Fabric Budget</h2>
+                      <div className="p-4 rounded-xl bg-info-light border border-info/20">
+                        <p className="text-sm font-sans text-foreground">
+                          💡 Since you're supplying your own fabric, the artisan will only quote for stitching and labour. You'll receive bids based on garment complexity and your requirements.
+                        </p>
                       </div>
                     </div>
                   )}

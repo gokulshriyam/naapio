@@ -147,8 +147,11 @@ const AlterationFlow = () => {
     const hasMajor = alterationFixes.some(f => majorFixes.includes(f));
     const multiplier = hasMajor ? 2.0 : alterationFixes.length > 2 ? 1.5 : 1.0;
     const avg = Math.round(base * multiplier / 100) * 100;
-    const min = Math.max(1000, Math.round(avg * 0.6 / 100) * 100);
-    const max = Math.round(avg * 1.8 / 100) * 100;
+    const computedMin = Math.max(1000, Math.round(avg * 0.6 / 100) * 100);
+    const computedMax = Math.round(avg * 1.8 / 100) * 100;
+    // Safety guard — min < max, both >= 1000, never inverted
+    const min = Math.max(1000, Math.min(computedMin, computedMax - 500));
+    const max = Math.max(min + 500, computedMax);
     const factors: string[] = [];
     if (hasMajor) factors.push('Major alteration work detected (+100%)');
     else if (alterationFixes.length > 2) factors.push(`${alterationFixes.length} fixes selected (+50%)`);
@@ -242,7 +245,7 @@ const AlterationFlow = () => {
         orderType: "Alteration",
         garment: isMatchingPiece ? `Matching Piece: ${matchingPieceType}` : garmentDisplay,
         occasion: "",
-        budgetRange: `${formatBudget(alterationBudgetRange[0])} – ${formatBudget(alterationBudgetRange[1])}`,
+        budgetRange: [alterationBudgetRange[0], alterationBudgetRange[1]],
         deliveryDate: alterationDeliveryDate,
         matchingPieceType, matchingForGarment, matchingFabricAvailable, matchingColourNote,
         timestamp: new Date().toISOString()

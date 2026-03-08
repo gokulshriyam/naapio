@@ -249,10 +249,10 @@ const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
   },
 };
 
-const resolveGarmentConfig = (category: string, subCategory: string): GarmentMeasurementConfig => {
+const resolveGarmentConfig = (category: string, subCategory: string, gender?: string): GarmentMeasurementConfig => {
   if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
   if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
-  return MEASUREMENT_CONFIG['Kurti'];
+  return gender === 'men' ? MEASUREMENT_CONFIG['Kurta'] : MEASUREMENT_CONFIG['Kurti'];
 };
 
 // ═══════════════════════════════════════
@@ -412,7 +412,8 @@ const ActiveOrdersPage = () => {
 
   const garmentConfig = resolveGarmentConfig(
     lastOrder?.selectedCategory || '',
-    lastOrder?.selectedSubCategory || ''
+    lastOrder?.selectedSubCategory || '',
+    gender
   );
   const garmentFields = garmentConfig.fields;
 
@@ -595,6 +596,19 @@ const ActiveOrdersPage = () => {
   // Loading state
   // ═══════════════════════════════════════
 
+  if (!loading && !activeOrder && !lastOrder) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-24 flex flex-col items-center gap-4">
+        <span className="text-6xl">🧵</span>
+        <h2 className="text-xl font-serif font-bold text-foreground">No active order yet</h2>
+        <p className="text-sm text-muted-foreground font-sans max-w-xs">
+          Accept a bid from your dashboard to start tracking your order here.
+        </p>
+        <Button variant="gold" onClick={() => navigate('/dashboard')}>← Back to My Orders</Button>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="max-w-4xl animate-pulse">
@@ -673,7 +687,7 @@ const ActiveOrdersPage = () => {
   return (
     <div className="max-w-4xl" ref={contentRef}>
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
-        <ArrowLeft className="w-4 h-4" /> ← My Orders
+        <ArrowLeft className="w-4 h-4" /> My Orders
       </button>
 
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
@@ -1091,12 +1105,17 @@ const ActiveOrdersPage = () => {
                   {confirmedKeys.map(key => (
                     <label key={key} className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${verifiedFields[key] ? 'bg-success-light' : 'hover:bg-secondary'}`}>
                       <Checkbox checked={!!verifiedFields[key]} onCheckedChange={v => setVerifiedFields({ ...verifiedFields, [key]: !!v })} />
-                      <span className="text-xs font-sans text-foreground flex-1">{key}: {confirmedMeasurements[key]}"</span>
+                      <span className="text-xs font-sans text-foreground flex-1">{key}: {String(confirmedMeasurements[key]).replace(/"+$/, '')}"</span>
                       {verifiedFields[key] && <span className="text-[10px] font-sans text-success font-medium">Verified ✓</span>}
                     </label>
                   ))}
                   {confirmedKeys.length === 0 && (
-                    <p className="text-xs text-muted-foreground font-sans">No confirmed measurements found. Proceed if video looks correct.</p>
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-light border border-warning/20">
+                      <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                      <p className="text-xs font-sans text-foreground">
+                        No confirmed measurements found for this order. Visually verify all fit points in the video before approving.
+                      </p>
+                    </div>
                   )}
                 </div>
 

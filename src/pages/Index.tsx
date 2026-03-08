@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sparkles, Menu, X, User, LogOut, ShoppingBag, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -123,16 +123,16 @@ const Index = () => {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 cursor-pointer">
+          <Link to="/" className="flex items-center gap-2 cursor-pointer">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
-          </a>
+          </Link>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition-colors">{t('nav.howItWorks')}</a>
             <a href="/#categories" className="hover:text-foreground transition-colors">{t('nav.categories')}</a>
-            <a href="/for-tailors" className="hover:text-foreground transition-colors">{t('nav.forTailors')}</a>
+            <Link to="/for-tailors" className="hover:text-foreground transition-colors">{t('nav.forTailors')}</Link>
           </div>
           <div className="hidden md:flex items-center gap-2">
             <CitySelector />
@@ -198,7 +198,7 @@ const Index = () => {
             <div className="h-px bg-border my-2" />
             <a href="#how-it-works" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.howItWorks')}</a>
             <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
-            <a href="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</a>
+            <Link to="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</Link>
             <div className="flex-1" />
             <div className="space-y-3 pt-3">
               {isLoggedIn ? (

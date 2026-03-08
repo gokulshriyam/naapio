@@ -258,12 +258,16 @@ const BiddingRoom = ({
   const [showRankInfo, setShowRankInfo] = useState(false);
   const [expandedPortfolio, setExpandedPortfolio] = useState<string | null>(null);
   const [expandedChat, setExpandedChat] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Record<string, { text: string; from: string }[]>>({});
-  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<Record<string, { text: string; from: string; masked?: boolean }[]>>({});
+  const [chatInputs, setChatInputs] = useState<Record<string, string>>({});
   const [ignoredBids, setIgnoredBids] = useState<Set<string>>(new Set());
   const [undoTimers, setUndoTimers] = useState<Record<string, NodeJS.Timeout>>({});
 
   const tl = useCountdown(order.bidDeadline);
+  // TODO: API_INTEGRATION_POINT — replace mockBids with bids filtered by order.id
+  // In production: const bids = await fetch(`/v1/orders/${order.id}/bids`)
+  // For demo continuity, mockBids are currently scoped to NP-2026-00098 only.
+  // Filter for demo: show bids only if order.bidsReceived > 0 (existing guard handles this).
   const sorted = [...mockBids].sort(sortFns[sortBy] || sortFns.Recommended);
   const visible = sorted.filter((b) => !ignoredBids.has(b.id));
   const displayed = showAll ? visible : visible.slice(0, 4);
@@ -296,8 +300,9 @@ const BiddingRoom = ({
   };
 
   const handleSendChat = (bidId: string) => {
-    if (!chatInput.trim()) return;
-    const rawMsg = chatInput.trim();
+    const input = chatInputs[bidId] ?? "";
+    if (!input.trim()) return;
+    const rawMsg = input.trim();
     const maskedMsg = maskContactInfo(rawMsg);
     const wasContactMasked = rawMsg !== maskedMsg;
     
@@ -305,7 +310,7 @@ const BiddingRoom = ({
       ...prev,
       [bidId]: [...(prev[bidId] || []), { text: maskedMsg, from: "you", masked: wasContactMasked }],
     }));
-    setChatInput("");
+    setChatInputs(prev => ({ ...prev, [bidId]: "" }));
     
     if (wasContactMasked) {
       toast.info("ℹ️ Contact info was hidden — share after selection");
@@ -489,8 +494,8 @@ const BiddingRoom = ({
                     </div>
                     <div className="flex gap-2 p-2 border-t border-border">
                       <Input
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
+                        value={chatInputs[bid.id] ?? ""}
+                        onChange={(e) => setChatInputs(prev => ({ ...prev, [bid.id]: e.target.value }))}
                         placeholder="Type a message..."
                         className="h-8 text-xs"
                         onKeyDown={(e) => e.key === "Enter" && handleSendChat(bid.id)}
@@ -554,16 +559,16 @@ const BiddingPage = () => {
           const bidDeadline = new Date(postedDate.getTime() + 7 * 24 * 60 * 60 * 1000);
           
           // Parse budget range properly
-          let budgetRange = { min: 5000, max: 20000 };
+          let budgetRange = { min: 1000, max: 20000 };
           if (lo.budgetRange) {
-            if (typeof lo.budgetRange === "string") {
-              // Try to parse string format like "₹5K – ₹20K"
-              budgetRange = { min: 5000, max: 20000 };
-            } else if (Array.isArray(lo.budgetRange) && lo.budgetRange.length === 2) {
-              budgetRange = { min: lo.budgetRange[0], max: lo.budgetRange[1] };
-            } else if (typeof lo.budgetRange === "object" && lo.budgetRange.min !== undefined) {
-              budgetRange = lo.budgetRange;
+            if (Array.isArray(lo.budgetRange) && lo.budgetRange.length === 2) {
+              budgetRange = { min: Number(lo.budgetRange[0]) || 1000, max: Number(lo.budgetRange[1]) || 20000 };
+            } else if (typeof lo.budgetRange === 'object' && lo.budgetRange !== null && lo.budgetRange.min !== undefined) {
+              budgetRange = { min: Number(lo.budgetRange.min) || 1000, max: Number(lo.budgetRange.max) || 20000 };
             }
+            // Guard: min must be < max and both >= 1000
+            budgetRange.min = Math.max(1000, budgetRange.min);
+            budgetRange.max = Math.max(budgetRange.min + 500, budgetRange.max);
           }
           
           orders.unshift({
@@ -600,7 +605,7 @@ const BiddingPage = () => {
   const handleCloseBid = (orderId: string) => {
     setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
     setPastOrders((prev) => [
-      { id: orderId, orderType: "New Order", garment: activeOrders.find((o) => o.id === orderId)?.garment || "", status: "expired", postedAt: "Mar 2026", bidsReceived: 0, note: "Closed by customer" },
+      { id: orderId, orderType: activeOrders.find(o => o.id === orderId)?.orderType || "New Order", garment: activeOrders.find((o) => o.id === orderId)?.garment || "", status: "expired", postedAt: "Mar 2026", bidsReceived: 0, note: "Closed by customer" },
       ...prev,
     ]);
     setCloseBidDialog(null);
@@ -748,8 +753,8 @@ const BiddingPage = () => {
 
                     {/* Action row — stack on mobile */}
                     <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                      <Button size="sm" variant="outline" className="text-xs w-full sm:w-auto" onClick={() => navigate("/wizard")}>
-                        <Edit className="w-3 h-3 mr-1" /> Edit Brief
+                      <Button size="sm" variant="outline" className="text-xs w-full sm:w-auto" onClick={() => navigate(`/order/${order.id}`)} title="Your brief has been posted and cannot be edited while bids are open">
+                        <Edit className="w-3 h-3 mr-1" /> 📋 View Brief
                       </Button>
                       <Button
                         size="sm"
@@ -778,7 +783,12 @@ const BiddingPage = () => {
                         {whileYouWaitOpen === order.id && (
                           <div className="mt-2 space-y-2 pl-4">
                             {!order.measurementsSubmitted ? (
-                              <button onClick={() => navigate("/wizard")} className="text-xs font-sans text-accent hover:underline block">📏 Submit measurements</button>
+                              <span
+                                className="text-xs font-sans text-muted-foreground block cursor-default"
+                                title="Measurements will be collected at M1 after you accept a bid."
+                              >
+                                📏 Measurements — collected at M1 after you accept a bid ℹ️
+                              </span>
                             ) : (
                               <span className="text-xs font-sans text-success block">✓ Measurements submitted</span>
                             )}
