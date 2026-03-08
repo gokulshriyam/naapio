@@ -554,7 +554,89 @@ const Wizard = () => {
   );
   const [photoFromBadgeShown, setPhotoFromBadgeShown] = useState<Set<string>>(new Set());
 
-  const isBlouseCategory = selectedCategory === "Saree Blouse" || (selectedSubCategory || "").toLowerCase().includes("blouse");
+  const isMobileThumb = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  // ── Draggable thumbnail logic ──
+  const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    const clientX = 'touches' in e ? e.nativeEvent.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? e.nativeEvent.touches[0].clientY : (e as React.MouseEvent).clientY;
+    setDragOffset({
+      x: clientX - thumbPosition.x,
+      y: clientY - thumbPosition.y,
+    });
+    e.preventDefault();
+  }, [thumbPosition]);
+
+  const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const thumbW = isMobileThumb ? 120 : 148;
+    const thumbH = isMobileThumb ? 140 : 200;
+    const newX = Math.min(Math.max(0, clientX - dragOffset.x), window.innerWidth - thumbW);
+    const newY = Math.min(Math.max(0, clientY - dragOffset.y), window.innerHeight - thumbH);
+    setThumbPosition({ x: newX, y: newY });
+  }, [isDragging, dragOffset, isMobileThumb]);
+
+  const handleDragEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (!localStorage.getItem('naapio_thumb_dragged')) {
+      localStorage.setItem('naapio_thumb_dragged', '1');
+      setShowDragHint(false);
+    }
+    // Snap to nearest corner
+    const snapMargin = 16;
+    const thumbW = isMobileThumb ? 120 : 148;
+    const thumbH = isMobileThumb ? 140 : 200;
+    const midX = window.innerWidth / 2;
+    const midY = window.innerHeight / 2;
+    setThumbPosition(prev => ({
+      x: prev.x < midX ? snapMargin : window.innerWidth - thumbW - snapMargin,
+      y: prev.y < midY ? snapMargin + 60 : window.innerHeight - thumbH - snapMargin,
+    }));
+  }, [isDragging, isMobileThumb]);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', handleDragMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('touchmove', handleDragMove);
+      window.removeEventListener('touchend', handleDragEnd);
+    };
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  // Persist thumb position
+  useEffect(() => {
+    if (!isDragging) {
+      localStorage.setItem('naapio_thumb_pos', JSON.stringify(thumbPosition));
+    }
+  }, [thumbPosition, isDragging]);
+
+  // Restore saved position on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('naapio_thumb_pos');
+    if (saved) {
+      try { setThumbPosition(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  // Auto-hide drag hint after 3s
+  useEffect(() => {
+    if (showDragHint) {
+      const t = setTimeout(() => setShowDragHint(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [showDragHint]);
+
+
 
   const hasEmbellishment = selectedSurfaces.length > 0 &&
     !selectedSurfaces.every((s) => s === "Plain / No Embellishment" || s === "No Preference");
