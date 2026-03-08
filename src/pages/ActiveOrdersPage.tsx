@@ -48,6 +48,7 @@ const ActiveOrdersPage = () => {
   const navigate = useNavigate();
   const [activeMilestone, setActiveMilestone] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
 
   // ── Dynamic order data from localStorage ──
   const [activeOrder, setActiveOrder] = useState<any>(null);
@@ -60,6 +61,7 @@ const ActiveOrdersPage = () => {
       const raw2 = localStorage.getItem('naapio_last_order');
       if (raw2) setLastOrder(JSON.parse(raw2));
     } catch {}
+    setTimeout(() => setLoading(false), 300);
   }, []);
 
   // Derived display values
