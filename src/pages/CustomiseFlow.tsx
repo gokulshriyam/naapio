@@ -380,25 +380,31 @@ const CustomiseFlow = () => {
     );
   };
 
-  // ── SVG Garment Diagram ──
+  // ── SVG Garment Diagram (multi-view) ──
   const GarmentDiagram = () => {
-    const isFullGarment = placementZones.includes("Full Garment");
+    const zones = getZonesForView(activeView);
+    const currentSelected = selectedZonesByView[activeView];
+    const drawableZones = zones.filter(z => z.d); // only zones with SVG paths
+
+    const silhouette = activeView === 'lower'
+      ? "M 70,20 L 230,20 L 248,230 L 52,230 Z"
+      : "M 150,30 Q 120,28 95,38 L 30,55 L 30,105 L 88,125 L 85,245 L 82,260 L 218,260 L 215,245 L 212,125 L 270,105 L 270,55 L 205,38 Q 180,28 150,30 Z";
+
     return (
-      <svg viewBox="0 0 300 280" className="w-full max-w-sm mx-auto" aria-label="Garment placement diagram">
-        {/* Garment silhouette outline */}
-        <path
-          d="M 150,30 Q 120,28 95,38 L 40,55 L 40,100 L 88,120 L 88,230 L 82,260 L 218,260 L 212,230 L 212,120 L 260,100 L 260,55 L 205,38 Q 180,28 150,30 Z"
-          fill={isFullGarment ? "hsl(var(--accent) / 0.15)" : "hsl(var(--card))"}
-          stroke="hsl(var(--border))"
-          strokeWidth="1.5"
-          className="transition-colors duration-200"
-        />
-        {/* Centre line */}
-        <line x1="150" y1="52" x2="150" y2="260" stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="4 4" />
+      <svg viewBox={activeView === 'lower' ? "0 0 300 250" : "0 0 300 270"} className="w-full max-w-sm mx-auto" aria-label={`Garment ${activeView} placement diagram`}>
+        {/* Silhouette */}
+        <path d={silhouette} fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="1.5" />
+        {activeView !== 'lower' && (
+          <line x1="150" y1="52" x2="150" y2="260" stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="4 4" />
+        )}
 
         {/* Tappable zones */}
-        {svgZones.map((zone) => {
-          const selected = placementZones.includes(zone.id) || isFullGarment;
+        {drawableZones.map((zone) => {
+          const selected = currentSelected.includes(zone.id);
+          // Calculate centroid for label
+          const cx = zone.id.includes("left") || zone.id.includes("Left") ? 60 : zone.id.includes("right") || zone.id.includes("Right") ? 240 : 150;
+          const cy = zone.id.includes("neck") || zone.id.includes("Neck") ? 44 : zone.id.includes("shoulder") || zone.id.includes("Shoulder") ? 55 : zone.id.includes("chest") || zone.id.includes("Chest") ? 88 : zone.id.includes("sleeve") || zone.id.includes("Sleeve") ? 85 : zone.id.includes("waist") || zone.id.includes("Waist") ? 35 : zone.id.includes("hem") || zone.id.includes("Hem") ? 220 : zone.id.includes("upper") ? 88 : zone.id.includes("mid") ? 148 : zone.id.includes("lower") || zone.id.includes("Lower") ? 200 : zone.id.includes("abdomen") ? 180 : zone.id.includes("front-left") ? 110 : zone.id.includes("front-right") ? 190 : 150;
+
           return (
             <g key={zone.id} className="cursor-pointer" onClick={() => toggleZone(zone.id)}>
               <path
@@ -409,37 +415,31 @@ const CustomiseFlow = () => {
                 strokeDasharray={selected ? "none" : "4 3"}
                 className="transition-all duration-200 hover:fill-[hsl(var(--accent)/0.1)]"
               />
-              {selected && (
-                <text
-                  x={zone.id === "Sleeves" ? 64 : 150}
-                  y={
-                    zone.id === "Collar / Neckline"
-                      ? 44
-                      : zone.id === "Chest / Front Panel"
-                      ? 98
-                      : zone.id === "Sleeves"
-                      ? 82
-                      : zone.id === "Waistband"
-                      ? 147
-                      : 250
-                  }
-                  textAnchor="middle"
-                  className="fill-accent text-[9px] font-sans font-semibold pointer-events-none select-none"
-                >
-                  ✓ {zone.label}
-                </text>
-              )}
+              <text
+                x={cx}
+                y={cy}
+                textAnchor="middle"
+                className={`text-[8px] font-sans pointer-events-none select-none ${selected ? "fill-accent font-semibold" : "fill-muted-foreground"}`}
+              >
+                {selected ? `✓ ${zone.label}` : zone.label}
+              </text>
             </g>
           );
         })}
 
-        {/* Body area fill (between chest and hem) */}
-        <path
-          d="M 90,157 L 210,157 L 212,228 L 88,228 Z"
-          fill={isFullGarment ? "hsl(var(--accent) / 0.15)" : "transparent"}
-          stroke="none"
-          className="pointer-events-none"
-        />
+        {/* "Select All" buttons rendered outside SVG paths */}
+        {activeView === 'back' && (
+          <g className="cursor-pointer" onClick={() => toggleZone('back-full')}>
+            <rect x="100" y="252" width="100" height="24" rx="12" fill={currentSelected.length === backZones.filter(z => z.id !== 'back-full').length ? "hsl(var(--accent))" : "hsl(var(--muted))"} />
+            <text x="150" y="268" textAnchor="middle" className={`text-[9px] font-sans font-medium pointer-events-none select-none ${currentSelected.length === backZones.filter(z => z.id !== 'back-full').length ? "fill-accent-foreground" : "fill-foreground"}`}>Select All Back</text>
+          </g>
+        )}
+        {activeView === 'lower' && (
+          <g className="cursor-pointer" onClick={() => toggleZone('full-lower')}>
+            <rect x="100" y="235" width="100" height="24" rx="12" fill={currentSelected.length === lowerZones.filter(z => z.id !== 'full-lower').length ? "hsl(var(--accent))" : "hsl(var(--muted))"} />
+            <text x="150" y="251" textAnchor="middle" className={`text-[9px] font-sans font-medium pointer-events-none select-none ${currentSelected.length === lowerZones.filter(z => z.id !== 'full-lower').length ? "fill-accent-foreground" : "fill-foreground"}`}>Select All Lower</text>
+          </g>
+        )}
       </svg>
     );
   };
