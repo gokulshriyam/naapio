@@ -39,6 +39,24 @@ const categoryBudgetRanges: Record<string, { min: number; max: number; label: st
 
 const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
 
+const budgetGuidance: Record<string, string> = {
+  'Saree Blouse': 'Typical range: ₹800 – ₹5,000',
+  'Kurti': 'Typical range: ₹600 – ₹3,000',
+  'Salwar Kameez': 'Typical range: ₹1,500 – ₹6,000',
+  'Lehenga': 'Typical range: ₹5,000 – ₹80,000',
+  'Anarkali': 'Typical range: ₹2,500 – ₹15,000',
+  'Sherwani': 'Typical range: ₹8,000 – ₹60,000',
+  'Kurta': 'Typical range: ₹800 – ₹4,000',
+  'Gown': 'Typical range: ₹4,000 – ₹30,000',
+  'Suit': 'Typical range: ₹6,000 – ₹40,000',
+  'Blazer': 'Typical range: ₹6,000 – ₹40,000',
+  'Bandhgala': 'Typical range: ₹5,000 – ₹35,000',
+  'Co-ord Set': 'Typical range: ₹3,000 – ₹12,000',
+  'Jacket': 'Typical range: ₹5,000 – ₹20,000',
+  'Trousers': 'Typical range: ₹2,000 – ₹8,000',
+  'Indo-Western': 'Typical range: ₹8,000 – ₹35,000',
+};
+
 const subCategories: Record<string, string[]> = {
   "Sherwani": ["Achkan", "Indo-Western Sherwani", "Jodhpuri Sherwani", "Double-Breasted Sherwani", "Nehru Collar Sherwani"],
   "Kurta": ["Straight Kurta", "Pathani Kurta", "Kaftan Kurta", "Embroidered / Festive Kurta", "Plain / Daily Wear Kurta", "Nehru Collar Kurta"],
@@ -286,6 +304,17 @@ const Wizard = () => {
   // Share Brief
   const [briefShared, setBriefShared] = useState(false);
 
+  // Advanced Fabric Preferences
+  const [showAdvancedFabric, setShowAdvancedFabric] = useState<boolean>(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
+
+  // Exit Warning
+  const [showExitWarning, setShowExitWarning] = useState(false);
+
+  // Measurement Photo
+  const [measurementPhoto, setMeasurementPhoto] = useState<File | null>(null);
+
   // Gift / Ordering for someone else
   const [orderingFor, setOrderingFor] = useState<'self' | 'someone' | 'group' | ''>('');
   const [recipientName, setRecipientName] = useState('');
@@ -442,6 +471,59 @@ const Wizard = () => {
     }
   }, [groupSize]);
 
+  // Popstate handler for Android back button
+  useEffect(() => {
+    if (step >= 1) {
+      window.history.pushState({ wizardStep: step }, '');
+    }
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (step > 1) {
+        if (step === 2 && step2Phase) {
+          const phases = ['category', 'occasion', 'fit', 'design', 'measurements'];
+          const currentIndex = phases.indexOf(step2Phase);
+          if (currentIndex > 0) {
+            setStep2Phase(phases[currentIndex - 1] as any);
+          } else {
+            setStep(1);
+          }
+        } else if (step === 3 && step3Phase) {
+          const phases = ['feel', 'fabricType', 'colour', 'surface', 'blend', 'brand', 'fabricBudget', 'embellishment', 'budgetDelivery'];
+          const currentIndex = phases.indexOf(step3Phase);
+          if (currentIndex > 0) {
+            setStep3Phase(phases[currentIndex - 1] as any);
+          } else {
+            setStep(2);
+          }
+        } else {
+          setStep((prev) => Math.max(0, prev - 1) as any);
+        }
+        window.history.pushState({ wizardStep: step - 1 }, '');
+      } else {
+        setShowExitWarning(true);
+        window.history.pushState({ wizardStep: step }, '');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [step, step2Phase, step3Phase]);
+
+  // Delivery day count helper
+  const getDeliveryDayCount = (dateStr: string) => {
+    if (!dateStr) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const getDeliveryDayMessage = (days: number) => {
+    if (days < 7) return { text: `That's ${days} days — very tight. Consider enabling Rush Order.`, color: 'text-destructive' };
+    if (days <= 14) return { text: `That's ${days} days — tight but possible for simple garments.`, color: 'text-amber-600' };
+    if (days <= 30) return { text: `That's ${days} days — good timeline.`, color: 'text-green-600' };
+    return { text: `That's ${days} days — comfortable timeline.`, color: 'text-muted-foreground' };
+  };
+
   const canProceed = () => {
     if (step === 0) {
       if (orderingFor === 'self') return true;
@@ -471,7 +553,11 @@ const Wizard = () => {
       if (step3Phase === "brand") return true;
       if (step3Phase === "fabricBudget") return !!fabricBudgetBand;
       if (step3Phase === "embellishment") return !!embellishmentBudget;
-      if (step3Phase === "budgetDelivery") return budgetRange[0] >= 1000 && !!deliveryDate;
+      if (step3Phase === "budgetDelivery") {
+        const minOk = budgetRange[0] >= 500;
+        const maxOk = budgetRange[1] === 0 || budgetRange[1] >= budgetRange[0];
+        return minOk && maxOk && !!deliveryDate;
+      }
       return true;
     }
     if (step === 4) return otpVerified && termsAccepted;
@@ -728,6 +814,19 @@ const Wizard = () => {
 
   return (
     <div className="min-h-screen bg-secondary">
+      {/* Exit Warning Modal */}
+      {showExitWarning && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-lg font-serif font-bold text-foreground mb-2">Leave this order?</h3>
+            <p className="text-sm text-muted-foreground font-sans mb-6">Your progress will be saved as a draft — you can continue later.</p>
+            <div className="flex gap-3">
+              <Button variant="gold" className="flex-1" onClick={() => setShowExitWarning(false)}>Stay & Continue</Button>
+              <Button variant="outline" className="flex-1" onClick={() => { setShowExitWarning(false); navigate('/'); }}>Leave</Button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Draft Resume Banner */}
       {draftRestored && restoredDraft && (
         <div className="bg-amber-50 border-b border-amber-200">
@@ -1703,17 +1802,62 @@ const Wizard = () => {
                       </div>
                     )}
 
-                    <div className="flex gap-2 mb-6">
-                      {(["standard", "custom", "later"] as const).map((t) => (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {(["standard", "custom", "later", "photo"] as const).map((t) => (
                         <button
                           key={t}
-                          onClick={() => setMeasurementType(t)}
-                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${measurementType === t ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
+                          onClick={() => { if (t === "photo") { setMeasurementType("custom"); setMeasurementPhoto(null); } else { setMeasurementType(t); } }}
+                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[48px] ${
+                            (t === "photo" ? !!measurementPhoto : measurementType === t && !measurementPhoto)
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-card border border-border text-foreground hover:bg-muted"
+                          }`}
                         >
-                          {t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later") : t.charAt(0).toUpperCase() + t.slice(1)}
+                          {t === "photo" ? "📷 Upload Measurement Card"
+                            : t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later")
+                            : t.charAt(0).toUpperCase() + t.slice(1)}
                         </button>
                       ))}
                     </div>
+
+                    {/* Measurement Photo Upload */}
+                    {measurementPhoto !== undefined && (
+                      <div className="mb-6">
+                        <label
+                          className="block p-4 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 cursor-pointer transition-all"
+                        >
+                          {measurementPhoto ? (
+                            <div className="flex items-center gap-3">
+                              <img src={URL.createObjectURL(measurementPhoto)} alt="Measurement card" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                              <div>
+                                <p className="font-sans text-sm font-medium text-foreground">Measurement card uploaded</p>
+                                <button onClick={(e) => { e.preventDefault(); setMeasurementPhoto(null); }} className="text-xs text-accent font-sans hover:underline">Remove</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-2">
+                              <p className="font-sans text-sm font-medium text-foreground mb-1">📷 Upload your darzi card / measurement slip</p>
+                              <p className="text-xs text-muted-foreground font-sans">Photo of your tailor's measurement card, notebook, or any written measurements</p>
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] || null;
+                              if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                              setMeasurementPhoto(f);
+                            }}
+                          />
+                        </label>
+                        {measurementPhoto && (
+                          <p className="text-xs text-muted-foreground font-sans mt-2">
+                            Your tailor will read your measurements from this photo. If any values are unclear, they'll ask during Milestone 1.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {measurementType === "standard" && (
                       <div className="space-y-4">
@@ -2095,8 +2239,28 @@ const Wizard = () => {
                     </div>
                   )}
 
+                  {/* Advanced Fabric Preferences Toggle */}
+                  {step3Phase === "surface" && (
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setShowAdvancedFabric(!showAdvancedFabric)}
+                        className="w-full p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-all flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span>⚙️</span>
+                          <div className="text-left">
+                            <p className="font-sans text-sm font-medium text-foreground">Advanced preferences (optional)</p>
+                            <p className="font-sans text-xs text-muted-foreground">Fabric blend, brand, embellishment budget</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-accent font-sans">{showAdvancedFabric ? "Hide ↑" : "Show →"}</span>
+                      </button>
+                      <p className="text-xs text-muted-foreground font-sans mt-2">💡 Most customers skip this — your tailor will suggest the best options based on your budget.</p>
+                    </div>
+                  )}
+
                   {/* STEP 3e: FABRIC BLEND */}
-                  {step3Phase === "blend" && (
+                  {step3Phase === "blend" && showAdvancedFabric && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any preference on fabric composition?</h2>
                       <p className="text-muted-foreground font-sans mb-6">This helps your tailor source the right quality</p>
@@ -2130,7 +2294,7 @@ const Wizard = () => {
                   )}
 
                   {/* STEP 3f: BRAND PREFERENCE */}
-                  {step3Phase === "brand" && (
+                  {step3Phase === "brand" && showAdvancedFabric && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any preferred fabric brand?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Optional — leave blank if you have no preference</p>
@@ -2196,7 +2360,7 @@ const Wizard = () => {
                   )}
 
                   {/* STEP 3h: EMBELLISHMENT BUDGET */}
-                  {step3Phase === "embellishment" && (
+                  {step3Phase === "embellishment" && showAdvancedFabric && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your embellishment budget?</h2>
                       <p className="text-muted-foreground font-sans mb-6">For the embroidery or surface work you selected</p>
@@ -2256,7 +2420,16 @@ const Wizard = () => {
                             </div>
                           </div>
                           <p className="text-xs text-muted-foreground font-sans">
-                            Vendor bids will be based on this range. You're not locked in — bids above range won't be shown.
+                            {budgetGuidance[selectedCategory] || 'Enter your comfortable range'}
+                          </p>
+                          {budgetRange[0] > 0 && budgetRange[1] > 0 && budgetRange[0] > budgetRange[1] && (
+                            <p className="text-xs text-destructive font-sans mt-1">Min budget can't be higher than max</p>
+                          )}
+                          {budgetRange[0] > 0 && budgetRange[1] > 0 && budgetRange[1] >= budgetRange[0] && (budgetRange[1] - budgetRange[0]) < 500 && (
+                            <p className="text-xs text-amber-600 font-sans mt-1">A wider range attracts more bids. Consider expanding by ₹1,000–₹2,000.</p>
+                          )}
+                          <p className="text-xs text-muted-foreground font-sans mt-2">
+                            💡 Set a realistic range — tailors bid within it. Too low a max may reduce bid quality. Too high isn't a commitment — you negotiate.
                           </p>
                         </div>
 
@@ -2311,6 +2484,27 @@ const Wizard = () => {
                               />
                             </PopoverContent>
                           </Popover>
+
+                          {/* Day count */}
+                          {deliveryDate && (() => {
+                            const days = getDeliveryDayCount(deliveryDate);
+                            const msg = getDeliveryDayMessage(days);
+                            return <p className={`text-xs font-sans mt-2 ${msg.color}`}>{msg.text}</p>;
+                          })()}
+
+                          <p className="text-xs text-muted-foreground font-sans mt-2">
+                            🗓️ Ordering for a wedding? Pick a date 3–5 days before the event to allow for last-minute adjustments.
+                          </p>
+
+                          {/* Rush + distant date sync */}
+                          {isRushOrder && deliveryDate && getDeliveryDayCount(deliveryDate) > 21 && (
+                            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                              <p className="text-xs text-amber-800 font-sans">
+                                ⚡ Rush order is enabled but your delivery date is {getDeliveryDayCount(deliveryDate)} days away — rush may not be necessary. You can disable it to attract more bids.
+                              </p>
+                              <button onClick={() => setIsRushOrder(false)} className="text-xs text-accent font-sans hover:underline mt-1">Disable Rush Order</button>
+                            </div>
+                          )}
 
                           <div className="flex items-center gap-3 mt-4">
                             <Checkbox
@@ -3005,13 +3199,17 @@ const Wizard = () => {
                   } else if (step3Phase === "colour") {
                     setStep3Phase("surface");
                   } else if (step3Phase === "surface") {
-                    setStep3Phase("blend");
+                    if (showAdvancedFabric) {
+                      setStep3Phase("blend");
+                    } else {
+                      setStep3Phase("fabricBudget");
+                    }
                   } else if (step3Phase === "blend") {
                     setStep3Phase("brand");
                   } else if (step3Phase === "brand") {
                     setStep3Phase("fabricBudget");
                   } else if (step3Phase === "fabricBudget") {
-                    if (hasEmbellishment) {
+                    if (hasEmbellishment && showAdvancedFabric) {
                       setStep3Phase("embellishment");
                     } else {
                       setStep3Phase("budgetDelivery");
