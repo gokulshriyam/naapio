@@ -1589,7 +1589,109 @@ Return a JSON object with ONLY these fields, no other text:
               <div>
                 <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Upload Your Inspiration</h2>
                 <p className="text-muted-foreground font-sans mb-6">Share the design that inspires you</p>
-                {uploaded ? (
+                {uploaded && inspirationPhoto ? (
+                  <div className="space-y-4">
+                    <div className="relative rounded-2xl overflow-hidden border border-border">
+                      <img src={URL.createObjectURL(inspirationPhoto)} alt="Uploaded inspiration" className="w-full h-[400px] object-cover" />
+                      <button 
+                        onClick={() => { 
+                          setUploaded(false); 
+                          setInspirationPhoto(null); 
+                          setPhotoAnalysis(null); 
+                          setAnalysisLoading(false);
+                        }} 
+                        className="absolute top-3 right-3 p-2 bg-card rounded-full shadow-md hover:bg-muted transition-colors"
+                      >
+                        <X className="w-4 h-4 text-foreground" />
+                      </button>
+                      <div className="absolute top-3 left-3 px-3 py-1 bg-card/90 backdrop-blur-sm rounded-full text-xs font-sans font-medium text-foreground">
+                        {inspirationPhoto.name.slice(0, 20)}{inspirationPhoto.name.length > 20 ? '...' : ''}
+                      </div>
+                    </div>
+
+                    {/* Analysis Status */}
+                    {analysisLoading && (
+                      <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }}
+                        className="flex items-center gap-2 p-3 bg-accent/10 rounded-xl"
+                      >
+                        <motion.span 
+                          animate={{ scale: [1, 1.2, 1] }} 
+                          transition={{ repeat: Infinity, duration: 1.5 }}
+                          className="text-lg"
+                        >
+                          ✨
+                        </motion.span>
+                        <span className="text-sm font-sans text-foreground">Analysing your inspiration photo...</span>
+                      </motion.div>
+                    )}
+
+                    {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl"
+                      >
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-sans text-green-800">
+                          Photo analysed — we'll pre-select matching options as you go through the wizard.
+                        </span>
+                      </motion.div>
+                    )}
+
+                    {/* Photo Analysis Card */}
+                    {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                     (photoAnalysis.confidence === 'high' || photoAnalysis.confidence === 'medium') && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-amber-50 border border-amber-200 rounded-xl"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg">✨</span>
+                          <span className="font-sans font-semibold text-foreground text-sm">What we detected in your photo</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans mb-3">
+                          We'll pre-select these as you go — change anything you like.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              👗 {photoAnalysis.detectedGarment}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              🎨 {photoAnalysis.detectedColour}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedFeel && photoAnalysis.detectedFeel !== 'Unable to determine' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              🧵 {photoAnalysis.detectedFeel}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedSurfaces && photoAnalysis.detectedSurfaces.length > 0 && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              ✨ {photoAnalysis.detectedSurfaces[0]}
+                              {photoAnalysis.detectedSurfaces.length > 1 && ` +${photoAnalysis.detectedSurfaces.length - 1} more`}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedOccasion && photoAnalysis.detectedOccasion !== 'Unable to determine' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              📅 {photoAnalysis.detectedOccasion}
+                            </span>
+                          )}
+                        </div>
+                        {photoAnalysis.confidence === 'medium' && (
+                          <p className="text-xs text-amber-700 font-sans mt-3">
+                            Some attributes detected — verify as you go.
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                ) : uploaded ? (
                   <div className="relative rounded-2xl overflow-hidden border border-border">
                     <img src={redLehenga} alt="Uploaded inspiration" className="w-full h-[400px] object-cover" />
                     <button onClick={() => setUploaded(false)} className="absolute top-3 right-3 p-2 bg-card rounded-full shadow-md hover:bg-muted transition-colors">
@@ -1600,14 +1702,24 @@ Return a JSON object with ONLY these fields, no other text:
                     </div>
                   </div>
                 ) : (
-                  <div
-                    onClick={() => setUploaded(true)}
-                    className="h-[400px] border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-colors bg-card"
-                  >
+                  <label className="h-[400px] border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-colors bg-card">
+                    <input 
+                      type="file" 
+                      accept="image/jpeg,image/png,image/webp" 
+                      className="hidden" 
+                      onChange={handleInspirationUpload}
+                    />
                     <Upload className="w-12 h-12 text-muted-foreground mb-4" />
                     <p className="font-sans font-medium text-foreground mb-1">Click to upload</p>
                     <p className="text-sm text-muted-foreground font-sans">or drag and drop your inspiration image</p>
-                  </div>
+                    <button 
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setUploaded(true); }}
+                      className="mt-4 text-xs text-accent font-sans hover:underline"
+                    >
+                      or use demo image →
+                    </button>
+                  </label>
                 )}
               </div>
               <div>
