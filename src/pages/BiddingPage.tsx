@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
   Clock, Edit, Eye, X as XIcon, Star, RotateCcw,
@@ -84,6 +85,7 @@ const initialDemoOrder = {
 
 const BiddingPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [timers, setTimers] = useState(activeRequests.map((r) => ({ ...r.countdown, minutes: 0, seconds: 0 })));
 
   // Load last order from localStorage
@@ -174,10 +176,10 @@ const BiddingPage = () => {
     return (
       <div className="max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
         <span className="text-5xl mb-4">📋</span>
-        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">No active orders yet</h2>
-        <p className="text-muted-foreground font-sans mb-6">Start your first order to see it tracked here.</p>
+        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">{t('dashboard.noOrders')}</h2>
+        <p className="text-muted-foreground font-sans mb-6">{t('dashboard.noOrdersSubtext')}</p>
         <Button variant="gold" onClick={() => navigate("/start")}>
-          Start an Order →
+          {t('dashboard.startOrder')}
         </Button>
       </div>
     );
@@ -450,8 +452,8 @@ const BiddingPage = () => {
       {/* ══════ 5-Milestone Tracker ══════ */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-serif font-bold text-foreground">Order Milestones</h2>
-          <p className="text-sm text-muted-foreground font-sans">Your tailor uploads proof at each stage — you approve before work continues</p>
+          <h2 className="text-xl font-serif font-bold text-foreground">{t('dashboard.milestones')}</h2>
+          <p className="text-sm text-muted-foreground font-sans">{t('dashboard.milestonesSubtext')}</p>
         </div>
 
         {(milestones.every((m) => m.status === "pending") || milestones.some((m) => m.status === "changes_requested")) && (

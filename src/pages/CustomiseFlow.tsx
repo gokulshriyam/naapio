@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ChevronRight, ChevronLeft, Check, X, CalendarIcon, Lock, ChevronDown, Info, Camera } from "lucide-react";
@@ -103,6 +104,7 @@ const svgZones: { id: string; label: string; d: string }[] = [
 
 const CustomiseFlow = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [showReview, setShowReview] = useState(false);
 

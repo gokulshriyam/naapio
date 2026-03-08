@@ -1,0 +1,137 @@
+{
+  "nav": {
+    "howItWorks": "How It Works",
+    "forTailors": "For Tailors",
+    "categories": "Categories",
+    "login": "Login",
+    "getStarted": "Get Started"
+  },
+  "hero": {
+    "headline": "See It. Stitch It.",
+    "subheadline": "India's first managed marketplace for custom ethnic wear. Upload your inspiration. 500+ master tailors bid. 100% escrow protected.",
+    "primaryCta": "Upload Your Inspiration →",
+    "secondaryCta": "How It Works"
+  },
+  "start": {
+    "heading": "What would you like to do?",
+    "subheading": "Choose the right path — we'll tailor the experience for you.",
+    "newOrder": "New Order",
+    "newOrderDesc": "Make a new outfit from scratch",
+    "alteration": "Alteration / Repair",
+    "alterationDesc": "Fix, resize, shorten or repair existing clothes",
+    "ownFabric": "I Have My Own Fabric",
+    "ownFabricDesc": "You have fabric ready — tailor stitches to your specs",
+    "customise": "Customise My Garment",
+    "customiseDesc": "Add embroidery, artwork, sequins or prints to an existing piece",
+    "selectCityPrompt": "Please select your city above to continue"
+  },
+  "wizard": {
+    "step1": {
+      "heading": "Show Us What You're Dreaming Of",
+      "subheading": "Upload photos, videos, or screenshots of any outfit that inspires you.",
+      "uploadLabel": "Tap to upload",
+      "descriptionLabel": "Describe the look you want (optional but recommended)",
+      "descriptionPlaceholder": "e.g. I want a deep red bridal lehenga with heavy gold zari work...",
+      "nextButton": "Continue to Category & Fit →",
+      "skipLink": "Skip — I'll just describe it"
+    },
+    "step2": {
+      "genderHeading": "Who is this outfit for?",
+      "mens": "Men's Clothing",
+      "womens": "Women's Clothing",
+      "kids": "Kids / Unisex",
+      "comingSoon": "Coming Soon",
+      "categoryHeading": "What would you like made?",
+      "occasionHeading": "What's the occasion?",
+      "fitHeading": "How do you like your clothes to fit?",
+      "designHeading": "Any design preferences?",
+      "measurementsHeading": "Your measurements"
+    },
+    "step4": {
+      "heading": "Review Your Order",
+      "subheading": "Check everything below — once you pay, your brief goes live to tailors",
+      "payButton": "Pay ₹499 & Post Brief",
+      "escrowBadge": "100% Escrow Protected",
+      "outfitPreviewHeading": "See this outfit on you",
+      "outfitPreviewSubtext": "Upload a full-length photo and we'll generate an AI visualisation"
+    }
+  },
+  "dashboard": {
+    "heading": "My Orders",
+    "noOrders": "No active orders yet",
+    "noOrdersSubtext": "Start your first order to see it tracked here.",
+    "startOrder": "Start an Order →",
+    "orderStatus": "Order Status",
+    "milestones": "Order Milestones",
+    "milestonesSubtext": "Your tailor uploads proof at each stage — you approve before work continues",
+    "approve": "✓ Approve",
+    "requestChanges": "↩ Request Changes"
+  },
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "edit": "Edit →",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again.",
+    "required": "Required",
+    "optional": "Optional",
+    "recommended": "Recommended",
+    "noPreference": "No Preference",
+    "comingSoon": "Coming Soon"
+  },
+  "footer": {
+    "services": "Services",
+    "newOrder": "New Bespoke Order",
+    "alteration": "Alteration & Repair",
+    "customise": "Customise Your Garment",
+    "categories": "Categories",
+    "regional": "Regional Garments",
+    "company": "Company",
+    "forTailors": "For Tailors",
+    "faq": "FAQ",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "rights": "© 2026 Naapio. All rights reserved."
+  },
+  "citySelector": {
+    "label": "City",
+    "placeholder": "Select your city",
+    "notListed": "My city isn't listed",
+    "registerInterest": "Register interest for your city",
+    "tier1Cities": "Available Now",
+    "otherCities": "Coming Soon"
+  },
+  "languageSelector": {
+    "label": "Language"
+  },
+  "faq": {
+    "heading": "Frequently Asked Questions",
+    "subheading": "Everything you need to know about Naapio"
+  },
+  "alteration": {
+    "step1Heading": "What garment needs altering?",
+    "step2Heading": "What needs fixing?",
+    "step3Heading": "Upload Photos of Your Garment",
+    "step4Heading": "Budget & Delivery",
+    "reviewHeading": "Review Your Alteration",
+    "reviewSubheading": "Check everything below — once you pay, your brief goes live to tailors",
+    "payButton": "Pay ₹299 & Post Brief"
+  },
+  "customise": {
+    "step1Heading": "Upload Photos of Your Garment",
+    "step2Heading": "What customisation do you want?",
+    "step3Heading": "Where should the work be placed?",
+    "step4Heading": "Colour & Style Preferences",
+    "step5Heading": "Budget & Delivery",
+    "reviewHeading": "Review Your Customisation",
+    "reviewSubheading": "Check everything below — once you pay, your brief goes live to artisans",
+    "payButton": "Pay ₹299 & Post Brief"
+  },
+  "translationBanner": {
+    "comingSoon": "translation coming soon — showing English for now.",
+    "helpTranslate": "Want to help translate? contact@naapio.in"
+  }
+}

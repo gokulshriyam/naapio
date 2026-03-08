@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Upload, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -30,11 +32,11 @@ const HeroSection = () => {
               <span className="text-accent font-sans font-medium tracking-wide uppercase text-sm">India's Premier Bespoke Marketplace</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-serif font-bold text-primary-foreground leading-tight mb-6">
-              See It.<br />
-              <span className="italic text-accent">Stitch It.</span>
+              {t('hero.headline').split('.')[0]}.<br />
+              <span className="italic text-accent">{t('hero.headline').split('.')[1]?.trim() || 'Stitch It'}.</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 font-sans mb-10 max-w-lg leading-relaxed">
-              Upload your dream design, get bids from 500+ verified master tailors, and have it custom-made with escrow-protected payments.
+              {t('hero.subheadline')}
             </p>
           </motion.div>
 
@@ -51,7 +53,7 @@ const HeroSection = () => {
               className="animate-pulse-gold"
             >
               <Upload className="w-5 h-5" />
-              Upload your inspiration
+              {t('hero.primaryCta')}
             </Button>
             <Button
               variant="outline"
@@ -61,7 +63,7 @@ const HeroSection = () => {
               }}
               className="bg-primary-foreground/20 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/30 hover:border-primary-foreground/60"
             >
-              How it works
+              {t('hero.secondaryCta')}
             </Button>
           </motion.div>
 
