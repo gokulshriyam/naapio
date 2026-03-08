@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sparkles, Menu, X } from "lucide-react";
+import { Sparkles, Menu, X, User, LogOut, ShoppingBag, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -23,6 +23,45 @@ const Index = () => {
   const [loginPhone, setLoginPhone] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
   const [loginOtpSent, setLoginOtpSent] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('naapio_user'));
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const getUserData = () => {
+    try {
+      const raw = localStorage.getItem('naapio_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  };
+
+  const getInitials = () => {
+    const user = getUserData();
+    if (user?.name && user.name !== 'Customer') return user.name.charAt(0).toUpperCase();
+    if (user?.phone) return user.phone.slice(-2);
+    return 'U';
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('naapio_user');
+    setIsLoggedIn(false);
+    setShowUserMenu(false);
+    navigate('/');
+    toast.info('Logged out successfully');
+  };
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
     <div className="min-h-screen">
