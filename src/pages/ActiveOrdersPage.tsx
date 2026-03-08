@@ -437,7 +437,32 @@ const ActiveOrdersPage = () => {
     setTimeout(() => { setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' as const } : m)); }, 2000);
   };
 
-  const handleSubmitReview = () => {
+  const handleChangeRequestResponse = (messageId: string, response: 'accepted' | 'declined') => {
+    setChatMessages(prev => prev.map(m => {
+      if (m.id === messageId && m.changeRequest) {
+        return { ...m, changeRequest: { ...m.changeRequest, status: response } };
+      }
+      return m;
+    }));
+    if (response === 'accepted') {
+      const msg = chatMessages.find(m => m.id === messageId);
+      const extra = msg?.changeRequest?.amount || 0;
+      try {
+        const order = JSON.parse(localStorage.getItem('naapio_active_order') || '{}');
+        order.bidAmount = (order.bidAmount || 0) + extra;
+        order.netPayable = (order.netPayable || 0) + extra;
+        order.changeRequests = [...(order.changeRequests || []), { description: msg?.changeRequest?.description, amount: extra, acceptedAt: new Date().toISOString() }];
+        localStorage.setItem('naapio_active_order', JSON.stringify(order));
+        setActiveOrder(order);
+      } catch {}
+      toast.success(`₹${extra.toLocaleString('en-IN')} change request accepted. Payment confirmed.`);
+      // TODO: PAYMENT_INTEGRATION — trigger Razorpay for `extra` amount here
+    } else {
+      toast.info('Change request declined. Artisan has been notified.');
+    }
+  };
+
+
     const avg = (review.quality + review.communication + review.timeliness + review.value) / 4;
     const history = JSON.parse(localStorage.getItem('naapio_order_history') || '[]');
     history.push({
