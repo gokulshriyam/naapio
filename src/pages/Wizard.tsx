@@ -1072,10 +1072,27 @@ Return a JSON object with ONLY these fields, no other text:
       );
 
       const data = await response.json();
-      rawText = data.candidates?.[0]?.content?.parts
-        ?.filter((p: any) => p.text)
-        ?.map((p: any) => p.text)
-        ?.join('') || '';
+      console.log('=== GEMINI RAW DATA ===', JSON.stringify(data));
+
+      // Try multiple possible response paths
+      rawText = 
+        // Standard path
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        // Alternative path
+        data.candidates?.[0]?.content?.parts
+          ?.find((p: any) => p.text)?.text ||
+        // Fallback path
+        data.candidates?.[0]?.output ||
+        // Error path — log and return empty
+        (() => {
+          console.log('=== ALL RESPONSE PATHS FAILED ===');
+          console.log('candidates:', data.candidates);
+          console.log('promptFeedback:', data.promptFeedback);
+          console.log('error:', data.error);
+          return '';
+        })();
+
+      console.log('=== EXTRACTED rawText ===', rawText);
 
       // === FIX 2: Robust JSON Extraction ===
       let cleanText = rawText || '';
