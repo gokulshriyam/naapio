@@ -908,7 +908,7 @@ const VendorActiveOrders = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </main>
       </div>
 
       {/* Dispute Modal */}
