@@ -519,7 +519,7 @@ const ActiveOrdersPage = () => {
   const m1Valid = (() => {
     if (garmentConfig.noMeasurementNeeded) return true;
     const allFilled = garmentFields.every(f => measurements[f.field]?.trim());
-    const heightOk = !garmentConfig.heightRequired || heightValue.trim();
+    const heightOk = !garmentConfig.heightRequired || (heightUnit === 'ftin' ? (heightFt.trim() && heightIn.trim()) : heightCm.trim());
     return allFilled && heightOk && dpdp1 && dpdp2;
   })();
 
