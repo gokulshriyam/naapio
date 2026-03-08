@@ -59,6 +59,12 @@ const HeroSection = () => {
             >
               Are you an artisan? Join Naapio →
             </button>
+
+            {/* City & Language selectors */}
+            <div className="flex items-center gap-4 mt-6">
+              <CitySelector />
+              <LanguageSelector />
+            </div>
           </motion.div>
 
           {/* Right — Image collage (desktop) */}
