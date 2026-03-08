@@ -257,6 +257,13 @@ const Wizard = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Outfit Visualiser state
+  const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
+  const [generatedOutfitImage, setGeneratedOutfitImage] = useState<string>("");
+  const [visualiserLoading, setVisualiserLoading] = useState<boolean>(false);
+  const [visualiserError, setVisualiserError] = useState<string>("");
+  const [visualiserDismissed, setVisualiserDismissed] = useState<boolean>(false);
+
   const hasEmbellishment = selectedSurfaces.length > 0 &&
     !selectedSurfaces.every((s) => s === "Plain / No Embellishment" || s === "No Preference");
 
@@ -312,6 +319,132 @@ const Wizard = () => {
       toast.success("Payment confirmed! Your request is now live.");
       navigate("/dashboard");
     }, 1500);
+  };
+
+  // Outfit Visualiser helpers
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const buildOutfitPrompt = (): string => {
+    const parts: string[] = [];
+    parts.push(
+      `Generate a realistic fashion photograph of this person wearing a custom Indian outfit. ` +
+      `Maintain their exact face, skin tone, body shape, and proportions from the uploaded photo. ` +
+      `Show the complete garment from head to toe. ` +
+      `Clean neutral studio background. Photorealistic style.`
+    );
+    if (selectedCategory) {
+      parts.push(`Garment type: ${selectedCategory}${selectedSubCategory ? ` — specifically ${selectedSubCategory}` : ''}.`);
+    }
+    if (gender) {
+      parts.push(`For a ${gender.toLowerCase()} customer.`);
+    }
+    if (selectedOccasion) {
+      parts.push(`Occasion: ${selectedOccasion}.`);
+    }
+    if (selectedFit && selectedFit !== '') {
+      parts.push(`Fit: ${selectedFit}.`);
+    }
+    const designParts: string[] = [];
+    if (selectedNeckline) designParts.push(`${selectedNeckline} neckline`);
+    if (selectedSleeve) designParts.push(`${selectedSleeve} sleeves`);
+    if (designParts.length > 0) {
+      parts.push(`Design details: ${designParts.join(', ')}.`);
+    }
+    if (selectedFeel && selectedFeel !== 'No Preference') {
+      parts.push(`Fabric feel: ${selectedFeel}.`);
+    }
+    if (selectedFabricTypes && selectedFabricTypes.length > 0 && !selectedFabricTypes.includes('No preference')) {
+      parts.push(`Fabric: ${selectedFabricTypes.slice(0, 2).join(' or ')}.`);
+    }
+    if (selectedColourMood && selectedColourMood !== 'No preference') {
+      parts.push(`Colour: ${selectedColourMood}.`);
+      if (colourNote) parts.push(`Colour note: ${colourNote}.`);
+    }
+    if (
+      selectedSurfaces && selectedSurfaces.length > 0 &&
+      !selectedSurfaces.includes('Plain / No Embellishment') &&
+      !selectedSurfaces.includes('No Preference')
+    ) {
+      parts.push(`Surface embellishment: ${selectedSurfaces.slice(0, 2).join(', ')}.`);
+    }
+    parts.push(`The outfit must look like a real tailored garment — not a costume or illustration.`);
+    return parts.join(' ');
+  };
+
+  const generateOutfitVisualisation = async (file: File) => {
+    setVisualiserLoading(true);
+    setVisualiserError("");
+    setGeneratedOutfitImage("");
+    try {
+      const base64 = await fileToBase64(file);
+      const prompt = buildOutfitPrompt();
+      const apiKey = "AIzaSyAJJrSzFD4l1We-3mLIfx6P84IJtmVD40A"; // TODO: move server-side before launch
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: file.type || 'image/jpeg',
+                    data: base64
+                  }
+                },
+                { text: prompt }
+              ]
+            }],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"]
+            }
+          })
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      const data = await response.json();
+      const imagePart = data?.candidates?.[0]?.content?.parts?.find(
+        (part: any) => part.inlineData?.mimeType?.startsWith('image/')
+      );
+      if (imagePart?.inlineData?.data) {
+        setGeneratedOutfitImage(
+          `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`
+        );
+      } else {
+        throw new Error("No image in response");
+      }
+    } catch (err: any) {
+      console.error('Gemini error:', err);
+      setVisualiserError(
+        "Visualisation unavailable right now — you can still proceed with your order."
+      );
+    } finally {
+      setVisualiserLoading(false);
+    }
+  };
+
+  const handleSelfieUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Photo must be under 8 MB");
+      return;
+    }
+    setSelfiePhoto(file);
+    generateOutfitVisualisation(file);
   };
 
   const toggleFabric = (name: string) => {
@@ -1231,6 +1364,109 @@ const Wizard = () => {
               <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-8">
                 {/* LEFT COLUMN: Order Summary */}
                 <div className="space-y-4">
+
+                  {/* OUTFIT VISUALISER */}
+                  {!visualiserDismissed && (
+                    <div className="rounded-xl border border-amber-200/60 overflow-hidden" style={{ backgroundColor: '#FDF3E3' }}>
+                      <div className="p-5 relative">
+                        {/* Skip button */}
+                        <button
+                          onClick={() => setVisualiserDismissed(true)}
+                          className="absolute top-3 right-3 text-xs font-sans text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Skip →
+                        </button>
+
+                        {/* NO PHOTO YET */}
+                        {!selfiePhoto && !visualiserLoading && !generatedOutfitImage && !visualiserError && (
+                          <div>
+                            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground">NEW · OUTFIT PREVIEW</span>
+                            <h3 className="font-serif font-bold text-lg text-foreground mt-1 mb-1">See this outfit on you</h3>
+                            <p className="text-sm text-muted-foreground font-sans mb-4">
+                              Upload a full-length photo and we'll generate an AI visualisation of how your outfit could look — before you post your brief.
+                            </p>
+                            <label className="inline-block cursor-pointer">
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png"
+                                className="hidden"
+                                onChange={handleSelfieUpload}
+                              />
+                              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-sans font-semibold text-sm bg-accent text-accent-foreground shadow-md hover:bg-accent/90 transition-colors cursor-pointer">
+                                Upload Your Photo →
+                              </span>
+                            </label>
+                            <p className="text-[11px] text-muted-foreground font-sans mt-3">
+                              ✦ AI-generated style inspiration only — not an exact preview. Your tailor's work is defined by your brief.
+                            </p>
+                            <p className="text-[10px] text-muted-foreground font-sans mt-1 flex items-center gap-1">
+                              <Info className="w-3 h-3 inline" /> Your photo is sent to Google Gemini for generation only — not stored on Naapio's servers.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* LOADING STATE */}
+                        {visualiserLoading && (
+                          <div className="flex flex-col items-center justify-center py-8">
+                            <div className="w-10 h-10 border-4 border-accent/30 border-t-accent rounded-full animate-spin mb-4" />
+                            <p className="font-sans font-semibold text-foreground text-sm">Generating your outfit visualisation...</p>
+                            <p className="text-xs text-muted-foreground font-sans mt-1">Usually takes 15–20 seconds</p>
+                          </div>
+                        )}
+
+                        {/* IMAGE GENERATED */}
+                        {generatedOutfitImage && !visualiserLoading && (
+                          <div>
+                            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground">OUTFIT INSPIRATION · AI GENERATED</span>
+                            <div className="mt-3 rounded-xl overflow-hidden shadow-md">
+                              <img
+                                src={generatedOutfitImage}
+                                alt="AI-generated outfit visualisation"
+                                className="w-full max-h-[480px] md:max-h-[480px] max-h-[280px] object-contain bg-white"
+                              />
+                            </div>
+                            <p className="text-[11px] text-muted-foreground font-sans mt-3">
+                              ✦ AI-generated inspiration view. Your actual garment is defined by the brief below.
+                            </p>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 mt-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelfiePhoto(null);
+                                  setGeneratedOutfitImage("");
+                                  setVisualiserError("");
+                                }}
+                              >
+                                ↺ Try a different photo
+                              </Button>
+                              <button
+                                onClick={() => setVisualiserDismissed(true)}
+                                className="text-xs font-sans text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+                              >
+                                ✕ Hide
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ERROR STATE */}
+                        {visualiserError && !visualiserLoading && (
+                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-sm text-amber-800 font-sans">⚠️ {visualiserError}</p>
+                            <button
+                              onClick={() => {
+                                if (selfiePhoto) generateOutfitVisualisation(selfiePhoto);
+                              }}
+                              className="text-xs font-sans text-accent font-medium hover:underline mt-1"
+                            >
+                              Try again →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* ORDER TYPE */}
                   <div className="p-5 bg-card rounded-xl border border-border">
