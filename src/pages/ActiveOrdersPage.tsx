@@ -441,7 +441,10 @@ const ActiveOrdersPage = () => {
   const initialM: Record<string, string> = {};
   garmentFields.forEach(f => { initialM[f.field] = savedMeasurements[f.field] || ''; });
   const [measurements, setMeasurements] = useState<Record<string, string>>(initialM);
-  const [heightValue, setHeightValue] = useState(savedMeasurements['Height'] || '');
+  const [heightUnit, setHeightUnit] = useState<'ftin' | 'cm'>('ftin');
+  const [heightFt, setHeightFt] = useState('');
+  const [heightIn, setHeightIn] = useState('');
+  const [heightCm, setHeightCm] = useState('');
   const [dpdp1, setDpdp1] = useState(false);
   const [dpdp2, setDpdp2] = useState(false);
   const [m1Locked, setM1Locked] = useState(false);
