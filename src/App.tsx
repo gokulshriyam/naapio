@@ -17,7 +17,10 @@ import ForTailorsPage from "./pages/ForTailorsPage";
 import StartPage from "./pages/StartPage";
 import AlterationFlow from "./pages/AlterationFlow";
 import CustomiseFlow from "./pages/CustomiseFlow";
-import NotFound from "./pages/NotFound";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
 
 const queryClient = new QueryClient();
 
