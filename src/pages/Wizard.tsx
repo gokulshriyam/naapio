@@ -286,6 +286,17 @@ const Wizard = () => {
   // Share Brief
   const [briefShared, setBriefShared] = useState(false);
 
+  // Advanced Fabric Preferences
+  const [showAdvancedFabric, setShowAdvancedFabric] = useState<boolean>(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
+
+  // Exit Warning
+  const [showExitWarning, setShowExitWarning] = useState(false);
+
+  // Measurement Photo
+  const [measurementPhoto, setMeasurementPhoto] = useState<File | null>(null);
+
   // Gift / Ordering for someone else
   const [orderingFor, setOrderingFor] = useState<'self' | 'someone' | 'group' | ''>('');
   const [recipientName, setRecipientName] = useState('');
