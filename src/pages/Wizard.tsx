@@ -1240,6 +1240,8 @@ Important rules:
         // Fallback: try to extract values manually with regex
         analysis = {
           detectedGarment: extractField(rawText, 'detectedGarment'),
+          detectedSubCategory: extractField(rawText, 'detectedSubCategory') || '',
+          detectedGender: extractField(rawText, 'detectedGender') || '',
           detectedColour: extractField(rawText, 'detectedColour'),
           detectedFeel: extractField(rawText, 'detectedFeel'),
           detectedSurfaces: extractArrayField(rawText, 'detectedSurfaces'),
