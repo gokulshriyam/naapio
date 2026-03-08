@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import CitySelector from "@/components/CitySelector";
+import LanguageSelector from "@/components/LanguageSelector";
 import womensFashion from "@/assets/womens-fashion.jpg";
 import mensFashion from "@/assets/mens-fashion.jpg";
 import redLehenga from "@/assets/red-lehenga.jpg";
@@ -59,6 +61,12 @@ const HeroSection = () => {
             >
               Are you an artisan? Join Naapio →
             </button>
+
+            {/* City & Language selectors */}
+            <div className="flex items-center gap-4 mt-6">
+              <CitySelector />
+              <LanguageSelector />
+            </div>
           </motion.div>
 
           {/* Right — Image collage (desktop) */}
