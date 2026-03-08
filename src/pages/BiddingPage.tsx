@@ -296,8 +296,9 @@ const BiddingRoom = ({
   };
 
   const handleSendChat = (bidId: string) => {
-    if (!chatInput.trim()) return;
-    const rawMsg = chatInput.trim();
+    const input = chatInputs[bidId] ?? "";
+    if (!input.trim()) return;
+    const rawMsg = input.trim();
     const maskedMsg = maskContactInfo(rawMsg);
     const wasContactMasked = rawMsg !== maskedMsg;
     
@@ -305,7 +306,7 @@ const BiddingRoom = ({
       ...prev,
       [bidId]: [...(prev[bidId] || []), { text: maskedMsg, from: "you", masked: wasContactMasked }],
     }));
-    setChatInput("");
+    setChatInputs(prev => ({ ...prev, [bidId]: "" }));
     
     if (wasContactMasked) {
       toast.info("ℹ️ Contact info was hidden — share after selection");
