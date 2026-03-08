@@ -21,7 +21,7 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
-
+import VendorDashboard from "./pages/VendorDashboard";
 const queryClient = new QueryClient();
 
 const App = () => (
