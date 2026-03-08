@@ -534,7 +534,59 @@ const Wizard = () => {
     setDeliveryDate(min.toISOString().split("T")[0]);
   }, [selectedCategory, isRushOrder]);
 
-  // beforeunload warning on payment step
+  // === FIX 4: Pre-fill wizard state from photo analysis ===
+  useEffect(() => {
+    if (!photoAnalysis || !photoAnalysis.analysisComplete || photoAnalysis.analysisError) return;
+    
+    console.log('Applying pre-fills from photo analysis:', photoAnalysis);
+    
+    // Pre-fill category if detected and not already set
+    if (photoAnalysis.detectedGarment && !selectedCategory) {
+      const mappedCategory = mapDetectedToCategory(photoAnalysis.detectedGarment);
+      if (mappedCategory) {
+        setSelectedCategory(mappedCategory);
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'category']));
+        console.log('Pre-filled category:', mappedCategory);
+      }
+    }
+    
+    // Pre-fill occasion if detected and not already set
+    if (photoAnalysis.detectedOccasion && 
+        photoAnalysis.detectedOccasion !== 'Unable to determine' &&
+        !selectedOccasion) {
+      setSelectedOccasion(photoAnalysis.detectedOccasion);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'occasion']));
+      console.log('Pre-filled occasion:', photoAnalysis.detectedOccasion);
+    }
+    
+    // Pre-fill fabric feel if detected and not already set
+    if (photoAnalysis.detectedFeel && 
+        photoAnalysis.detectedFeel !== 'Unable to determine' &&
+        !selectedFeel) {
+      setSelectedFeel(photoAnalysis.detectedFeel);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'feel']));
+      console.log('Pre-filled feel:', photoAnalysis.detectedFeel);
+    }
+    
+    // Pre-fill colour mood if detected and not already set
+    if (photoAnalysis.detectedColour && !selectedColourMood) {
+      setSelectedColourMood(photoAnalysis.detectedColour);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'colour']));
+      console.log('Pre-filled colour:', photoAnalysis.detectedColour);
+    }
+    
+    // Pre-fill surfaces if detected and not already set
+    if (photoAnalysis.detectedSurfaces?.length > 0 && 
+        selectedSurfaces.length === 0) {
+      setSelectedSurfaces(photoAnalysis.detectedSurfaces);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
+      console.log('Pre-filled surfaces:', photoAnalysis.detectedSurfaces);
+    }
+  }, [photoAnalysis]);
+  // Dependency array intentionally excludes the selected* values
+  // so pre-fill only fires once when analysis completes,
+  // not every time customer changes a selection.
+
   useEffect(() => {
     if (step === 4) {
       const handler = (e: BeforeUnloadEvent) => {
