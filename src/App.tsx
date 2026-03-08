@@ -38,6 +38,9 @@ const App = () => (
             <Route path="/wizard" element={<Wizard />} />
             <Route path="/alteration" element={<AlterationFlow />} />
             <Route path="/customise" element={<CustomiseFlow />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<BiddingPage />} />
               <Route path="view-bids" element={<ViewBidsPage />} />
@@ -46,7 +49,8 @@ const App = () => (
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
-            <Route path="*" element={<NotFound />} />
+            <Route path="/404" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
       </CityProvider>
