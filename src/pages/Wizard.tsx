@@ -2057,6 +2057,35 @@ const Wizard = () => {
                     </p>
                   </div>
 
+                  {/* Rush Order badge in Budget & Delivery section */}
+                  {isRushOrder && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-100 text-amber-800">⚡ Rush Order</span>
+                    </div>
+                  )}
+
+                  {/* Share Brief on WhatsApp */}
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <h3 className="font-sans font-semibold text-foreground text-sm mb-1">Want a second opinion before you pay?</h3>
+                    <p className="text-xs text-muted-foreground font-sans mb-3">Share your brief with family or your stylist on WhatsApp</p>
+                    {!briefShared ? (
+                      <button
+                        onClick={() => { window.open(`https://wa.me/?text=${buildShareText()}`, '_blank'); setBriefShared(true); }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-sans font-semibold text-sm text-white transition-colors"
+                        style={{ backgroundColor: '#25D366' }}
+                      >
+                        📲 Share on WhatsApp
+                      </button>
+                    ) : (
+                      <div>
+                        <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-sans font-semibold text-sm border border-green-500 text-green-700 bg-green-50">
+                          ✓ Brief shared — ready to pay?
+                        </button>
+                        <p className="text-xs text-muted-foreground font-sans mt-2">Shared to WhatsApp. Come back when you're ready.</p>
+                      </div>
+                    )}
+                  </div>
+
                   <p className="text-xs text-muted-foreground font-sans mt-2">
                     Tap any Edit → link above to update a section without losing your other answers.
                   </p>
