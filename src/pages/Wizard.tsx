@@ -228,6 +228,7 @@ const quickBrackets = [
   { label: "₹35K – ₹75K", min: 35000, max: 75000 },
   { label: "₹75K – ₹1.5L", min: 75000, max: 150000 },
   { label: "₹1.5L – ₹3L", min: 150000, max: 300000 },
+  { label: "₹3L – ₹5L", min: 300000, max: 500000 },
 ];
 
 const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -247,7 +248,348 @@ const ownFabricTypeOptions = ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet"
 const ownFabricWidthOptions = ["36 inches (narrow)", "44 inches (standard)", "54 inches (wide)", "I don't know"];
 const ownFabricConditionOptions = ["New / Unwashed", "Washed / Pre-treated", "Vintage / Heirloom", "Recycled (from another garment)"];
 
-// Helper functions for robust JSON extraction from Gemini responses
+// ═══ MEASUREMENT CONFIG SYSTEM (Naapio Wizard Spec v2.0) ═══
+type MeasurementField = {
+  field: string;
+  description: string;
+  tip: string;
+  videoUrl: string | null;
+};
+
+type GarmentMeasurementConfig = {
+  supportsStandard: boolean;
+  heightRequired: boolean;
+  noStitching?: boolean;
+  noStitchingMessage?: string;
+  fields: MeasurementField[];
+};
+
+const HEIGHT_FIELD: MeasurementField = {
+  field: 'Height',
+  description: 'Your full standing height',
+  tip: 'Stand straight against a wall. Mark the top of your head. Measure from floor to that mark. Enter in feet+inches (e.g. 5\'6") or cm (e.g. 168cm).',
+  videoUrl: null,
+};
+
+const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
+  'Saree (fabric only)': {
+    supportsStandard: false, heightRequired: false,
+    noStitching: true,
+    noStitchingMessage: "Saree is unstitched fabric — no measurements needed. If you're adding a blouse, please select 'Saree Blouse' as your category.",
+    fields: [],
+  },
+  'Saree Blouse': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Bust', description: 'Fullest part of chest', tip: 'Measure around the fullest part of your chest, keeping the tape parallel to the floor.', videoUrl: null },
+      { field: 'Under-bust', description: 'Just below the bust', tip: 'Measure just below your bust where a bra band naturally sits.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist (for blouse waist seam)', tip: 'Measure your narrowest natural waist point.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Measure across your upper back from one shoulder edge to the other.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around the arm opening', tip: 'Measure around the armhole loosely — you need room for movement.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder point to desired sleeve end', tip: 'From your shoulder point to where you want the sleeve to end.', videoUrl: null },
+      { field: 'Sleeve end circumference', description: 'Around wrist or sleeve opening', tip: 'Around your wrist bone, or the opening size you prefer.', videoUrl: null },
+      { field: 'Blouse length — front', description: 'Front neckline to blouse hem', tip: 'From the centre front neckline down to where you want the blouse to end.', videoUrl: null },
+      { field: 'Blouse length — back', description: 'Back neckline to blouse hem', tip: 'From the centre back neckline down to the blouse hem.', videoUrl: null },
+      { field: 'Front neck depth', description: 'Depth of front neckline opening', tip: 'From the shoulder seam down to the lowest point of your front neckline.', videoUrl: null },
+      { field: 'Back neck depth', description: 'Depth of back neckline opening', tip: 'From the shoulder seam down to the lowest point of your back neckline.', videoUrl: null },
+    ],
+  },
+  'Kurti': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest measurement', tip: 'Around the fullest part of your chest, tape parallel to floor.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest part of your natural waist.', videoUrl: null },
+      { field: 'Hip', description: 'Fullest hips (if kurti is hip-length or longer)', tip: 'Around the fullest part of your hips, approx 8 inches below your waist.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Across your upper back from shoulder edge to shoulder edge.', videoUrl: null },
+      { field: 'Kurti length', description: 'Highest shoulder point to hem', tip: 'From the highest point of your shoulder straight down to where you want the kurti to end.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder point to desired sleeve end', tip: 'From shoulder point to desired sleeve length.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around the arm opening', tip: 'Around the armhole loosely for ease of movement.', videoUrl: null },
+    ],
+  },
+  'Salwar Kameez': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest', tip: 'Around fullest chest, tape parallel to floor.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest natural waist.', videoUrl: null },
+      { field: 'Hip', description: 'Fullest hips', tip: 'Fullest hip measurement.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Across upper back.', videoUrl: null },
+      { field: 'Kameez length', description: 'Shoulder to hem', tip: 'From shoulder to desired kameez length.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'From shoulder to desired sleeve end.', videoUrl: null },
+      { field: 'Sleeve width', description: 'Around upper arm (bicep area)', tip: 'Around the fullest part of your upper arm.', videoUrl: null },
+      { field: 'Neck depth', description: 'Front neckline depth', tip: 'From shoulder seam to lowest front neckline point.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole — relaxed, not tight.', videoUrl: null },
+    ],
+  },
+  'Salwar / Churidar / Pyjama': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Waist', description: 'Where waistband sits', tip: 'Around your waist where the waistband will sit.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hip point', tip: 'Fullest part of hips, usually 8 inches below waist.', videoUrl: null },
+      { field: 'Thigh circumference', description: 'Around fullest thigh', tip: 'Around the fullest part of your thigh when standing.', videoUrl: null },
+      { field: 'Knee circumference', description: 'Around knee', tip: 'Around the knee when standing straight.', videoUrl: null },
+      { field: 'Calf circumference', description: 'Around fullest calf', tip: 'Around the fullest part of your calf.', videoUrl: null },
+      { field: 'Ankle / hem opening', description: 'Around ankle or desired opening', tip: 'Around ankle, or the opening size you want at the hem.', videoUrl: null },
+      { field: 'Inseam length', description: 'Crotch to ankle (inside leg)', tip: 'From crotch seam down the inside of your leg to your ankle bone.', videoUrl: null },
+      { field: 'Outseam length', description: 'Waistband to ankle (outside leg)', tip: 'From the top of the waistband down the outside of your leg to ankle.', videoUrl: null },
+      { field: 'Rise', description: 'Waistband to crotch seam', tip: 'From the top of your waistband down to your crotch point. Sit on a hard chair — measure from waist to seat.', videoUrl: null },
+    ],
+  },
+  'Anarkali': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest', tip: 'Around fullest chest.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
+      { field: 'Anarkali length', description: 'Shoulder to desired hem', tip: 'From highest shoulder point to desired hem.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole, relaxed.', videoUrl: null },
+      { field: 'Neck depth', description: 'Front neckline depth', tip: 'Shoulder seam to lowest front neckline point.', videoUrl: null },
+    ],
+  },
+  'Lehenga': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest (for choli)', tip: 'Around fullest chest for the blouse.', videoUrl: null },
+      { field: 'Under-bust', description: 'Below bust (for choli)', tip: 'Just below bust where bra band sits.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hip measurement.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder (for choli)', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening (for choli)', tip: 'Around armhole, relaxed.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to sleeve end (for choli)', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
+      { field: 'Sleeve end circumference', description: 'Around wrist / sleeve opening', tip: 'Around wrist or sleeve end opening.', videoUrl: null },
+      { field: 'Blouse length — front', description: 'Front neckline to choli hem', tip: 'Front neckline to where choli ends.', videoUrl: null },
+      { field: 'Blouse length — back', description: 'Back neckline to choli hem', tip: 'Back neckline to choli hem.', videoUrl: null },
+      { field: 'Front neck depth', description: 'Front neckline depth', tip: 'Shoulder seam to lowest front neckline point.', videoUrl: null },
+      { field: 'Back neck depth', description: 'Back neckline depth', tip: 'Shoulder seam to lowest back neckline.', videoUrl: null },
+      { field: 'Skirt length (waist to floor)', description: 'Waist to floor for skirt', tip: 'From waistband to floor — wear your heels when measuring if applicable.', videoUrl: null },
+    ],
+  },
+  'Bridal Lehenga': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest (for choli)', tip: 'Around fullest chest.', videoUrl: null },
+      { field: 'Under-bust', description: 'Below bust', tip: 'Below bust, bra band area.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
+      { field: 'Sleeve end circumference', description: 'Around wrist / sleeve end', tip: 'Around wrist or sleeve end.', videoUrl: null },
+      { field: 'Blouse length — front', description: 'Front neckline to choli hem', tip: 'Front neckline to choli hem.', videoUrl: null },
+      { field: 'Blouse length — back', description: 'Back neckline to choli hem', tip: 'Back neckline to choli hem.', videoUrl: null },
+      { field: 'Front neck depth', description: 'Front neckline depth', tip: 'Shoulder seam to lowest front neckline.', videoUrl: null },
+      { field: 'Back neck depth', description: 'Back neckline depth', tip: 'Shoulder seam to lowest back neckline.', videoUrl: null },
+      { field: 'Skirt length (waist to floor)', description: 'Waist to floor', tip: 'Waistband to floor, wearing heels if applicable.', videoUrl: null },
+      { field: 'Heel height', description: 'Height of heels you will wear', tip: 'Measure height of the specific heels you plan to wear on the day. This calibrates the skirt length.', videoUrl: null },
+    ],
+  },
+  'Chaniya Choli': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest (for choli)', tip: 'Fullest chest.', videoUrl: null },
+      { field: 'Under-bust', description: 'Below bust (for choli)', tip: 'Below bust.', videoUrl: null },
+      { field: 'Waist', description: 'Waist for chaniya waistband', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
+      { field: 'Chaniya length', description: 'Waist to desired hem', tip: 'From waistband to desired hem.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder (choli)', tip: 'Across back.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Armhole circumference, relaxed.', videoUrl: null },
+      { field: 'Blouse length — back', description: 'Back neckline to choli hem', tip: 'Back neckline to choli hem.', videoUrl: null },
+    ],
+  },
+  'Nauvari / 9-Yard Saree': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
+      { field: 'Length (waist to floor)', description: 'Waist to floor', tip: 'From natural waist to floor.', videoUrl: null },
+    ],
+  },
+  'Gown': {
+    supportsStandard: true, heightRequired: true,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest', tip: 'Fullest chest measurement.', videoUrl: null },
+      { field: 'Under-bust', description: 'Below bust', tip: 'Below bust.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
+      { field: 'Gown length', description: 'Shoulder to floor', tip: 'From shoulder to floor — wear heels when measuring.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole.', videoUrl: null },
+      { field: 'Heel height', description: 'Heel height for length calibration', tip: 'Height of heels you will wear with this gown.', videoUrl: null },
+    ],
+  },
+  'Mermaid / Fishtail Gown': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Bust', description: 'Fullest chest', tip: 'Fullest chest.', videoUrl: null },
+      { field: 'Under-bust', description: 'Below bust', tip: 'Below bust.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
+      { field: 'Thigh circumference', description: 'Fullest thigh', tip: 'Around fullest thigh.', videoUrl: null },
+      { field: 'Knee circumference', description: 'Around knee', tip: 'Around the knee.', videoUrl: null },
+      { field: 'Calf circumference', description: 'Around fullest calf', tip: 'Around the fullest calf.', videoUrl: null },
+      { field: 'Ankle / flare opening', description: 'Ankle or desired flare start', tip: 'Around ankle, or where you want the fishtail to start.', videoUrl: null },
+      { field: 'Total length', description: 'Shoulder to floor', tip: 'Shoulder to floor, wearing heels.', videoUrl: null },
+      { field: 'Heel height', description: 'Heel height for calibration', tip: 'Height of heels to be worn.', videoUrl: null },
+    ],
+  },
+  'Kurta': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Chest', description: 'Fullest chest', tip: 'Around fullest chest.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
+      { field: 'Kurta length', description: 'Shoulder to desired hem', tip: 'From highest shoulder to desired hem.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'From shoulder to wrist, arm slightly bent.', videoUrl: null },
+      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole.', videoUrl: null },
+      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
+    ],
+  },
+  'Sherwani': {
+    supportsStandard: false, heightRequired: true,
+    fields: [
+      { field: 'Chest — inhaled', description: 'Chest at full breath in', tip: 'Measure around fullest chest while breathing in. This ensures enough room.', videoUrl: null },
+      { field: 'Chest — relaxed', description: 'Chest at rest', tip: 'Measure around chest while breathing normally, relaxed.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest hips/seat', tip: 'Fullest seat measurement.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
+      { field: 'Sherwani length', description: 'Shoulder to desired hem', tip: 'From highest shoulder to desired hem length.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist, arm slightly bent.', videoUrl: null },
+      { field: 'Bicep circumference', description: 'Around fullest bicep', tip: 'Around the fullest part of your upper arm.', videoUrl: null },
+      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
+      { field: 'Trouser waist', description: 'Waist for churidar/trouser', tip: 'Where the trouser waistband sits.', videoUrl: null },
+      { field: 'Trouser hip / seat', description: 'Fullest hip for trousers', tip: 'Fullest seat for trouser fit.', videoUrl: null },
+      { field: 'Thigh circumference', description: 'Fullest thigh', tip: 'Around fullest thigh.', videoUrl: null },
+      { field: 'Inseam length', description: 'Crotch to ankle (inside)', tip: 'Inside leg from crotch to ankle.', videoUrl: null },
+      { field: 'Outseam length', description: 'Waist to ankle (outside)', tip: 'Outside leg from waist to ankle.', videoUrl: null },
+      { field: 'Ankle / churidar hem', description: 'Around ankle', tip: 'Around ankle bone.', videoUrl: null },
+    ],
+  },
+  'Bandhgala': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Chest — inhaled', description: 'Chest at full breath', tip: 'Fullest chest breathing in.', videoUrl: null },
+      { field: 'Chest — relaxed', description: 'Chest at rest', tip: 'Chest relaxed.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest seat', tip: 'Fullest seat.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
+      { field: 'Jacket length', description: 'Shoulder to hem', tip: 'Shoulder to desired hem.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist.', videoUrl: null },
+      { field: 'Bicep circumference', description: 'Around fullest bicep', tip: 'Around fullest upper arm.', videoUrl: null },
+      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
+    ],
+  },
+  'Suit / Blazer': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Chest — inhaled', description: 'Chest at full breath', tip: 'Fullest chest breathing in — for proper jacket ease.', videoUrl: null },
+      { field: 'Chest — relaxed', description: 'Chest at rest', tip: 'Chest breathing normally.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest seat', tip: 'Fullest seat.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
+      { field: 'Jacket length', description: 'Shoulder to hem', tip: 'Centre back from neckline to desired hem.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist bone.', videoUrl: null },
+      { field: 'Bicep circumference', description: 'Around fullest bicep', tip: 'Around fullest upper arm.', videoUrl: null },
+      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
+    ],
+  },
+  'Trouser / Chinos / Western Trouser': {
+    supportsStandard: false, heightRequired: false,
+    fields: [
+      { field: 'Waist', description: 'Where waistband sits', tip: 'Around your waist where the trouser waistband will sit.', videoUrl: null },
+      { field: 'Hip / Seat', description: 'Fullest seat (approx 8" below waist)', tip: 'Around the fullest part of your seat, usually 8 inches below the waist.', videoUrl: null },
+      { field: 'Thigh circumference', description: 'Around fullest thigh', tip: 'Around the fullest part of your thigh when standing normally.', videoUrl: null },
+      { field: 'Knee circumference', description: 'Around knee', tip: 'Around the knee, standing straight.', videoUrl: null },
+      { field: 'Calf circumference', description: 'Around fullest calf', tip: 'Around the fullest part of your calf.', videoUrl: null },
+      { field: 'Ankle / hem opening', description: 'Desired trouser opening', tip: 'How wide you want the trouser opening at the ankle. Standard trouser: 14–16 inches.', videoUrl: null },
+      { field: 'Inseam length', description: 'Crotch to ankle (inside leg)', tip: 'From your crotch seam, down the inside of your leg to your ankle bone.', videoUrl: null },
+      { field: 'Outseam length', description: 'Waistband to ankle (outside leg)', tip: 'From the top of the waistband down the outside of your leg to ankle bone.', videoUrl: null },
+      { field: 'Rise', description: 'Waistband to crotch seam', tip: 'Sit on a hard flat chair. Measure from waist to the seat surface. This is your rise.', videoUrl: null },
+    ],
+  },
+  'Formal Shirt': {
+    supportsStandard: true, heightRequired: false,
+    fields: [
+      { field: 'Chest', description: 'Fullest chest', tip: 'Around fullest chest over undergarments.', videoUrl: null },
+      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
+      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
+      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist, arm slightly bent.', videoUrl: null },
+      { field: 'Collar circumference', description: 'Around base of neck', tip: 'Around the base of your neck. Add 0.5 inch for comfort.', videoUrl: null },
+      { field: 'Shirt length', description: 'Back neckline to hem', tip: 'From back neckline to desired shirt length.', videoUrl: null },
+      { field: 'Wrist circumference', description: 'Around wrist for cuff', tip: 'Around wrist bone.', videoUrl: null },
+    ],
+  },
+  'Veshti / Mundu': {
+    supportsStandard: false, heightRequired: false,
+    noStitching: true,
+    noStitchingMessage: "Standard fabric dimensions apply. No body measurements needed. Mention any specific draping style preference in your brief.",
+    fields: [],
+  },
+  'Dhoti / Panche': {
+    supportsStandard: false, heightRequired: false,
+    noStitching: true,
+    noStitchingMessage: "Standard fabric dimensions apply. No body measurements needed.",
+    fields: [],
+  },
+};
+
+const resolveGarmentMeasurementConfig = (
+  category: string,
+  subCategory?: string
+): GarmentMeasurementConfig => {
+  if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
+  if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
+  return MEASUREMENT_CONFIG['Kurti'];
+};
+
+const WOMEN_SIZES = [
+  { size: 'XS', bust: '31–32', waist: '23–24', hip: '33–34', eu: '32', us: '0', uk: '4' },
+  { size: 'S',  bust: '33–34', waist: '25–26', hip: '35–36', eu: '34', us: '2', uk: '6' },
+  { size: 'M',  bust: '35–36', waist: '27–28', hip: '37–38', eu: '36', us: '4', uk: '8' },
+  { size: 'L',  bust: '37–39', waist: '29–31', hip: '39–41', eu: '38', us: '6', uk: '10' },
+  { size: 'XL', bust: '40–42', waist: '32–34', hip: '42–44', eu: '40', us: '8', uk: '12' },
+  { size: 'XXL',bust: '43–45', waist: '35–37', hip: '45–47', eu: '42', us: '10', uk: '14' },
+  { size: 'XXXL',bust:'46–48', waist: '38–40', hip: '48–50', eu: '44', us: '12', uk: '16' },
+  { size: '4XL', bust:'49–51', waist: '41–43', hip: '51–53', eu: '46', us: '14', uk: '18' },
+];
+
+const MEN_SIZES = [
+  { size: 'XS',   chest: '34–35', waist: '28–29', shoulder: '16', eu: '44', usuk: '34' },
+  { size: 'S',    chest: '36–37', waist: '30–31', shoulder: '17', eu: '46', usuk: '36' },
+  { size: 'M',    chest: '38–39', waist: '32–33', shoulder: '18', eu: '48', usuk: '38' },
+  { size: 'L',    chest: '40–41', waist: '34–35', shoulder: '19', eu: '50', usuk: '40' },
+  { size: 'XL',   chest: '42–43', waist: '36–37', shoulder: '20', eu: '52', usuk: '42' },
+  { size: 'XXL',  chest: '44–45', waist: '38–39', shoulder: '21', eu: '54', usuk: '44' },
+  { size: 'XXXL', chest: '46–48', waist: '40–42', shoulder: '22', eu: '56', usuk: '46' },
+  { size: '4XL',  chest: '49–51', waist: '43–45', shoulder: '23', eu: '58', usuk: '48' },
+];
+
+// Auto-fill helper: map standard size to measurement field values
+const autoFillFromStandardSize = (
+  sizeRow: any,
+  gender: 'men' | 'women',
+  fields: MeasurementField[]
+): Record<string, string> => {
+  const filled: Record<string, string> = {};
+  const getFirstNum = (range: string) => range?.split('–')[0]?.replace(/[^\d.]/g, '') || '';
+  
+  fields.forEach(f => {
+    const fl = f.field.toLowerCase();
+    if (gender === 'women') {
+      if (fl.includes('bust') || fl.includes('chest')) filled[f.field] = getFirstNum(sizeRow.bust);
+      else if (fl.includes('waist')) filled[f.field] = getFirstNum(sizeRow.waist);
+      else if (fl.includes('hip') || fl.includes('seat')) filled[f.field] = getFirstNum(sizeRow.hip);
+    } else {
+      if (fl.includes('chest')) filled[f.field] = getFirstNum(sizeRow.chest);
+      else if (fl.includes('waist')) filled[f.field] = getFirstNum(sizeRow.waist);
+      else if (fl.includes('shoulder')) filled[f.field] = getFirstNum(sizeRow.shoulder);
+    }
+  });
+  return filled;
+};
+
+// Helper function for robust JSON extraction from Gemini responses
 const extractField = (text: string, field: string): string => {
   const match = text.match(
     new RegExp(`"${field}"\\s*:\\s*"([^"]+)"`)
@@ -459,6 +801,18 @@ const Wizard = () => {
 
   // Step transition
   const [stepTransitioning, setStepTransitioning] = useState(false);
+
+  // Measurement tab & tip modal state
+  const [measurementTab, setMeasurementTab] = useState<'standard' | 'custom' | 'later'>('custom');
+  const [activeTip, setActiveTip] = useState<MeasurementField | null>(null);
+  const [heightFeet, setHeightFeet] = useState('');
+  const [heightInches, setHeightInches] = useState('');
+  const [heightCm, setHeightCm] = useState('');
+  const [heightUnit, setHeightUnit] = useState<'ftin' | 'cm'>('ftin');
+  const [selectedStandardSize, setSelectedStandardSize] = useState('');
+  const [autoFilledFromSize, setAutoFilledFromSize] = useState('');
+  const [darziCardPhoto, setDarziCardPhoto] = useState<File | null>(null);
+  const [measureLaterConsent, setMeasureLaterConsent] = useState(false);
 
   // Measurement Photo
   const [measurementPhoto, setMeasurementPhoto] = useState<File | null>(null);
@@ -1002,7 +1356,18 @@ const Wizard = () => {
         if (isBlouseCategory) return !!blouseFrontNeck && !!blouseBackNeck && !!blouseSleeveStyle;
         return true;
       }
-      if (step2Phase === "measurements") return consent1 && consent2;
+      if (step2Phase === "measurements") {
+        const gc = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
+        if (gc.noStitching) return true;
+        if (measurementTab === 'later') return measureLaterConsent;
+        if (measurementTab === 'standard') return !!selectedStandardSize && consent1 && consent2;
+        // custom tab: all fields filled + consents
+        const allFilled = gc.fields.every(f => {
+          if (f.field.toLowerCase().includes('heel')) return true; // optional
+          return !!measurements[f.field] && Number(measurements[f.field]) > 0;
+        });
+        return allFilled && consent1 && consent2;
+      }
       return false;
     }
     if (step === 3) {
@@ -1074,24 +1439,16 @@ const Wizard = () => {
         ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
         timestamp: new Date().toISOString()
       }));
-      // Save measurements for reorder
-      if (measurementType === 'custom' && Object.keys(measurements).some(k => measurements[k])) {
-        localStorage.setItem('naapio_measurements', JSON.stringify({
-          savedAt: new Date().toISOString(),
-          garment: selectedCategory,
-          measurements,
-          standardSize,
-          sizeRegion,
-        }));
-      } else if (measurementType === 'standard') {
-        localStorage.setItem('naapio_measurements', JSON.stringify({
-          savedAt: new Date().toISOString(),
-          garment: selectedCategory,
-          measurements: {},
-          standardSize,
-          sizeRegion,
-        }));
-      }
+      // Save measurements
+      localStorage.setItem('naapio_measurements', JSON.stringify({
+        savedAt: new Date().toISOString(),
+        garment: selectedSubCategory || selectedCategory,
+        measurementType: measurementTab,
+        selectedStandardSize: selectedStandardSize || null,
+        measurements: { ...measurements },
+        heightCm: heightUnit === 'cm' ? Number(heightCm) || null : ((Number(heightFeet) || 0) * 30.48 + (Number(heightInches) || 0) * 2.54) || null,
+        source: 'wizard_step_2e',
+      }));
       localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);
@@ -2720,79 +3077,41 @@ Important rules:
               )}
 
               {/* SUB-PHASE: MEASUREMENTS */}
-              {step2Phase === "measurements" && (
-                <div>
-                  {/* Measurement Guide */}
-                  <div className="mb-6">
-                    <button
-                      onClick={() => setMeasureGuideOpen(!measureGuideOpen)}
-                      className="font-sans text-sm font-medium text-accent hover:underline"
-                    >
-                      📏 How to take your measurements {measureGuideOpen ? "↑" : "→"}
-                    </button>
-                    {measureGuideOpen && (
-                      <div className="mt-3 p-5 bg-card rounded-xl border border-border">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                          {[
-                            { title: "Bust / Chest", tip: "Measure around the fullest part of your chest, keeping the tape parallel to the floor." },
-                            { title: "Waist", tip: "Measure around your natural waist — the narrowest part of your torso, usually 2–3 inches above your navel." },
-                            { title: "Hips", tip: "Measure around the fullest part of your hips and seat, about 7–9 inches below your natural waist." },
-                            { title: "Height", tip: "Stand straight without shoes. Measure from the top of your head to the floor." },
-                            { title: "Shoulder Width", tip: "Measure from the edge of one shoulder to the other across your back." },
-                            { title: "Sleeve Length", tip: "From the shoulder edge, down the outside of your arm to your wrist with arm slightly bent." },
-                          ].map((item) => (
-                            <div key={item.title}>
-                              <p className="font-sans text-sm font-semibold text-foreground">{item.title}</p>
-                              <p className="font-sans text-xs text-muted-foreground mt-0.5">{item.tip}</p>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground font-sans mb-3">
-                          📌 Tip: Ask someone to help measure you — self-measurements are often inaccurate. Your tailor will confirm all measurements at Milestone 1 before cutting any fabric.
-                        </p>
-                        <button
-                          onClick={() => setMeasureGuideOpen(false)}
-                          className="text-xs text-accent font-sans hover:underline"
-                        >
-                          Got it — close guide ↑
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              {step2Phase === "measurements" && (() => {
+                const garmentConfig = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
+                const garmentLabel = selectedSubCategory || selectedCategory;
+                const garmentFields = garmentConfig.fields;
+                const defaultTab = garmentConfig.supportsStandard ? 'standard' : 'custom';
+                
+                // Pre-fill from localStorage
+                const savedMeasData = (() => {
+                  try { return JSON.parse(localStorage.getItem('naapio_measurements') || '{}'); } catch { return {}; }
+                })();
+                const hasPrefill = savedMeasData.measurements && Object.keys(savedMeasData.measurements).length > 0;
 
-                {/* Saved measurements card for reorder */}
-                {isReorder && measurementType === 'saved' && (() => {
-                  const savedMeasurements = localStorage.getItem("naapio_measurements");
-                  if (!savedMeasurements) return null;
-                  const parsed = JSON.parse(savedMeasurements);
+                // No-stitching shortcut
+                if (garmentConfig.noStitching) {
                   return (
-                    <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <span className="text-xl">📏</span>
-                        <div className="flex-1">
-                          <p className="font-sans font-semibold text-foreground text-sm">Using your saved measurements</p>
-                          <p className="text-xs text-muted-foreground font-sans mt-0.5">From your previous order {reorderFrom}</p>
-                          {parsed.standardSize && (
-                            <p className="text-xs text-foreground font-sans mt-1">Size: {parsed.standardSize} ({parsed.sizeRegion})</p>
-                          )}
-                          <div className="flex gap-2 mt-2">
-                            <Button size="sm" variant="default" onClick={() => { /* use as-is */ }}>Use these measurements ✓</Button>
-                            <Button size="sm" variant="outline" onClick={() => setMeasurementType('custom')}>Update measurements →</Button>
-                          </div>
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements for {garmentLabel}</h2>
+                      <div className="p-5 bg-teal-50 border border-teal-200 rounded-xl mt-4">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">ℹ️</span>
+                          <p className="font-sans text-sm text-foreground">{garmentConfig.noStitchingMessage}</p>
                         </div>
                       </div>
                     </div>
                   );
-                })()}
+                }
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                const sizeTable = gender === 'women' ? WOMEN_SIZES : MEN_SIZES;
+                
+                return (
                   <div>
-                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements</h2>
-                    <p className="text-muted-foreground font-sans mb-6">
-                      For <span className="font-semibold text-foreground">{gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}</span>
-                    </p>
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements for {garmentLabel}</h2>
+                    <p className="text-muted-foreground font-sans mb-6">All measurements in inches unless noted.</p>
 
-                    {/* Gift order: measurement request option */}
+                    {/* Gift order measurement request */}
                     {giftOrder && recipientPhone && (
                       <div className="mb-4 p-4 bg-teal-50 border border-teal-200 rounded-xl">
                         <div className="flex items-start gap-3">
@@ -2803,142 +3122,346 @@ Important rules:
                             <Button size="sm" variant="outline" className="mt-2" onClick={() => toast.success(`Measurement request will be sent to ${recipientPhone} after you post your brief.`)}>
                               Send Measurement Request →
                             </Button>
-                            {/* TODO: API_INTEGRATION_POINT — POST measurement request to recipientPhone via WhatsApp Business API */}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {(["standard", "custom", "later", "photo"] as const).map((t) => (
+                    {/* THREE-TAB LAYOUT */}
+                    <div className="flex gap-2 mb-6">
+                      {garmentConfig.supportsStandard && (
                         <button
-                          key={t}
-                          onClick={() => { if (t === "photo") { setMeasurementType("custom"); setMeasurementPhoto(null); } else { setMeasurementType(t); } }}
-                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[48px] ${
-                            (t === "photo" ? !!measurementPhoto : measurementType === t && !measurementPhoto)
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-card border border-border text-foreground hover:bg-muted"
+                          onClick={() => setMeasurementTab('standard')}
+                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[44px] ${
+                            measurementTab === 'standard' ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"
                           }`}
                         >
-                          {t === "photo" ? "📷 Upload Measurement Card"
-                            : t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later")
-                            : t.charAt(0).toUpperCase() + t.slice(1)}
+                          📐 Standard Size
                         </button>
-                      ))}
+                      )}
+                      <button
+                        onClick={() => setMeasurementTab('custom')}
+                        className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[44px] ${
+                          measurementTab === 'custom' ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        ✏️ Custom
+                      </button>
+                      <button
+                        onClick={() => setMeasurementTab('later')}
+                        className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[44px] ${
+                          measurementTab === 'later' ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        ⏱ Provide Later
+                      </button>
                     </div>
 
-                    {/* Measurement Photo Upload */}
-                    {measurementPhoto !== undefined && (
-                      <div className="mb-6">
-                        <label
-                          className="block p-4 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 cursor-pointer transition-all"
-                        >
-                          {measurementPhoto ? (
-                            <div className="flex items-center gap-3">
-                              <img src={URL.createObjectURL(measurementPhoto)} alt="Measurement card" className="w-16 h-16 rounded-lg object-cover border border-border" />
-                              <div>
-                                <p className="font-sans text-sm font-medium text-foreground">Measurement card uploaded</p>
-                                <button onClick={(e) => { e.preventDefault(); setMeasurementPhoto(null); }} className="text-xs text-accent font-sans hover:underline">Remove</button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="text-center py-2">
-                              <p className="font-sans text-sm font-medium text-foreground mb-1">📷 Upload your darzi card / measurement slip</p>
-                              <p className="text-xs text-muted-foreground font-sans">Photo of your tailor's measurement card, notebook, or any written measurements</p>
-                            </div>
-                          )}
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png"
-                            className="hidden"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0] || null;
-                              if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
-                              setMeasurementPhoto(f);
-                            }}
-                          />
-                        </label>
-                        {measurementPhoto && (
-                          <p className="text-xs text-muted-foreground font-sans mt-2">
-                            Your tailor will read your measurements from this photo. If any values are unclear, they'll ask during Milestone 1.
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {measurementType === "standard" && (
+                    {/* ── STANDARD TAB ── */}
+                    {measurementTab === 'standard' && garmentConfig.supportsStandard && (
                       <div className="space-y-4">
-                        <div className="flex gap-2 mb-3">
-                          {["UK", "US", "EU"].map((r) => (
-                            <button key={r} onClick={() => setSizeRegion(r)} className={`px-3 py-1.5 rounded-md text-xs font-sans font-medium ${sizeRegion === r ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>{r}</button>
-                          ))}
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm font-sans">
+                            <thead>
+                              <tr className="border-b border-border">
+                                <th className="py-2 px-3 text-left text-muted-foreground font-medium">Size</th>
+                                {gender === 'women' ? (
+                                  <>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Bust</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Waist</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Hip</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">EU</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">US</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">UK</th>
+                                  </>
+                                ) : (
+                                  <>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Chest</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Waist</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Shoulder</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">EU</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">US/UK</th>
+                                  </>
+                                )}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sizeTable.map((row: any) => {
+                                const isSelected = selectedStandardSize === row.size;
+                                return (
+                                  <tr
+                                    key={row.size}
+                                    onClick={() => {
+                                      setSelectedStandardSize(row.size);
+                                      const filled = autoFillFromStandardSize(row, gender, garmentFields);
+                                      setMeasurements(prev => ({ ...prev, ...filled }));
+                                      setAutoFilledFromSize(row.size);
+                                      setMeasurementTab('custom');
+                                    }}
+                                    className={`cursor-pointer transition-colors border-b border-border ${
+                                      isSelected ? "bg-accent/20 font-semibold" : "hover:bg-muted/50"
+                                    }`}
+                                  >
+                                    <td className="py-2.5 px-3 font-semibold">{row.size}</td>
+                                    {gender === 'women' ? (
+                                      <>
+                                        <td className="py-2.5 px-3">{row.bust}"</td>
+                                        <td className="py-2.5 px-3">{row.waist}"</td>
+                                        <td className="py-2.5 px-3">{row.hip}"</td>
+                                        <td className="py-2.5 px-3">{row.eu}</td>
+                                        <td className="py-2.5 px-3">{row.us}</td>
+                                        <td className="py-2.5 px-3">{row.uk}</td>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <td className="py-2.5 px-3">{row.chest}"</td>
+                                        <td className="py-2.5 px-3">{row.waist}"</td>
+                                        <td className="py-2.5 px-3">{row.shoulder}"</td>
+                                        <td className="py-2.5 px-3">{row.eu}</td>
+                                        <td className="py-2.5 px-3">{row.usuk}</td>
+                                      </>
+                                    )}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((s) => (
-                            <button key={s} onClick={() => setStandardSize(s)} className={`w-14 h-14 rounded-xl font-sans font-medium text-sm transition-all ${standardSize === s ? "bg-accent text-accent-foreground" : "bg-card border border-border text-foreground hover:border-accent/30"}`}>{s}</button>
-                          ))}
-                        </div>
+                        <p className="text-xs text-muted-foreground font-sans">
+                          📏 Clicking a row auto-fills custom measurements as a starting point — you can review and adjust.
+                        </p>
+                        <p className="text-xs text-muted-foreground font-sans italic">
+                          Measurements shown are in inches. Standard sizes are a reference — your artisan works to the exact custom measurements you confirm.
+                        </p>
                       </div>
                     )}
 
-                    {measurementType === "custom" && (
-                      <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                        {measurementFields.map((field) => (
-                          <div key={field}>
-                            <label className="text-xs font-sans text-muted-foreground mb-1 block">{field}</label>
-                            <Input
-                              type="number"
-                              placeholder="0.0"
-                              value={measurements[field] || ""}
-                              onChange={(e) => setMeasurements({ ...measurements, [field]: e.target.value })}
-                              className="font-sans"
-                            />
+                    {/* ── CUSTOM TAB ── */}
+                    {measurementTab === 'custom' && (
+                      <div className="space-y-4">
+                        {/* Pre-fill banner */}
+                        {hasPrefill && (
+                          <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl flex items-start gap-2">
+                            <span>📏</span>
+                            <p className="text-xs font-sans text-teal-800">We've pre-filled measurements from your previous session. Please review and confirm.</p>
                           </div>
-                        ))}
+                        )}
+                        {autoFilledFromSize && (
+                          <div className="p-3 bg-accent/10 border border-accent/20 rounded-xl flex items-start gap-2">
+                            <span>📐</span>
+                            <p className="text-xs font-sans text-foreground">Auto-filled from size <span className="font-semibold">{autoFilledFromSize}</span>. Review and adjust as needed.</p>
+                          </div>
+                        )}
+
+                        {/* Height field */}
+                        {garmentConfig.heightRequired && (
+                          <div className="p-4 bg-muted/50 rounded-xl border border-border mb-2">
+                            <label className="font-sans font-semibold text-sm text-foreground mb-2 block">Your Height (required for length calibration)</label>
+                            <div className="flex items-center gap-2">
+                              {heightUnit === 'ftin' ? (
+                                <>
+                                  <Input type="number" min="3" max="7" value={heightFeet} onChange={(e) => setHeightFeet(e.target.value)} placeholder="5" className="w-16 font-sans" />
+                                  <span className="text-xs text-muted-foreground font-sans">ft</span>
+                                  <Input type="number" min="0" max="11" value={heightInches} onChange={(e) => setHeightInches(e.target.value)} placeholder="6" className="w-16 font-sans" />
+                                  <span className="text-xs text-muted-foreground font-sans">in</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Input type="number" min="100" max="220" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="168" className="w-24 font-sans" />
+                                  <span className="text-xs text-muted-foreground font-sans">cm</span>
+                                </>
+                              )}
+                              <button
+                                onClick={() => setHeightUnit(heightUnit === 'ftin' ? 'cm' : 'ftin')}
+                                className="ml-2 px-2 py-1 rounded text-xs font-sans bg-muted text-foreground hover:bg-border transition-colors"
+                              >
+                                {heightUnit === 'ftin' ? 'Use cm' : 'Use ft/in'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Measurement fields */}
+                        <div className="space-y-3">
+                          {garmentFields.map((mf) => {
+                            const isOptional = mf.field.toLowerCase().includes('heel');
+                            const wasAutoFilled = autoFilledFromSize && measurements[mf.field];
+                            return (
+                              <div key={mf.field} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-card">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="font-sans font-semibold text-sm text-foreground">{mf.field}</p>
+                                    {isOptional && <span className="text-[10px] text-muted-foreground font-sans">(optional)</span>}
+                                    {wasAutoFilled && (
+                                      <span className="px-1.5 py-0.5 rounded text-[9px] font-sans font-medium bg-muted text-muted-foreground">From size {autoFilledFromSize}</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground font-sans">{mf.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    step="0.5"
+                                    placeholder="e.g. 36"
+                                    value={measurements[mf.field] || ""}
+                                    onChange={(e) => {
+                                      setMeasurements(prev => ({ ...prev, [mf.field]: e.target.value }));
+                                      if (autoFilledFromSize) setAutoFilledFromSize('');
+                                    }}
+                                    className="w-20 font-sans text-center"
+                                  />
+                                  <span className="text-xs text-muted-foreground font-sans w-8">in</span>
+                                  <button
+                                    onClick={() => setActiveTip(mf)}
+                                    className="text-xs text-accent font-sans hover:underline whitespace-nowrap"
+                                  >
+                                    ▶ Tip
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* DPDP Consent */}
+                        <div className="mt-6 space-y-3 pt-4 border-t border-border">
+                          <p className="font-sans font-semibold text-sm text-foreground">Data & Consent</p>
+                          <div className="flex items-start gap-3">
+                            <Checkbox id="mc1" checked={consent1} onCheckedChange={(v) => setConsent1(!!v)} />
+                            <label htmlFor="mc1" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                              I confirm these measurements are accurate and consent to sharing them with matched artisans for this order only.
+                            </label>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <Checkbox id="mc2" checked={consent2} onCheckedChange={(v) => setConsent2(!!v)} />
+                            <label htmlFor="mc2" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                              I understand my measurements are stored securely under Naapio's{' '}
+                              <a href="/privacy" target="_blank" className="text-accent underline">Privacy Policy</a> and DPDP Act 2023.
+                            </label>
+                          </div>
+                        </div>
                       </div>
                     )}
 
-                    {measurementType === "later" && (
-                      <p className="text-muted-foreground font-sans text-sm p-4 bg-card rounded-xl border border-border">
-                        No worries! Your accepted tailor will guide you through measurements via a video call. You have 48 hours after going live to submit measurements.
-                      </p>
+                    {/* ── PROVIDE LATER TAB ── */}
+                    {measurementTab === 'later' && (
+                      <div className="space-y-4">
+                        <div className="p-5 bg-amber-50 border border-amber-200 rounded-xl">
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl">⏱</span>
+                            <div>
+                              <p className="font-sans font-semibold text-foreground text-sm mb-1">No worries! You can submit measurements later.</p>
+                              <p className="text-xs text-muted-foreground font-sans">
+                                Measurements must be submitted at Milestone 1 before your artisan can begin stitching. You'll have 48 hours after order placement.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <Checkbox id="mc-later" checked={measureLaterConsent} onCheckedChange={(v) => setMeasureLaterConsent(!!v)} />
+                          <label htmlFor="mc-later" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                            I understand measurements must be submitted within 48 hours of artisan acceptance.
+                          </label>
+                        </div>
+                      </div>
                     )}
-                  </div>
 
-                  <div>
-                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Data & Consent</h2>
-                    <p className="text-muted-foreground font-sans mb-6">Required before your order goes live</p>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Checkbox id="c1" checked={consent1} onCheckedChange={(v) => setConsent1(!!v)} />
-                        <label htmlFor="c1" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
-                          I consent to my measurement data being stored securely and shared only with my accepted vendor per Naapio's Privacy Policy (DPDP Act 2023)
-                        </label>
+                    {/* ── DARZI CARD UPLOAD (below all tabs) ── */}
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="flex-1 h-px bg-border" />
+                        <span className="font-sans text-xs text-muted-foreground font-medium">OR</span>
+                        <div className="flex-1 h-px bg-border" />
                       </div>
-                      <div className="flex items-start gap-3">
-                        <Checkbox id="c2" checked={consent2} onCheckedChange={(v) => setConsent2(!!v)} />
-                        <label htmlFor="c2" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
-                          I understand my data will be deleted upon request within 72 hours
-                        </label>
-                      </div>
+                      <label className="block p-4 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 cursor-pointer transition-all">
+                        {darziCardPhoto ? (
+                          <div className="flex items-center gap-3">
+                            <img src={URL.createObjectURL(darziCardPhoto)} alt="Darzi card" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                            <div>
+                              <p className="font-sans text-sm font-medium text-foreground">Darzi card uploaded ✓</p>
+                              <button onClick={(e) => { e.preventDefault(); setDarziCardPhoto(null); }} className="text-xs text-accent font-sans hover:underline">Remove</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-2">
+                            <p className="text-2xl mb-1">📷</p>
+                            <p className="font-sans text-sm font-medium text-foreground mb-1">Upload your darzi card / measurement slip</p>
+                            <p className="text-xs text-muted-foreground font-sans">Photo of your tailor's measurement notebook, card, or any written measurements</p>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0] || null;
+                            if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                            setDarziCardPhoto(f);
+                            if (f) toast.success("Darzi card uploaded ✓");
+                          }}
+                        />
+                      </label>
+                      {darziCardPhoto && (
+                        <p className="text-xs text-muted-foreground font-sans mt-2">
+                          {/* TODO: OCR_INTEGRATION — send to Gemini Vision to extract values */}
+                          Your artisan will read measurements from this photo. If values are unclear, they'll ask during Milestone 1.
+                        </p>
+                      )}
                     </div>
 
-                    {/* Order summary so far */}
+                    {/* Order summary */}
                     <div className="mt-6 p-4 bg-card rounded-xl border border-border">
                       <p className="font-sans text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your order so far</p>
                       <div className="space-y-1">
                         <p className="font-sans text-sm text-foreground">
-                          <span className="text-muted-foreground">Garment:</span> {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}
+                          <span className="text-muted-foreground">Garment:</span> {gender === "women" ? "Women's" : "Men's"} {garmentLabel}
                         </p>
                         <p className="font-sans text-sm text-foreground">
                           <span className="text-muted-foreground">Occasion:</span> {selectedOccasion}
                         </p>
                       </div>
                     </div>
+
+                    {/* Measurement Tip Modal */}
+                    {activeTip && (
+                      <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4" onClick={() => setActiveTip(null)}>
+                        <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                          <h3 className="font-serif font-bold text-foreground text-lg mb-3">How to measure: {activeTip.field}</h3>
+                          <div className="text-center text-4xl mb-3">
+                            {activeTip.field.toLowerCase().includes('bust') || activeTip.field.toLowerCase().includes('chest') ? '📏' :
+                             activeTip.field.toLowerCase().includes('waist') ? '〰️' :
+                             activeTip.field.toLowerCase().includes('shoulder') ? '🫱' :
+                             activeTip.field.toLowerCase().includes('length') || activeTip.field.toLowerCase().includes('height') ? '📐' :
+                             activeTip.field.toLowerCase().includes('sleeve') || activeTip.field.toLowerCase().includes('bicep') ? '💪' :
+                             activeTip.field.toLowerCase().includes('hip') || activeTip.field.toLowerCase().includes('seat') ? '🧍' : '📏'}
+                          </div>
+                          <p className="font-sans text-sm text-muted-foreground mb-1">{activeTip.description}</p>
+                          <p className="font-sans text-sm text-foreground mt-2">{activeTip.tip}</p>
+                          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-xs font-sans text-amber-800">💡 Always measure over regular undergarments. Keep tape snug but not tight.</p>
+                          </div>
+                          <div className="mt-3">
+                            {activeTip.videoUrl ? (
+                              <a href={activeTip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-accent font-sans hover:underline">
+                                🎬 Watch measurement video →
+                              </a>
+                            ) : (
+                              <p className="text-xs text-muted-foreground font-sans italic">
+                                🎬 Video coming soon — will be linked before platform launch.
+                              </p>
+                            )}
+                          </div>
+                          <Button variant="gold" className="w-full mt-4" onClick={() => setActiveTip(null)}>
+                            Got it ✓
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                </div>
-              )}
+                );
+              })()}
 
             </motion.div>
           )}
@@ -3590,13 +4113,13 @@ Important rules:
                                 if (val[1] - val[0] >= 2000) setBudgetRange(val);
                               }}
                               min={1000}
-                              max={200000}
+                              max={500000}
                               step={budgetRange[0] < 10000 ? 500 : budgetRange[0] < 50000 ? 1000 : 5000}
                               className="w-full"
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
                               <span>₹1K</span>
-                              <span>₹2L</span>
+                              <span>₹5L</span>
                             </div>
                           </div>
 
