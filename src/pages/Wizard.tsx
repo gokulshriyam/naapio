@@ -2342,7 +2342,16 @@ const Wizard = () => {
                             </div>
                           </div>
                           <p className="text-xs text-muted-foreground font-sans">
-                            Vendor bids will be based on this range. You're not locked in — bids above range won't be shown.
+                            {budgetGuidance[selectedCategory] || 'Enter your comfortable range'}
+                          </p>
+                          {budgetRange[0] > 0 && budgetRange[1] > 0 && budgetRange[0] > budgetRange[1] && (
+                            <p className="text-xs text-destructive font-sans mt-1">Min budget can't be higher than max</p>
+                          )}
+                          {budgetRange[0] > 0 && budgetRange[1] > 0 && budgetRange[1] >= budgetRange[0] && (budgetRange[1] - budgetRange[0]) < 500 && (
+                            <p className="text-xs text-amber-600 font-sans mt-1">A wider range attracts more bids. Consider expanding by ₹1,000–₹2,000.</p>
+                          )}
+                          <p className="text-xs text-muted-foreground font-sans mt-2">
+                            💡 Set a realistic range — tailors bid within it. Too low a max may reduce bid quality. Too high isn't a commitment — you negotiate.
                           </p>
                         </div>
 
