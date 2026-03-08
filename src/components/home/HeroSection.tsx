@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import CitySelector from "@/components/CitySelector";
-import LanguageSelector from "@/components/LanguageSelector";
+import CitySelector from "@/components/CitySelector"; 
+import LanguageSelector from "@/components/LanguageSelector"; 
 import womensFashion from "@/assets/womens-fashion.jpg";
 import mensFashion from "@/assets/mens-fashion.jpg";
 import redLehenga from "@/assets/red-lehenga.jpg";
