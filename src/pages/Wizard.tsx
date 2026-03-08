@@ -2933,11 +2933,35 @@ Return a JSON object with ONLY these fields, no other text:
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any embellishment or surface work?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Select everything that interests you — your tailor will advise what works for your garment</p>
+
+                      {/* Photo pre-fill notice */}
+                      {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                       photoAnalysis.detectedSurfaces && photoAnalysis.detectedSurfaces.length > 0 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-sans text-amber-800">
+                            We detected <span className="font-semibold">{photoAnalysis.detectedSurfaces.join(', ')}</span> in your photo.
+                          </span>
+                        </motion.div>
+                      )}
+
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         {surfaceOptions.map((sopt) => {
                           const isSelected = selectedSurfaces.includes(sopt.label);
                           const isExclusive = 'exclusive' in sopt && sopt.exclusive;
                           const plainSelected = selectedSurfaces.includes("Plain / No Embellishment");
+                          const isDetected = photoAnalysis?.analysisComplete && 
+                            !photoAnalysis?.analysisError && 
+                            photoAnalysis.detectedSurfaces?.includes(sopt.label);
+                          
+                          // Auto pre-select detected surfaces if nothing selected yet
+                          if (isDetected && selectedSurfaces.length === 0 && !photoFromBadgeShown.has('surfaces')) {
+                            setTimeout(() => {
+                              setSelectedSurfaces(photoAnalysis.detectedSurfaces || []);
+                              setPhotoFromBadgeShown(prev => new Set(prev).add('surfaces'));
+                            }, 100);
+                          }
+                          
                           return (
                             <button
                               key={sopt.label}
@@ -2953,7 +2977,7 @@ Return a JSON object with ONLY these fields, no other text:
                                   });
                                 }
                               }}
-                              className={`rounded-xl overflow-hidden text-left transition-all border ${
+                              className={`rounded-xl overflow-hidden text-left transition-all border relative ${
                                 isSelected
                                   ? "border-accent ring-2 ring-accent/30"
                                   : "border-border hover:border-accent/30"
@@ -2974,6 +2998,11 @@ Return a JSON object with ONLY these fields, no other text:
                                   {sopt.label}
                                 </p>
                               </div>
+                              {isDetected && isSelected && (
+                                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                                  ✨ From photo
+                                </span>
+                              )}
                             </button>
                           );
                         })}
