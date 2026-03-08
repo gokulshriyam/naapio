@@ -22,13 +22,17 @@ const VendorLayout = () => {
     catch { return {}; }
   })();
 
+  const vendorDisplayName = vendor.name && vendor.name !== 'Artisan'
+    ? vendor.name
+    : mockVendor.realName;
+
   useEffect(() => {
     if (!vendor.role) navigate('/for-tailors');
   }, [vendor.role, navigate]);
 
   if (!vendor.role) return null;
 
-  const initials = vendor.name?.charAt(0)?.toUpperCase() || 'A';
+  const initials = vendorDisplayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   const isActive = (path: string) => {
     if (path === '/vendor') return location.pathname === '/vendor';
@@ -61,7 +65,7 @@ const VendorLayout = () => {
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-sans font-semibold text-sm text-foreground truncate">{vendor.name || 'Artisan'}</p>
+              <p className="font-sans font-semibold text-sm text-foreground truncate">{vendorDisplayName}</p>
               <span className="text-[10px] font-sans font-semibold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">
                 {mockVendor.tier} Tier
               </span>

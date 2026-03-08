@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Ruler, Scissors, Video, Package, Check, Lock, ArrowLeft, Star,
   MessageSquare, AlertTriangle, Send, Paperclip, CheckCheck, X, Copy, Printer,
-  Upload, Plus, Link as LinkIcon,
+  Upload, Plus, Link as LinkIcon, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,14 +63,23 @@ type ChatMsg = {
   from: 'vendor' | 'customer' | 'system';
   status: 'sent' | 'delivered' | 'read';
   timestamp: number;
+  changeRequest?: {
+    id: string;
+    description: string;
+    amount: number;
+    status: 'pending' | 'accepted' | 'declined';
+  };
 };
 
-const InlineChat = ({ customerName, onClose }: { customerName: string; onClose: () => void }) => {
+const InlineChat = ({ customerName, onClose, orderId, bidAmount }: { customerName: string; onClose: () => void; orderId: string; bidAmount: number }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([
     { id: 'sys-1', text: 'Messages are moderated by Naapio. No contact sharing until order is confirmed.', from: 'system', status: 'read', timestamp: Date.now() - 60000 },
   ]);
   const [input, setInput] = useState('');
+  const [showChangeRequestForm, setShowChangeRequestForm] = useState(false);
+  const [crDescription, setCrDescription] = useState('');
+  const [crAmount, setCrAmount] = useState('');
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -95,6 +104,29 @@ const InlineChat = ({ customerName, onClose }: { customerName: string; onClose: 
     }, 1500);
   };
 
+  const handleSendChangeRequest = () => {
+    if (!crDescription.trim() || !crAmount.trim() || Number(crAmount) < 100) return;
+    const amount = Number(crAmount);
+    const crMsg: ChatMsg = {
+      id: `cr-${Date.now()}`,
+      text: '',
+      from: 'vendor',
+      status: 'read',
+      timestamp: Date.now(),
+      changeRequest: {
+        id: `cr-${Date.now()}`,
+        description: crDescription,
+        amount,
+        status: 'pending',
+      },
+    };
+    setMessages(prev => [...prev, crMsg]);
+    setShowChangeRequestForm(false);
+    setCrDescription('');
+    setCrAmount('');
+    toast.success('Change request sent to customer.');
+  };
+
   return (
     <div className="border border-border rounded-xl overflow-hidden bg-background">
       <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border">
@@ -105,29 +137,79 @@ const InlineChat = ({ customerName, onClose }: { customerName: string; onClose: 
         <button onClick={onClose}><X className="w-4 h-4 text-muted-foreground hover:text-foreground" /></button>
       </div>
       <div ref={scrollRef} className="h-48 overflow-y-auto p-3 space-y-2">
-        {messages.map(msg => (
-          <div key={msg.id} className={cn(
-            "max-w-[80%] text-xs font-sans rounded-xl px-3 py-2",
-            msg.from === 'vendor' ? 'ml-auto bg-accent/15 text-foreground' :
-            msg.from === 'customer' ? 'bg-muted text-foreground' :
-            'mx-auto bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 text-center text-[10px] rounded-full px-3 py-1'
-          )}>
-            {msg.text}
-            {msg.from === 'vendor' && (
-              <div className="flex justify-end mt-0.5">
-                {msg.status === 'sent' && <Check className="w-3 h-3 text-muted-foreground" />}
-                {msg.status === 'delivered' && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
-                {msg.status === 'read' && <CheckCheck className="w-3 h-3 text-blue-500" />}
+        {messages.map(msg => {
+          // Change request card (vendor perspective)
+          if (msg.changeRequest) {
+            const cr = msg.changeRequest;
+            const newTotal = bidAmount + cr.amount;
+            return (
+              <div key={msg.id} className="mx-0 my-2 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/20 p-3 space-y-2">
+                <p className="text-[10px] font-sans font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">📋 Change Request Sent</p>
+                <p className="text-sm font-sans text-foreground">{cr.description}</p>
+                <div>
+                  <p className="text-xs text-muted-foreground font-sans">Additional cost</p>
+                  <p className="text-lg font-serif font-bold text-accent">+₹{cr.amount.toLocaleString('en-IN')}</p>
+                  <p className="text-[10px] font-sans text-muted-foreground">New order total: ₹{newTotal.toLocaleString('en-IN')}</p>
+                </div>
+                {cr.status === 'pending' && (
+                  <span className="inline-block text-[10px] font-sans text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">Awaiting customer approval</span>
+                )}
+                {cr.status === 'accepted' && (
+                  <span className="inline-block text-[10px] font-sans text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">✓ Customer Accepted</span>
+                )}
+                {cr.status === 'declined' && (
+                  <span className="inline-block text-[10px] font-sans text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Declined</span>
+                )}
+                <p className="text-[10px] text-muted-foreground font-sans">🔒 Payment is escrow-protected.</p>
               </div>
-            )}
-          </div>
-        ))}
+            );
+          }
+
+          return (
+            <div key={msg.id} className={cn(
+              "max-w-[80%] text-xs font-sans rounded-xl px-3 py-2",
+              msg.from === 'vendor' ? 'ml-auto bg-accent/15 text-foreground' :
+              msg.from === 'customer' ? 'bg-muted text-foreground' :
+              'mx-auto bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 text-center text-[10px] rounded-full px-3 py-1'
+            )}>
+              {msg.text}
+              {msg.from === 'vendor' && (
+                <div className="flex justify-end mt-0.5">
+                  {msg.status === 'sent' && <Check className="w-3 h-3 text-muted-foreground" />}
+                  {msg.status === 'delivered' && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
+                  {msg.status === 'read' && <CheckCheck className="w-3 h-3 text-blue-500" />}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
+
+      {/* Change request form */}
+      {showChangeRequestForm && (
+        <div className="px-3 py-2 border-t border-border bg-amber-50/50 dark:bg-amber-950/10 space-y-2">
+          <p className="text-[10px] font-sans font-semibold text-foreground">Raise a Change Request</p>
+          <Input value={crDescription} onChange={e => setCrDescription(e.target.value)} placeholder="What additional work is needed?" className="h-7 text-xs" />
+          <Input type="number" value={crAmount} onChange={e => setCrAmount(e.target.value)} placeholder="Additional cost (₹)" className="h-7 text-xs" min={100} />
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" className="text-xs h-6" onClick={() => setShowChangeRequestForm(false)}>Cancel</Button>
+            <Button variant="gold" size="sm" className="text-xs h-6" onClick={handleSendChangeRequest} disabled={!crDescription.trim() || Number(crAmount) < 100}>Send Change Request</Button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
         <button className="text-muted-foreground hover:text-foreground"><Paperclip className="w-4 h-4" /></button>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="Type a message..." className="flex-1 text-xs font-sans bg-transparent outline-none text-foreground placeholder:text-muted-foreground" />
         <button onClick={handleSend} className="text-accent hover:text-accent/80"><Send className="w-4 h-4" /></button>
       </div>
+      {!showChangeRequestForm && (
+        <div className="px-3 pb-2">
+          <button onClick={() => setShowChangeRequestForm(true)} className="text-xs font-sans text-accent hover:underline">
+            + Raise a Change Request
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -146,6 +228,68 @@ type FabricEntry = {
 };
 
 // ═══════════════════════════════════════
+// Full Brief Card (left column)
+// ═══════════════════════════════════════
+const OrderBriefCard = ({ order }: { order: typeof mockVendorActiveOrders[0] }) => {
+  const SectionHeader = ({ title }: { title: string }) => (
+    <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground border-b border-border pb-1 mt-4 mb-2">{title}</p>
+  );
+  const BriefRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex justify-between text-xs font-sans">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-foreground text-right">{value}</span>
+    </div>
+  );
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-1">
+      <p className="text-xs font-sans font-semibold text-foreground">Brief Summary</p>
+
+      {order.inspirationPhoto && (
+        <img src={order.inspirationPhoto} alt="" className="w-full h-40 object-cover rounded-xl mt-2" />
+      )}
+
+      <SectionHeader title="Order Details" />
+      <BriefRow label="Order Type" value={order.orderType} />
+      <BriefRow label="Garment" value={`${order.category} · ${order.subCategory}`} />
+      <BriefRow label="Occasion" value={order.occasion} />
+
+      <SectionHeader title="Design Preferences" />
+      {order.fabricFeel && <BriefRow label="Fabric Feel" value={order.fabricFeel} />}
+      {order.colourMood && <BriefRow label="Colour Mood" value={order.colourMood} />}
+      {order.selectedFit && <BriefRow label="Fit" value={order.selectedFit} />}
+      {order.selectedNeckline && <BriefRow label="Neckline" value={order.selectedNeckline} />}
+      {order.selectedSleeve && <BriefRow label="Sleeve" value={order.selectedSleeve} />}
+      {order.dupattaOption && <BriefRow label="Dupatta" value={order.dupattaOption} />}
+      {order.liningOption && <BriefRow label="Lining" value={order.liningOption} />}
+
+      {order.surfaces && order.surfaces.length > 0 && (
+        <div className="mt-1">
+          <p className="text-[10px] font-sans text-muted-foreground mb-1">Surfaces</p>
+          <div className="flex flex-wrap gap-1">
+            {order.surfaces.map(s => (
+              <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-sans">{s}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <SectionHeader title="Logistics" />
+      <BriefRow label="Budget" value={`₹${(order.budgetMin || 0).toLocaleString('en-IN')} – ₹${(order.budgetMax || 0).toLocaleString('en-IN')}`} />
+      <BriefRow label="Delivery by" value={`${order.deliveryDate} (${order.deliveryDays} days)`} />
+      <BriefRow label="Rush Order" value={order.isRushOrder ? 'Yes' : 'No'} />
+
+      {order.additionalNotes && (
+        <>
+          <SectionHeader title="Notes" />
+          <p className="text-xs font-sans text-foreground italic">"{order.additionalNotes}"</p>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════
 // Main Component
 // ═══════════════════════════════════════
 
@@ -157,6 +301,7 @@ const VendorActiveOrders = () => {
 
   // Milestone state (for demo, advance from current)
   const [activeMilestone, setActiveMilestone] = useState(2);
+  const [m1ReadOnly, setM1ReadOnly] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -183,9 +328,12 @@ const VendorActiveOrders = () => {
   const [ratingComment, setRatingComment] = useState('');
   const [orderClosed, setOrderClosed] = useState(false);
 
-  // Reset milestone state when order changes
+  // Reset milestone state when order changes — START at currentMilestone (Fix 6)
   useEffect(() => {
-    if (selectedOrder) setActiveMilestone(selectedOrder.currentMilestone);
+    if (selectedOrder) {
+      setActiveMilestone(selectedOrder.currentMilestone);
+      setM1ReadOnly(false);
+    }
   }, [selectedOrder]);
 
   // ─── ORDER LIST VIEW ───
@@ -241,7 +389,7 @@ const VendorActiveOrders = () => {
                   {MILESTONES.map(m => <span key={m.id} className="flex-1 text-center">{m.label}</span>)}
                 </div>
                 <Progress value={progress} className="h-1 mb-4" />
-                <Button variant="gold" size="sm" className="text-xs" onClick={() => setSelectedOrderId(order.orderId)}>
+                <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => setSelectedOrderId(order.orderId)}>
                   Track Order →
                 </Button>
               </div>
@@ -274,7 +422,6 @@ const VendorActiveOrders = () => {
   const allStitchDone = stitchComplete.every(Boolean);
 
   const handlePrintBrief = () => {
-    // TODO: PDF_GENERATION — generate actual PDF with Naapio watermark
     window.print();
   };
 
@@ -306,7 +453,7 @@ const VendorActiveOrders = () => {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <button onClick={() => setSelectedOrderId(null)} className="flex items-center gap-1 text-sm font-sans text-muted-foreground hover:text-foreground mb-3">
+        <button onClick={() => { setSelectedOrderId(null); setM1ReadOnly(false); }} className="flex items-center gap-1 text-sm font-sans text-muted-foreground hover:text-foreground mb-3">
           <ArrowLeft className="w-4 h-4" /> Back to orders
         </button>
         <h1 className="font-serif font-bold text-2xl text-foreground">Order #{order.orderId}</h1>
@@ -321,14 +468,22 @@ const VendorActiveOrders = () => {
           return (
             <div key={m.id} className="flex items-center gap-1 flex-1">
               <button
-                onClick={() => { if (done || current) setActiveMilestone(m.id); }}
+                onClick={() => {
+                  if (m.id === 1 && activeMilestone > 1) {
+                    setM1ReadOnly(true);
+                    setActiveMilestone(1);
+                  } else if (done || current) {
+                    setM1ReadOnly(false);
+                    setActiveMilestone(m.id);
+                  }
+                }}
                 className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
                   done ? 'bg-accent text-accent-foreground cursor-pointer' :
                   current ? 'bg-accent/20 text-accent ring-2 ring-accent cursor-pointer' :
                   'bg-muted text-muted-foreground cursor-default'
                 )}
               >
-                {done ? <Check className="w-4 h-4" /> : <m.icon className="w-4 h-4" />}
+                {done ? <Check className="w-4 h-4" /> : m.id > activeMilestone ? <Lock className="w-3.5 h-3.5" /> : <m.icon className="w-4 h-4" />}
               </button>
               {i < MILESTONES.length - 1 && <div className={cn("flex-1 h-0.5", done ? 'bg-accent' : 'bg-border')} />}
             </div>
@@ -344,29 +499,8 @@ const VendorActiveOrders = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* LEFT COLUMN */}
         <div className="lg:w-72 flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
-          {/* Inspiration image */}
-          <div className="w-full h-48 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-5xl overflow-hidden">
-            {order.inspirationThumb ? <img src={order.inspirationThumb} alt="" className="w-full h-full object-cover" /> : '👗'}
-          </div>
-
-          {/* Order brief */}
-          <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-            <p className="text-xs font-sans font-semibold text-foreground">Order Brief</p>
-            <div className="space-y-1 text-xs font-sans">
-              <p><span className="text-muted-foreground">Occasion:</span> <span className="text-foreground">{order.occasion}</span></p>
-              <p><span className="text-muted-foreground">Budget:</span> <span className="text-foreground">₹{order.bidAmount.toLocaleString('en-IN')}</span></p>
-              <p><span className="text-muted-foreground">Delivery:</span> <span className="text-foreground">{order.deliveryDate} ({order.deliveryDays} days)</span></p>
-              <p><span className="text-muted-foreground">Type:</span> <span className="text-foreground">{order.orderType}</span></p>
-              <p><span className="text-muted-foreground">Colour Mood:</span> <span className="text-foreground">{order.colourMood}</span></p>
-              <p><span className="text-muted-foreground">Fabric Feel:</span> <span className="text-foreground">{order.fabricFeel}</span></p>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {order.surfaces.map(s => (
-                  <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-sans">{s}</span>
-                ))}
-              </div>
-            </div>
-            <p className="text-xs font-sans text-muted-foreground mt-2">{order.brief}</p>
-          </div>
+          {/* Full brief card (Fix 7) */}
+          <OrderBriefCard order={order} />
 
           {/* Measurements */}
           <div className="bg-muted rounded-xl p-4">
@@ -383,6 +517,15 @@ const VendorActiveOrders = () => {
               <Check className="w-3 h-3 text-teal-600" />
               <span className="text-[10px] font-sans text-teal-600 dark:text-teal-400">Confirmed by customer ✓</span>
             </div>
+            {/* Link to review M1 (Fix 6) */}
+            {activeMilestone > 1 && !m1ReadOnly && (
+              <button
+                onClick={() => { setM1ReadOnly(true); setActiveMilestone(1); }}
+                className="text-[10px] font-sans text-accent hover:underline mt-2 block"
+              >
+                ↩ Review M1 Measurements
+              </button>
+            )}
           </div>
 
           {/* Download brief */}
@@ -409,37 +552,58 @@ const VendorActiveOrders = () => {
           <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setChatOpen(!chatOpen)}>
             <MessageSquare className="w-3.5 h-3.5 mr-1" /> Message {order.customerFirstName}
           </Button>
-          {chatOpen && <InlineChat customerName={order.customerFirstName} onClose={() => setChatOpen(false)} />}
+          {chatOpen && <InlineChat customerName={order.customerFirstName} onClose={() => setChatOpen(false)} orderId={order.orderId} bidAmount={order.bidAmount} />}
         </div>
 
         {/* RIGHT COLUMN — Milestone content */}
         <div className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
-            {/* ═══ M1 — Measurements Review ═══ */}
+            {/* ═══ M1 — Measurements Review (read-only if m1ReadOnly) ═══ */}
             {activeMilestone === 1 && (
               <motion.div key="m1" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">M1 — Measurements Review</h2>
-                <p className="text-sm text-muted-foreground font-sans mb-4">Customer has submitted measurements. Review and confirm before proceeding.</p>
-
-                <div className="bg-muted rounded-xl p-4 mb-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(order.measurements).map(([key, val]) => (
-                      <div key={key} className="text-sm font-sans">
-                        <span className="text-muted-foreground">{key}:</span>{' '}
-                        <span className="font-semibold text-foreground">{val}{key !== 'Height' ? '"' : ''}</span>
+                {m1ReadOnly ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-sans mb-4">
+                      Measurements confirmed on {new Date(order.acceptedAt).toLocaleDateString()}. Contact customer via chat if adjustments needed.
+                    </p>
+                    <div className="bg-muted rounded-xl p-4 mb-4">
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(order.measurements).map(([key, val]) => (
+                          <div key={key} className="text-sm font-sans">
+                            <span className="text-muted-foreground">{key}:</span>{' '}
+                            <span className="font-semibold text-foreground">{val}{key !== 'Height' ? '"' : ''}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                    <Button variant="outline" size="sm" className="text-xs" onClick={() => { setM1ReadOnly(false); setActiveMilestone(order.currentMilestone); }}>
+                      ← Back to current milestone
+                    </Button>
                   </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="text-xs" onClick={() => setChatOpen(true)}>
-                    Ask about a measurement
-                  </Button>
-                  <Button variant="gold" size="sm" className="text-xs" onClick={() => { setActiveMilestone(2); toast.success('Measurements confirmed. Proceed to fabric sourcing.'); }}>
-                    ✓ Confirm Measurements — Begin Fabric Sourcing
-                  </Button>
-                </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-sans mb-4">Customer has submitted measurements. Review and confirm before proceeding.</p>
+                    <div className="bg-muted rounded-xl p-4 mb-4">
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(order.measurements).map(([key, val]) => (
+                          <div key={key} className="text-sm font-sans">
+                            <span className="text-muted-foreground">{key}:</span>{' '}
+                            <span className="font-semibold text-foreground">{val}{key !== 'Height' ? '"' : ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="text-xs" onClick={() => setChatOpen(true)}>
+                        Ask about a measurement
+                      </Button>
+                      <Button variant="gold" size="sm" className="text-xs" onClick={() => { setActiveMilestone(2); toast.success('Measurements confirmed. Proceed to fabric sourcing.'); }}>
+                        ✓ Confirm Measurements — Begin Fabric Sourcing
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -461,7 +625,6 @@ const VendorActiveOrders = () => {
                     <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 mb-4">
                       <p className="text-sm font-sans text-amber-800 dark:text-amber-200">⏳ Fabric options submitted. Waiting for customer approval...</p>
                     </div>
-                    {/* Demo: simulate approval */}
                     <Button variant="outline" size="sm" className="text-xs" onClick={() => setFabricApproved(true)}>
                       [Demo] Simulate Customer Approval
                     </Button>
@@ -517,12 +680,10 @@ const VendorActiveOrders = () => {
                       <Plus className="w-3.5 h-3.5 mr-1" /> Add Another Fabric Option
                     </Button>
 
-                    {/* Fabric advance */}
                     <div className="mt-2">
                       {mockVendor.tier === 'Gold' ? (
                         <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent hover:text-accent-foreground">
                           Request Fabric Advance →
-                          {/* TODO: PAYMENT_INTEGRATION — trigger advance request flow */}
                         </Button>
                       ) : (
                         <Tooltip>
@@ -555,7 +716,6 @@ const VendorActiveOrders = () => {
               <motion.div key="m3" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">M3 — Update Stitching Progress</h2>
                 <p className="text-sm text-muted-foreground font-sans mb-4">Keep your customer informed. Update each stage as you complete it.</p>
-
                 <div className="space-y-3">
                   {stitchStages.map((stage, idx) => (
                     <div key={idx} className={cn("flex items-center gap-3 p-3 rounded-xl border transition-colors",
@@ -572,20 +732,18 @@ const VendorActiveOrders = () => {
                         <p className="text-[10px] font-sans text-muted-foreground">{stage.dayLabel}</p>
                       </div>
                       {!stitchComplete[idx] && (idx === 0 || stitchComplete[idx - 1]) && (
-                        <Button variant="gold" size="sm" className="text-xs" onClick={() => markStitchStage(idx)}>
+                        <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => markStitchStage(idx)}>
                           Mark Complete ✓
                         </Button>
                       )}
                     </div>
                   ))}
                 </div>
-
                 {allStitchDone && (
                   <Button variant="gold" className="mt-6" onClick={() => setActiveMilestone(4)}>
                     Proceed to Fitting Video Upload →
                   </Button>
                 )}
-                {/* TODO: ARTISAN_PORTAL — these stage updates should push real-time notifications to customer */}
               </motion.div>
             )}
 
@@ -594,7 +752,6 @@ const VendorActiveOrders = () => {
               <motion.div key="m4" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">M4 — Upload Final Fitting Video</h2>
                 <p className="text-sm text-muted-foreground font-sans mb-4">Upload a clear video showing the garment against your measurements card.</p>
-
                 {videoApproved ? (
                   <div>
                     <div className="p-3 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 mb-4">
@@ -613,7 +770,6 @@ const VendorActiveOrders = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Upload */}
                     <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
                       <input type="file" accept="video/*" className="hidden" id="fitting-video-upload"
                         onChange={() => setVideoUploaded(true)} />
@@ -626,7 +782,6 @@ const VendorActiveOrders = () => {
                         )}
                       </label>
                     </div>
-
                     <div>
                       <Label className="text-xs font-sans">Or paste a link (YouTube / Google Drive)</Label>
                       <div className="flex gap-2 mt-1">
@@ -634,10 +789,6 @@ const VendorActiveOrders = () => {
                         <LinkIcon className="w-4 h-4 text-muted-foreground mt-2" />
                       </div>
                     </div>
-
-                    {/* TODO: VIDEO_INTEGRATION — upload to S3/Cloudinary via POST /v1/orders/{id}/fitting-video */}
-
-                    {/* Measurements reference */}
                     <div className="bg-muted rounded-xl p-3">
                       <p className="text-xs font-sans font-semibold text-foreground mb-2">Customer Measurements (for reference)</p>
                       <div className="grid grid-cols-2 gap-1">
@@ -646,7 +797,6 @@ const VendorActiveOrders = () => {
                         ))}
                       </div>
                     </div>
-
                     <Button variant="gold" disabled={!videoUploaded} onClick={() => {
                       setVideoSubmitted(true);
                       toast.success('Video submitted. Waiting for customer approval.');
@@ -663,7 +813,6 @@ const VendorActiveOrders = () => {
               <motion.div key="m5" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
                 <h2 className="font-serif font-bold text-xl text-foreground mb-1">M5 — Ship & Close Order</h2>
                 <p className="text-sm text-muted-foreground font-sans mb-4">Ship the garment and close this order.</p>
-
                 {orderClosed ? (
                   <div className="text-center py-8">
                     <p className="text-5xl mb-3">🎉</p>
@@ -673,10 +822,8 @@ const VendorActiveOrders = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Customer address */}
                     <div className="bg-card border border-border rounded-xl p-4">
                       <p className="text-xs font-sans font-semibold text-foreground mb-2">Customer Address</p>
-                      {/* TODO: ARTISAN_PORTAL — address revealed after customer confirms M5 address form */}
                       <div className="text-sm font-sans text-foreground space-y-0.5">
                         <p className="font-semibold">Sneha Krishnamurthy</p>
                         <p>14B, 3rd Cross, Jayanagar 4th Block</p>
@@ -695,8 +842,6 @@ const VendorActiveOrders = () => {
                         </Button>
                       </div>
                     </div>
-
-                    {/* Shipment form */}
                     {!shipped ? (
                       <div className="bg-card border border-border rounded-xl p-4 space-y-3">
                         <p className="text-xs font-sans font-semibold text-foreground">Shipment Details</p>
@@ -723,8 +868,6 @@ const VendorActiveOrders = () => {
                         <div className="p-3 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 mb-4">
                           <p className="text-sm font-sans text-green-800 dark:text-green-200">📦 Shipped! AWB: {awbNumber} via {courierName}</p>
                         </div>
-
-                        {/* Rate customer */}
                         <div className="bg-card border border-border rounded-xl p-4 space-y-4">
                           <p className="text-sm font-sans font-semibold text-foreground">Rate {order.customerFirstName} as a buyer</p>
                           <div className="space-y-3">

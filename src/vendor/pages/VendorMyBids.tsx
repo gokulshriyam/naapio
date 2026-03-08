@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CalendarIcon, MessageSquare, Pencil, X, Send, Paperclip, Check, CheckCheck } from "lucide-react";
+import { CalendarIcon, MessageSquare, Pencil, X, Send, Paperclip, Check, CheckCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -38,7 +38,7 @@ const formatCountdown = (date: Date) => {
   return `${hours}h left`;
 };
 
-const STATUS_CONFIG: Record<string, { label: string; classes: string; icon?: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; classes: string }> = {
   active: { label: 'Active', classes: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
   accepted: { label: '✓ Accepted', classes: 'bg-accent/15 text-accent' },
   declined: { label: 'Declined', classes: 'bg-muted text-muted-foreground' },
@@ -53,6 +53,58 @@ const SORT_OPTIONS = [
   { value: 'bid-high', label: 'My Bid High-Low' },
   { value: 'deadline', label: 'Deadline Soonest' },
 ];
+
+// ═══════════════════════════════════════
+// Full Brief Grid (reusable)
+// ═══════════════════════════════════════
+const BriefField = ({ label, value }: { label: string; value: string }) => (
+  <div>
+    <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground">{label}</p>
+    <p className="text-sm font-sans text-foreground">{value}</p>
+  </div>
+);
+
+const FullBriefGrid = ({ data }: { data: Record<string, any> }) => {
+  const fields: { label: string; value: string | undefined }[] = [
+    { label: 'Garment', value: data.category && data.subCategory ? `${data.category} · ${data.subCategory}` : undefined },
+    { label: 'Occasion', value: data.occasion },
+    { label: 'Fit Preference', value: data.selectedFit },
+    { label: 'Fabric Feel', value: data.fabricFeel },
+    { label: 'Colour Mood', value: data.colourMood },
+    { label: 'Neckline', value: data.selectedNeckline },
+    { label: 'Sleeve', value: data.selectedSleeve },
+    { label: 'Dupatta', value: data.dupattaOption },
+    { label: 'Lining', value: data.liningOption },
+    { label: 'Rush Order', value: data.isRushOrder !== undefined ? (data.isRushOrder ? 'Yes' : 'No') : undefined },
+    { label: 'Budget', value: data.budgetMin !== undefined ? `₹${data.budgetMin.toLocaleString('en-IN')} – ₹${data.budgetMax.toLocaleString('en-IN')}` : undefined },
+    { label: 'Delivery by', value: data.deliveryDate },
+  ];
+  const validFields = fields.filter(f => f.value);
+
+  return (
+    <div className="space-y-3 mt-3">
+      {data.selectedSurfaces && data.selectedSurfaces.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground">Surface / Embellishment</p>
+          <div className="flex flex-wrap gap-1 mt-0.5">
+            {data.selectedSurfaces.map((s: string) => (
+              <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-sans">{s}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {validFields.map(f => <BriefField key={f.label} label={f.label} value={f.value!} />)}
+      </div>
+      {data.additionalNotes && (
+        <div className="p-2.5 rounded-lg bg-muted/50 border border-border">
+          <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground mb-1">Additional Notes</p>
+          <p className="text-xs font-sans text-foreground">{data.additionalNotes}</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ═══════════════════════════════════════
 // Chat message type
@@ -86,13 +138,7 @@ const InlineChatPanel = ({ bidId, customerName, onClose }: { bidId: string; cust
     const masked = maskContactInfo(raw);
     const wasModified = masked !== raw;
 
-    const newMsg: ChatMsg = {
-      id: `v-${Date.now()}`,
-      text: masked,
-      from: 'vendor',
-      status: 'sent',
-      timestamp: Date.now(),
-    };
+    const newMsg: ChatMsg = { id: `v-${Date.now()}`, text: masked, from: 'vendor', status: 'sent', timestamp: Date.now() };
     setMessages(prev => {
       const next = [...prev, newMsg];
       if (wasModified) {
@@ -102,18 +148,10 @@ const InlineChatPanel = ({ bidId, customerName, onClose }: { bidId: string; cust
     });
     setInput('');
 
-    // Simulate delivery tick
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === newMsg.id ? { ...m, status: 'delivered' } : m));
-    }, 600);
-
-    // Simulate auto-reply from customer
+    setTimeout(() => { setMessages(prev => prev.map(m => m.id === newMsg.id ? { ...m, status: 'delivered' } : m)); }, 600);
     setTimeout(() => {
       setMessages(prev => prev.map(m => m.id === newMsg.id ? { ...m, status: 'read' } : m));
-      setMessages(prev => [
-        ...prev,
-        { id: `c-${Date.now()}`, text: 'Thank you for your message. I will review and get back to you shortly.', from: 'customer', status: 'read', timestamp: Date.now() },
-      ]);
+      setMessages(prev => [...prev, { id: `c-${Date.now()}`, text: 'Thank you for your message. I will review and get back to you shortly.', from: 'customer', status: 'read', timestamp: Date.now() }]);
     }, 1500);
   };
 
@@ -126,7 +164,6 @@ const InlineChatPanel = ({ bidId, customerName, onClose }: { bidId: string; cust
 
   return (
     <div className="mt-3 border border-border rounded-xl overflow-hidden bg-background">
-      {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border">
         <div>
           <span className="text-xs font-sans font-semibold text-foreground">{customerName}</span>
@@ -134,8 +171,6 @@ const InlineChatPanel = ({ bidId, customerName, onClose }: { bidId: string; cust
         </div>
         <button onClick={onClose}><X className="w-4 h-4 text-muted-foreground hover:text-foreground" /></button>
       </div>
-
-      {/* Messages */}
       <div ref={scrollRef} className="h-48 overflow-y-auto p-3 space-y-2">
         {messages.map(msg => (
           <div key={msg.id} className={cn(
@@ -146,24 +181,14 @@ const InlineChatPanel = ({ bidId, customerName, onClose }: { bidId: string; cust
           )}>
             {msg.text}
             {msg.from === 'vendor' && (
-              <div className="flex justify-end mt-0.5">
-                <TickIcon status={msg.status} />
-              </div>
+              <div className="flex justify-end mt-0.5"><TickIcon status={msg.status} /></div>
             )}
           </div>
         ))}
       </div>
-
-      {/* Input */}
       <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
         <button className="text-muted-foreground hover:text-foreground"><Paperclip className="w-4 h-4" /></button>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="Type a message..."
-          className="flex-1 text-xs font-sans bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-        />
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="Type a message..." className="flex-1 text-xs font-sans bg-transparent outline-none text-foreground placeholder:text-muted-foreground" />
         <button onClick={handleSend} className="text-accent hover:text-accent/80"><Send className="w-4 h-4" /></button>
       </div>
     </div>
@@ -173,10 +198,6 @@ const InlineChatPanel = ({ bidId, customerName, onClose }: { bidId: string; cust
 // ═══════════════════════════════════════
 // Edit Bid Modal
 // ═══════════════════════════════════════
-
-// IMPORTANT: Vendor alias is assigned at account creation and never changes.
-// Customer sees consistent alias (e.g. "Artisan Gold-7") regardless of bid edits.
-// This allows customers to track one vendor's revised offers. TODO: API_INTEGRATION_POINT
 
 type EditBidModalProps = {
   open: boolean;
@@ -190,7 +211,6 @@ const EditBidModal = ({ open, onClose, bid, onSave }: EditBidModalProps) => {
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(new Date(bid.deliveryDate));
   const [message, setMessage] = useState(bid.message);
 
-  // Reset on open
   useEffect(() => {
     if (open) {
       setPrice(String(bid.bidAmount));
@@ -221,8 +241,6 @@ const EditBidModal = ({ open, onClose, bid, onSave }: EditBidModalProps) => {
         <DialogHeader>
           <DialogTitle className="font-serif">Edit Bid — #{bid.leadId}</DialogTitle>
         </DialogHeader>
-
-        {/* Brief recap */}
         <div className="flex gap-3 p-3 rounded-xl bg-muted/50 border border-border">
           <div className="w-14 h-14 rounded-lg bg-accent/10 flex items-center justify-center text-2xl flex-shrink-0">
             {bid.category.includes('Women') ? '👗' : '🤵'}
@@ -235,11 +253,9 @@ const EditBidModal = ({ open, onClose, bid, onSave }: EditBidModalProps) => {
             </p>
           </div>
         </div>
-
         <p className="text-xs font-sans text-muted-foreground">
           Current bid: <span className="font-semibold text-foreground">₹{bid.bidAmount.toLocaleString('en-IN')}</span>
         </p>
-
         <div className="space-y-4 mt-2">
           <div>
             <Label className="font-sans text-sm">Proposed Price (₹)</Label>
@@ -249,14 +265,9 @@ const EditBidModal = ({ open, onClose, bid, onSave }: EditBidModalProps) => {
                 You will receive: <span className="font-semibold text-foreground">₹{netEarning.toLocaleString('en-IN')}</span> after 20% platform fee
               </p>
             )}
-            {exceedsBudget && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-sans mt-1">
-                ⚠️ Your bid exceeds customer's max budget (₹{bid.budgetMax.toLocaleString('en-IN')}).
-              </p>
-            )}
+            {exceedsBudget && <p className="text-xs text-amber-600 dark:text-amber-400 font-sans mt-1">⚠️ Your bid exceeds customer's max budget.</p>}
             {tooLow && <p className="text-xs text-destructive font-sans mt-1">Minimum bid is ₹1,000</p>}
           </div>
-
           <div>
             <Label className="font-sans text-sm">Estimated Delivery Date</Label>
             <Popover>
@@ -271,16 +282,13 @@ const EditBidModal = ({ open, onClose, bid, onSave }: EditBidModalProps) => {
               </PopoverContent>
             </Popover>
           </div>
-
           <div>
             <Label className="font-sans text-sm">Message to Customer (optional)</Label>
             <Textarea value={message} onChange={e => setMessage(e.target.value.slice(0, 500))} placeholder="Update your approach..." className="mt-1 font-sans min-h-[80px]" maxLength={500} />
             <p className="text-xs text-muted-foreground font-sans mt-1 text-right">{message.length}/500</p>
           </div>
         </div>
-
         <p className="text-xs text-muted-foreground font-sans mt-2">Your updated bid remains binding for 7 days.</p>
-
         <div className="flex gap-3 mt-4">
           <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
           <Button variant="gold" onClick={handleSubmit} disabled={!canSubmit} className="flex-1">Save Changes →</Button>
@@ -297,6 +305,7 @@ const EditBidModal = ({ open, onClose, bid, onSave }: EditBidModalProps) => {
 const VendorMyBids = () => {
   const navigate = useNavigate();
   const [bids, setBids] = useState<MyBid[]>(mockMyBids);
+  const [expandedBriefs, setExpandedBriefs] = useState<Set<string>>(new Set());
 
   // Filters
   const [statusFilter, setStatusFilter] = useState('All');
@@ -308,7 +317,6 @@ const VendorMyBids = () => {
   const [editBid, setEditBid] = useState<MyBid | null>(null);
   const [withdrawConfirmId, setWithdrawConfirmId] = useState<string | null>(null);
 
-  // Filter + sort
   const filtered = (() => {
     let result = [...bids];
     if (statusFilter !== 'All') result = result.filter(b => b.status === statusFilter.toLowerCase());
@@ -334,24 +342,29 @@ const VendorMyBids = () => {
     toast.success('Bid withdrawn successfully.');
   };
 
+  const toggleBrief = (id: string) => {
+    setExpandedBriefs(prev => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  };
+
   return (
     <div>
-      {/* Header */}
       <div className="mb-6">
         <h1 className="font-serif font-bold text-2xl text-foreground">My Bids</h1>
         <p className="text-sm font-sans text-muted-foreground">Track all bids you've submitted. Edit, withdraw, or monitor your ranking.</p>
       </div>
 
-      {/* Filter / Sort bar */}
       <div className="flex flex-wrap gap-2 mb-6">
-        {/* Status pills */}
         <div className="flex gap-1.5 overflow-x-auto">
           {['All', 'Active', 'Accepted', 'Declined', 'Expired', 'Withdrawn'].map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-sans transition-colors whitespace-nowrap",
+                "px-3 py-1.5 rounded-full text-xs font-sans transition-colors whitespace-nowrap min-h-[44px]",
                 statusFilter === s
                   ? 'bg-accent text-accent-foreground font-semibold'
                   : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -361,19 +374,16 @@ const VendorMyBids = () => {
             </button>
           ))}
         </div>
-
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-auto min-w-[100px] h-8 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>{CATEGORY_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
         </Select>
-
         <Select value={sort} onValueChange={setSort}>
           <SelectTrigger className="w-auto min-w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>{SORT_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
         </Select>
       </div>
 
-      {/* Empty state */}
       {filtered.length === 0 && (
         <div className="text-center py-16">
           <p className="text-4xl mb-3">🏷️</p>
@@ -383,143 +393,132 @@ const VendorMyBids = () => {
         </div>
       )}
 
-      {/* Bid cards */}
       <div className="space-y-4">
         {filtered.map(bid => {
           const sc = STATUS_CONFIG[bid.status];
+          const isExpanded = expandedBriefs.has(bid.id);
           return (
-            <div key={bid.id} className="bg-card border border-border rounded-2xl p-4">
+            <div key={bid.id} className="bg-card border border-border rounded-2xl overflow-hidden">
               {/* Accepted banner */}
               {bid.status === 'accepted' && (
-                <div className="mb-3 p-2.5 rounded-xl bg-accent/10 border border-accent/20">
-                  <p className="text-xs font-sans text-accent font-semibold">
+                <div className="p-2.5 bg-accent/10 border-b border-accent/20">
+                  <p className="text-xs font-sans text-accent font-semibold px-4">
                     🎉 This bid was accepted!{' '}
                     <button onClick={() => navigate('/vendor/orders')} className="underline hover:no-underline">View in Active Orders →</button>
                   </p>
                 </div>
               )}
-
-              {/* Expired banner */}
               {bid.status === 'expired' && (
-                <div className="mb-3 p-2.5 rounded-xl bg-muted border border-border">
-                  <p className="text-xs font-sans text-muted-foreground">⏱ Bid window closed.</p>
+                <div className="p-2.5 bg-muted border-b border-border">
+                  <p className="text-xs font-sans text-muted-foreground px-4">⏱ Bid window closed.</p>
                 </div>
               )}
 
-              <div className="flex gap-3">
-                {/* Thumb */}
-                <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
-                  {bid.inspirationThumb ? (
-                    <img src={bid.inspirationThumb} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    bid.category.includes('Women') ? '👗' : '🤵'
-                  )}
-                </div>
+              {/* Inspiration photo */}
+              {bid.inspirationPhoto && (
+                <img src={bid.inspirationPhoto} alt="" className="w-full h-48 object-cover" />
+              )}
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  {/* Row 1: badges */}
-                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-sans font-semibold", sc.classes)}>
-                      {sc.label}
-                    </span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{bid.orderType}</Badge>
-                    <span className="text-xs font-sans text-muted-foreground">{bid.category} · {bid.subCategory}</span>
-                  </div>
-
-                  {/* Row 2 */}
-                  <p className="text-xs font-sans text-muted-foreground">#{bid.leadId} · {bid.customerFirstName}, {bid.city}</p>
-
-                  {/* Row 3 */}
-                  <p className="mt-1.5 text-sm font-sans">
-                    <span className="text-muted-foreground">My bid:</span>{' '}
-                    <span className="font-serif font-bold text-accent">₹{bid.bidAmount.toLocaleString('en-IN')}</span>
-                    <span className="text-muted-foreground ml-3">Delivery:</span>{' '}
-                    <span className="text-foreground text-xs">{bid.deliveryDate}</span>
-                  </p>
-
-                  {/* Row 4 */}
-                  <p className="text-xs font-sans text-muted-foreground mt-0.5">
-                    Customer budget: ₹{bid.budgetMin.toLocaleString('en-IN')} – ₹{bid.budgetMax.toLocaleString('en-IN')}
-                  </p>
-
-                  {/* Row 5: Competition panel */}
-                  <div className="mt-2 p-2.5 rounded-lg bg-muted/70 space-y-1">
-                    <p className="text-xs font-sans text-foreground">
-                      📊 You are ranked <span className="font-semibold text-accent">#{bid.myRank}</span> of {bid.totalBids} bids
-                    </p>
-                    <p className="text-xs font-sans text-muted-foreground">
-                      Bid range on this brief: ₹{bid.bidRangeMin.toLocaleString('en-IN')} – ₹{bid.bidRangeMax.toLocaleString('en-IN')}
-                    </p>
-                    {bid.myRank > 1 && !bid.outbidAlert && (
-                      <p className="text-xs font-sans text-amber-700 dark:text-amber-400">
-                        ⚠️ A lower-priced bid exists. Consider revising to stay competitive.
-                      </p>
-                    )}
-                    {bid.outbidAlert && (
-                      <p className="text-xs font-sans text-destructive">
-                        🔔 You've been outbid! Update your bid before the deadline.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Row 6 */}
-                  <p className="text-xs font-sans text-muted-foreground mt-2">
-                    Bid deadline: <span className="font-semibold">{formatCountdown(bid.bidDeadline)}</span>
-                    <span className="mx-2">·</span>
-                    Submitted: {formatDistanceToNow(bid.submittedAt, { addSuffix: true })}
-                  </p>
-
-                  {bid.message && (
-                    <p className="text-xs font-sans text-muted-foreground mt-1 italic line-clamp-2">"{bid.message}"</p>
-                  )}
-
-                  {/* Action buttons (active only) */}
-                  {bid.status === 'active' && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-7"
-                        onClick={() => setOpenChatId(openChatId === bid.id ? null : bid.id)}
-                      >
-                        <MessageSquare className="w-3 h-3 mr-1" /> Chat
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setEditBid(bid)}>
-                        <Pencil className="w-3 h-3 mr-1" /> Edit Bid
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => setWithdrawConfirmId(bid.id)}>
-                        Withdraw
-                      </Button>
+              <div className="p-4">
+                <div className="flex gap-3">
+                  {!bid.inspirationPhoto && (
+                    <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
+                      {bid.inspirationThumb ? (
+                        <img src={bid.inspirationThumb} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        bid.category.includes('Women') ? '👗' : '🤵'
+                      )}
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* Inline chat */}
-              {openChatId === bid.id && (
-                <InlineChatPanel
-                  bidId={bid.id}
-                  customerName={bid.customerFirstName}
-                  onClose={() => setOpenChatId(null)}
-                />
-              )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                      <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-sans font-semibold", sc.classes)}>
+                        {sc.label}
+                      </span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{bid.orderType}</Badge>
+                      <span className="text-xs font-sans text-muted-foreground">{bid.category} · {bid.subCategory}</span>
+                    </div>
+
+                    <p className="text-xs font-sans text-muted-foreground">#{bid.leadId} · {bid.customerFirstName}, {bid.city}</p>
+                    {bid.occasion && <p className="text-xs font-sans text-muted-foreground">Occasion: {bid.occasion}</p>}
+
+                    <p className="mt-1.5 text-sm font-sans">
+                      <span className="text-muted-foreground">My bid:</span>{' '}
+                      <span className="font-serif font-bold text-accent">₹{bid.bidAmount.toLocaleString('en-IN')}</span>
+                      <span className="text-muted-foreground ml-3">Delivery:</span>{' '}
+                      <span className="text-foreground text-xs">{bid.deliveryDate}</span>
+                    </p>
+
+                    <p className="text-xs font-sans text-muted-foreground mt-0.5">
+                      Customer budget: ₹{bid.budgetMin.toLocaleString('en-IN')} – ₹{bid.budgetMax.toLocaleString('en-IN')}
+                    </p>
+
+                    {/* Competition panel */}
+                    <div className="mt-2 p-2.5 rounded-lg bg-muted/70 space-y-1">
+                      <p className="text-xs font-sans text-foreground">
+                        📊 You are ranked <span className="font-semibold text-accent">#{bid.myRank}</span> of {bid.totalBids} bids
+                      </p>
+                      <p className="text-xs font-sans text-muted-foreground">
+                        Bid range: ₹{bid.bidRangeMin.toLocaleString('en-IN')} – ₹{bid.bidRangeMax.toLocaleString('en-IN')}
+                      </p>
+                      {bid.myRank > 1 && !bid.outbidAlert && (
+                        <p className="text-xs font-sans text-amber-700 dark:text-amber-400">⚠️ A lower-priced bid exists. Consider revising.</p>
+                      )}
+                      {bid.outbidAlert && (
+                        <p className="text-xs font-sans text-destructive">🔔 You've been outbid! Update your bid before the deadline.</p>
+                      )}
+                    </div>
+
+                    {/* Collapsible brief */}
+                    <button
+                      onClick={() => toggleBrief(bid.id)}
+                      className="flex items-center gap-1 text-xs font-sans text-accent hover:underline mt-2"
+                    >
+                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      {isExpanded ? 'Hide Brief ↑' : 'View Brief ↓'}
+                    </button>
+                    {isExpanded && <FullBriefGrid data={bid} />}
+
+                    <p className="text-xs font-sans text-muted-foreground mt-2">
+                      Bid deadline: <span className="font-semibold">{formatCountdown(bid.bidDeadline)}</span>
+                      <span className="mx-2">·</span>
+                      Submitted: {formatDistanceToNow(bid.submittedAt, { addSuffix: true })}
+                    </p>
+
+                    {bid.message && (
+                      <p className="text-xs font-sans text-muted-foreground mt-1 italic line-clamp-2">"{bid.message}"</p>
+                    )}
+
+                    {bid.status === 'active' && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button variant="outline" size="sm" className="text-xs h-7 min-h-[44px]" onClick={() => setOpenChatId(openChatId === bid.id ? null : bid.id)}>
+                          <MessageSquare className="w-3 h-3 mr-1" /> Chat
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs h-7 min-h-[44px]" onClick={() => setEditBid(bid)}>
+                          <Pencil className="w-3 h-3 mr-1" /> Edit Bid
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-xs h-7 min-h-[44px] text-destructive" onClick={() => setWithdrawConfirmId(bid.id)}>
+                          Withdraw
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {openChatId === bid.id && (
+                  <InlineChatPanel bidId={bid.id} customerName={bid.customerFirstName} onClose={() => setOpenChatId(null)} />
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Edit Bid Modal */}
       {editBid && (
-        <EditBidModal
-          open={!!editBid}
-          onClose={() => setEditBid(null)}
-          bid={editBid}
-          onSave={handleEditSave}
-        />
+        <EditBidModal open={!!editBid} onClose={() => setEditBid(null)} bid={editBid} onSave={handleEditSave} />
       )}
 
-      {/* Withdraw confirmation dialog */}
       <Dialog open={!!withdrawConfirmId} onOpenChange={v => { if (!v) setWithdrawConfirmId(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
