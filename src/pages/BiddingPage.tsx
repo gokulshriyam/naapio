@@ -457,8 +457,8 @@ const BiddingPage = () => {
       {/* ══════ 5-Milestone Tracker ══════ */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-serif font-bold text-foreground">Order Milestones</h2>
-          <p className="text-sm text-muted-foreground font-sans">Your tailor uploads proof at each stage — you approve before work continues</p>
+          <h2 className="text-xl font-serif font-bold text-foreground">{t('dashboard.milestones')}</h2>
+          <p className="text-sm text-muted-foreground font-sans">{t('dashboard.milestonesSubtext')}</p>
         </div>
 
         {(milestones.every((m) => m.status === "pending") || milestones.some((m) => m.status === "changes_requested")) && (
