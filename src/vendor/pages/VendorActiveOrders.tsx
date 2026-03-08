@@ -246,11 +246,12 @@ const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActive
       <p className="text-xs font-sans font-semibold text-foreground">Brief Summary</p>
 
       {order.inspirationPhoto && (
-        <img src={order.inspirationPhoto} alt="" className="w-full h-36 object-cover object-top rounded-xl mt-2 cursor-pointer" onClick={() => {
-          // Will be handled by parent zoomImage state
-          const event = new CustomEvent('zoom-image', { detail: order.inspirationPhoto });
-          window.dispatchEvent(event);
-        }} />
+        <img
+          src={order.inspirationPhoto}
+          alt=""
+          className="w-full h-36 object-cover object-top rounded-xl mt-2 cursor-pointer"
+          onClick={() => onZoomImage?.(order.inspirationPhoto!)}
+        />
       )}
 
       <SectionHeader title="Order Details" />
