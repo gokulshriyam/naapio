@@ -540,9 +540,10 @@ const BiddingRoom = ({
                 </button>
                 {expandedChat === bid.id && (
                   <div className="mt-2 border border-border rounded-lg overflow-hidden">
-                    <div className="px-3 py-2 bg-muted flex items-center justify-between">
-                      <span className="text-xs font-sans font-medium text-foreground">Message {bid.alias}</span>
-                      <span className="text-[10px] text-muted-foreground font-sans">Contacts masked until selection</span>
+                    {/* Chat header */}
+                    <div className="px-3 py-2 bg-muted border-b border-border flex items-center justify-between">
+                      <span className="text-xs font-sans font-medium text-foreground">{bid.alias}</span>
+                      <span className="text-[10px] text-muted-foreground font-sans">Last seen 3 min ago</span>
                     </div>
                     {/* Contact masking notice */}
                     <div className="px-3 py-2 bg-warning-light border-b border-warning/20">
@@ -554,17 +555,59 @@ const BiddingRoom = ({
                       {(!chatMessages[bid.id] || chatMessages[bid.id].length === 0) && (
                         <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about fabric options, timeline, or previous work.</p>
                       )}
-                      {(chatMessages[bid.id] || []).map((m, i) => (
-                        <div key={i} className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
-                            m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
-                          }`}>
-                            {maskContactInfo(m.text)}
+                      {(chatMessages[bid.id] || []).map((m) => {
+                        if (m.from === 'system') {
+                          return (
+                            <div key={m.id} className="text-center my-2">
+                              <span className="text-[10px] font-sans text-muted-foreground italic bg-muted px-3 py-1.5 rounded-full inline-block max-w-[90%]">
+                                {m.text}
+                              </span>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={m.id} className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}>
+                            <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
+                              m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
+                            }`}>
+                              {m.attachment ? (
+                                m.attachment.type === 'image' ? (
+                                  <img src={m.attachment.url} alt={m.attachment.name} className="max-w-[160px] rounded-lg" />
+                                ) : m.attachment.type === 'video' ? (
+                                  <div className="flex items-center gap-2"><Video className="w-4 h-4" /><span>{m.attachment.name}</span><span className="opacity-60">▶ Play</span></div>
+                                ) : (
+                                  <div className="flex items-center gap-2"><FileText className="w-4 h-4" /><span>{m.attachment.name}</span>{m.attachment.size && <span className="opacity-60">{m.attachment.size}</span>}</div>
+                                )
+                              ) : (
+                                maskContactInfo(m.text || '')
+                              )}
+                            </div>
+                            {m.from === 'you' && (
+                              <span className="ml-1 self-end text-[10px] leading-none">
+                                {m.status === 'sent' && <span className="text-muted-foreground">✓</span>}
+                                {m.status === 'delivered' && <span className="text-muted-foreground">✓✓</span>}
+                                {m.status === 'read' && <span className="text-blue-500">✓✓</span>}
+                              </span>
+                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="flex gap-2 p-2 border-t border-border">
+                      <input
+                        type="file"
+                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        className="hidden"
+                        ref={el => { chatFileRefs.current[bid.id] = el; }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileAttach(bid.id, file);
+                          e.target.value = '';
+                        }}
+                      />
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0" onClick={() => chatFileRefs.current[bid.id]?.click()}>
+                        <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />
+                      </Button>
                       <Input
                         value={chatInputs[bid.id] ?? ""}
                         onChange={(e) => setChatInputs(prev => ({ ...prev, [bid.id]: e.target.value }))}
