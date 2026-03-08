@@ -154,13 +154,28 @@ const ActiveOrdersPage = () => {
   // Data from localStorage
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [lastOrder, setLastOrder] = useState<any>(null);
+  const [allActiveOrders, setAllActiveOrders] = useState<any[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
+      // Multi-order array support
+      const rawArr = localStorage.getItem('naapio_active_orders');
+      const orders = rawArr ? JSON.parse(rawArr) : [];
+      setAllActiveOrders(orders);
+
+      // Single-order compat
       const raw = localStorage.getItem('naapio_active_order');
       if (raw) setActiveOrder(JSON.parse(raw));
       const raw2 = localStorage.getItem('naapio_last_order');
       if (raw2) setLastOrder(JSON.parse(raw2));
+
+      // If multi-order, pre-select the most recent
+      if (orders.length > 1) {
+        const mostRecent = orders[orders.length - 1];
+        setSelectedOrderId(mostRecent.orderId);
+        setActiveOrder(mostRecent);
+      }
     } catch {}
     setTimeout(() => setLoading(false), 300);
   }, []);
