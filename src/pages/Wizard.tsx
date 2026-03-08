@@ -598,6 +598,27 @@ const Wizard = () => {
     }
   }, [groupSize]);
 
+  // Compute step 3 phases dynamically based on advanced preferences and surface selections
+  const getStep3Phases = (): string[] => {
+    const phases: string[] = ['feel', 'fabricType', 'colour', 'surface'];
+    
+    if (showAdvancedFabric) {
+      phases.push('blend');
+      phases.push('brand');
+    }
+    
+    phases.push('fabricBudget');
+    
+    if (showAdvancedFabric && 
+        selectedSurfaces.length > 0 && 
+        !selectedSurfaces.every(s => s === 'Plain / No Embellishment' || s === 'No Preference')) {
+      phases.push('embellishment');
+    }
+    
+    phases.push('budgetDelivery');
+    return phases;
+  };
+
   // Popstate handler for Android back button
   useEffect(() => {
     if (step >= 1) {
@@ -615,12 +636,13 @@ const Wizard = () => {
             setStep(1);
           }
         } else if (step === 3 && step3Phase) {
-          const phases = ['feel', 'fabricType', 'colour', 'surface', 'blend', 'brand', 'fabricBudget', 'embellishment', 'budgetDelivery'];
+          const phases = getStep3Phases();
           const currentIndex = phases.indexOf(step3Phase);
           if (currentIndex > 0) {
             setStep3Phase(phases[currentIndex - 1] as any);
           } else {
             setStep(2);
+            setStep2Phase('measurements');
           }
         } else {
           setStep((prev) => Math.max(0, prev - 1) as any);
@@ -633,7 +655,7 @@ const Wizard = () => {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [step, step2Phase, step3Phase]);
+  }, [step, step2Phase, step3Phase, showAdvancedFabric, selectedSurfaces]);
 
   // Delivery day count helper
   const getDeliveryDayCount = (dateStr: string) => {
