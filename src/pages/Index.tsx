@@ -192,13 +192,14 @@ const Index = () => {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto">
+          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto flex flex-col">
             <div className="w-full mb-2"><CitySelector variant="mobile" /></div>
             <div className="w-full mb-2"><LanguageSelector variant="mobile" /></div>
             <div className="h-px bg-border my-2" />
             <a href="#how-it-works" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.howItWorks')}</a>
             <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
             <a href="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</a>
+            <div className="flex-1" />
             <div className="space-y-3 pt-3">
               {isLoggedIn ? (
                 <>
