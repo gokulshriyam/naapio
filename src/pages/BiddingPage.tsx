@@ -26,15 +26,56 @@ const formatBudget = (v: number): string => {
   return `₹${v}`;
 };
 
-const calcTimeLeft = (deadline: Date) => {
-  const diff = Math.max(0, deadline.getTime() - Date.now());
+const calcTimeLeft = (deadline: Date | string | number) => {
+  const deadlineDate = deadline instanceof Date 
+    ? deadline 
+    : new Date(deadline);
+  
+  if (isNaN(deadlineDate.getTime())) {
+    return { days: 7, hours: 0, minutes: 0, seconds: 0, total: 604800000 };
+  }
+  
+  const total = deadlineDate.getTime() - Date.now();
+  if (total <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 };
+  }
+  
   return {
-    days: Math.floor(diff / 86400000),
-    hours: Math.floor((diff % 86400000) / 3600000),
-    minutes: Math.floor((diff % 3600000) / 60000),
-    seconds: Math.floor((diff % 60000) / 1000),
-    total: diff,
+    days: Math.floor(total / 86400000),
+    hours: Math.floor((total % 86400000) / 3600000),
+    minutes: Math.floor((total % 3600000) / 60000),
+    seconds: Math.floor((total % 60000) / 1000),
+    total,
   };
+};
+
+// Contact masking function
+const maskContactInfo = (text: string): string => {
+  // Mask Indian mobile numbers (with or without +91)
+  let masked = text.replace(
+    /(\+91[\s\-]?)?[6-9]\d{9}/g,
+    '📵 [contact hidden]'
+  );
+  
+  // Mask any 7+ consecutive digit string
+  masked = masked.replace(
+    /\b\d{7,}\b/g,
+    '[number hidden]'
+  );
+  
+  // Mask email addresses
+  masked = masked.replace(
+    /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g,
+    '📵 [email hidden]'
+  );
+  
+  // Mask WhatsApp references with numbers
+  masked = masked.replace(
+    /whatsapp\s*(me|at|on|:)?\s*(\+91[\s\-]?)?[6-9]\d{9}/gi,
+    '📵 [WhatsApp hidden]'
+  );
+  
+  return masked;
 };
 
 const daysSince = (d: Date) => Math.floor((Date.now() - d.getTime()) / 86400000);
