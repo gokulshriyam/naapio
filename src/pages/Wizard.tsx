@@ -553,7 +553,11 @@ const Wizard = () => {
       if (step3Phase === "brand") return true;
       if (step3Phase === "fabricBudget") return !!fabricBudgetBand;
       if (step3Phase === "embellishment") return !!embellishmentBudget;
-      if (step3Phase === "budgetDelivery") return budgetRange[0] >= 1000 && !!deliveryDate;
+      if (step3Phase === "budgetDelivery") {
+        const minOk = budgetRange[0] >= 500;
+        const maxOk = budgetRange[1] === 0 || budgetRange[1] >= budgetRange[0];
+        return minOk && maxOk && !!deliveryDate;
+      }
       return true;
     }
     if (step === 4) return otpVerified && termsAccepted;
