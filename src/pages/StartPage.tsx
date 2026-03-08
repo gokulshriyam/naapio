@@ -107,6 +107,10 @@ const StartPage = () => {
         ))}
       </div>
 
+      {prefilledCategory && (
+        <p className="text-sm text-accent font-sans mt-4">Starting with {prefilledCategory} pre-selected ✓</p>
+      )}
+
       {!isCitySelected && (
         <p className="text-sm text-muted-foreground font-sans mt-6">
           📍 {t('start.selectCityPrompt')}
