@@ -1609,108 +1609,108 @@ Important rules:
         </div>
       )}
 
-      {/* ═══ PART 2: Persistent Inspiration Thumbnail (Steps 2 & 3) ═══ */}
-      {/* Mobile: Collapsible bar at top */}
+      {/* ═══ PART 2: Persistent Draggable Inspiration Thumbnail (Steps 2 & 3) ═══ */}
       {(step === 2 || step === 3) && inspirationPhoto && (
-        <div className="md:hidden">
-          {!inspirationExpanded ? (
-            <button
-              onClick={() => setInspirationExpanded(true)}
-              className="w-full bg-card border-b border-border px-4 py-2 flex items-center gap-3"
-            >
-              <img 
-                src={URL.createObjectURL(inspirationPhoto)} 
-                alt="Inspiration" 
-                className="w-10 h-10 rounded-lg object-cover border border-border"
-              />
-              <span className="flex-1 text-left font-sans text-sm font-medium text-foreground">Your Inspiration 📸</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </button>
-          ) : (
-            <motion.div 
-              initial={{ height: 0 }} 
-              animate={{ height: 'auto' }}
-              className="bg-card border-b border-border overflow-hidden"
-            >
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-sans text-sm font-semibold text-foreground">Your Inspiration</span>
-                  <button 
-                    onClick={() => setInspirationExpanded(false)}
-                    className="text-xs text-muted-foreground font-sans flex items-center gap-1"
-                  >
-                    Collapse <ChevronDown className="w-3 h-3 rotate-180" />
-                  </button>
-                </div>
-                <img 
-                  src={URL.createObjectURL(inspirationPhoto)} 
-                  alt="Inspiration" 
-                  className="w-full h-44 rounded-xl object-cover border border-border"
-                  onClick={() => setInspirationLightboxOpen(true)}
-                />
-                {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
-                      <span className="px-2 py-0.5 bg-accent/10 rounded-full text-xs font-sans text-foreground">
-                        {photoAnalysis.detectedGarment}
-                      </span>
-                    )}
-                    {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
-                      <span className="px-2 py-0.5 bg-accent/10 rounded-full text-xs font-sans text-foreground">
-                        {photoAnalysis.detectedColour}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      )}
+        <div
+          ref={thumbRef}
+          onMouseDown={handleDragStart}
+          onTouchStart={handleDragStart}
+          style={{
+            position: 'fixed',
+            left: thumbPosition.x,
+            top: thumbPosition.y,
+            width: isMobileThumb ? 120 : 148,
+            zIndex: 999,
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+            borderRadius: 12,
+            boxShadow: isDragging 
+              ? '0 8px 32px rgba(0,0,0,0.25)' 
+              : '0 4px 20px rgba(0,0,0,0.15)',
+            transition: isDragging ? 'box-shadow 0.2s' : 'left 0.3s ease, top 0.3s ease, box-shadow 0.2s',
+            overflow: 'hidden',
+          }}
+          className="bg-card border border-border"
+        >
+          {/* Drag handle bar */}
+          <div className="flex items-center justify-center gap-1 bg-muted/60" style={{ height: 24, cursor: 'grab' }}>
+            <span className="text-muted-foreground" style={{ fontSize: 10, letterSpacing: 2 }}>⠿</span>
+            <span className="text-muted-foreground font-sans" style={{ fontSize: 10 }}>Your Inspiration</span>
+          </div>
 
-      {/* Desktop: Fixed card in bottom-right */}
-      {(step === 2 || step === 3) && inspirationPhoto && (
-        <div className="hidden md:block fixed bottom-24 right-6 z-40 w-40">
-          <div className="bg-card rounded-xl border border-border shadow-lg overflow-hidden">
-            <div className="p-2">
-              <p className="text-xs font-sans font-semibold text-muted-foreground mb-2">Your Inspiration</p>
-              <div className="relative">
-                <img 
-                  src={URL.createObjectURL(inspirationPhoto)} 
-                  alt="Inspiration" 
-                  className="w-full h-28 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setInspirationLightboxOpen(true)}
-                />
-                <button 
-                  onClick={() => setInspirationLightboxOpen(true)}
-                  className="absolute top-1.5 right-1.5 p-1 bg-card/90 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+          {/* Photo area */}
+          <div className="relative" style={{ pointerEvents: 'none' }}>
+            <img 
+              src={URL.createObjectURL(inspirationPhoto)} 
+              alt="Inspiration" 
+              className="w-full object-cover"
+              style={{ height: isMobileThumb ? 90 : 120 }}
+              draggable={false}
+            />
+            {analysisLoading && (
+              <div className="absolute inset-0 bg-card/80 flex items-center justify-center">
+                <motion.span 
+                  animate={{ rotate: 360 }} 
+                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                  className="text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg>
-                </button>
-                {analysisLoading && (
-                  <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center">
-                    <motion.span 
-                      animate={{ rotate: 360 }} 
-                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                      className="text-sm"
-                    >
-                      ✨
-                    </motion.span>
-                  </div>
-                )}
-                {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && !analysisLoading && (
-                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-green-500 text-white rounded text-[9px] font-sans font-semibold">
-                    ✨ Analysed
-                  </span>
-                )}
+                  ✨
+                </motion.span>
               </div>
-              {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
-                <p className="text-[10px] text-muted-foreground font-sans mt-2 truncate">
-                  {[photoAnalysis.detectedGarment, photoAnalysis.detectedColour].filter(d => d && d !== 'Other').join(' · ')}
+            )}
+            {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && !analysisLoading && (
+              <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-green-500 text-white rounded text-[8px] font-sans font-semibold">
+                ✨ Analysed
+              </span>
+            )}
+          </div>
+
+          {/* Bottom strip */}
+          <div className="flex items-end justify-between" style={{ padding: '6px 8px', pointerEvents: 'auto' }}>
+            <div className="flex-1 min-w-0">
+              {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError ? (
+                <>
+                  <p className="text-foreground font-sans truncate" style={{ fontSize: 11, lineHeight: '14px' }}>
+                    ✨ {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' ? photoAnalysis.detectedGarment : 'Detected'}
+                  </p>
+                  {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                    <p className="text-muted-foreground font-sans truncate" style={{ fontSize: 10, lineHeight: '13px' }}>
+                      {photoAnalysis.detectedColour}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-muted-foreground font-sans" style={{ fontSize: 10 }}>
+                  {analysisLoading ? 'Analysing...' : 'Uploaded'}
                 </p>
               )}
             </div>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setInspirationLightboxOpen(true);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              className="ml-1 p-1 rounded-full hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg>
+            </button>
           </div>
+
+          {/* Drag hint (first time only) */}
+          {showDragHint && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md bg-accent/90 text-accent-foreground font-sans"
+              style={{ fontSize: 10, zIndex: 1000 }}
+            >
+              Drag me to any corner ↕
+            </motion.div>
+          )}
         </div>
       )}
 
