@@ -2721,27 +2721,59 @@ Return a JSON object with ONLY these fields, no other text:
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">How do you want the fabric to feel?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Choose the quality that matches your vision</p>
+
+                      {/* Photo pre-fill notice */}
+                      {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                       photoAnalysis.detectedFeel && photoAnalysis.detectedFeel !== 'Unable to determine' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-sans text-amber-800">
+                            We detected <span className="font-semibold">{photoAnalysis.detectedFeel}</span> fabric in your photo.
+                          </span>
+                        </motion.div>
+                      )}
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {feelOptions.map((feel) => (
-                          <button
-                            key={feel.label}
-                            onClick={() => setSelectedFeel(feel.label)}
-                            className={`rounded-xl overflow-hidden text-left transition-all border-2 ${
-                              selectedFeel === feel.label
-                                ? "border-accent ring-2 ring-accent/30"
-                                : "border-border hover:border-accent/30"
-                            }`}
-                          >
-                            <img src={feel.img} alt={feel.label} className="w-full h-32 object-cover" />
-                            <div className="p-4">
-                              <p className="font-sans font-bold text-sm text-foreground mb-1 flex items-center gap-2">
-                                {selectedFeel === feel.label && <Check className="w-4 h-4 text-accent" />}
-                                {feel.label}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{feel.desc}</p>
-                            </div>
-                          </button>
-                        ))}
+                        {feelOptions.map((feel) => {
+                          const isDetected = photoAnalysis?.analysisComplete && 
+                            !photoAnalysis?.analysisError && 
+                            photoAnalysis.detectedFeel === feel.label;
+                          const isSelected = selectedFeel === feel.label;
+                          
+                          // Auto pre-select detected feel if nothing selected yet
+                          if (isDetected && !selectedFeel && !photoFromBadgeShown.has('feel')) {
+                            setTimeout(() => {
+                              setSelectedFeel(feel.label);
+                              setPhotoFromBadgeShown(prev => new Set(prev).add('feel'));
+                            }, 100);
+                          }
+                          
+                          return (
+                            <button
+                              key={feel.label}
+                              onClick={() => setSelectedFeel(feel.label)}
+                              className={`rounded-xl overflow-hidden text-left transition-all border-2 relative ${
+                                isSelected
+                                  ? "border-accent ring-2 ring-accent/30"
+                                  : "border-border hover:border-accent/30"
+                              }`}
+                            >
+                              <img src={feel.img} alt={feel.label} className="w-full h-32 object-cover" />
+                              <div className="p-4">
+                                <p className="font-sans font-bold text-sm text-foreground mb-1 flex items-center gap-2">
+                                  {isSelected && <Check className="w-4 h-4 text-accent" />}
+                                  {feel.label}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{feel.desc}</p>
+                              </div>
+                              {isDetected && isSelected && (
+                                <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                                  ✨ From photo
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
