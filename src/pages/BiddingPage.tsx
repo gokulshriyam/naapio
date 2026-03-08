@@ -490,8 +490,8 @@ const BiddingRoom = ({
                     </div>
                     <div className="flex gap-2 p-2 border-t border-border">
                       <Input
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
+                        value={chatInputs[bid.id] ?? ""}
+                        onChange={(e) => setChatInputs(prev => ({ ...prev, [bid.id]: e.target.value }))}
                         placeholder="Type a message..."
                         className="h-8 text-xs"
                         onKeyDown={(e) => e.key === "Enter" && handleSendChat(bid.id)}
