@@ -303,7 +303,7 @@ const CustomiseFlow = () => {
   const progressPercent = showReview ? 100 : (step / 5) * 100;
 
   const handleNext = () => {
-    if (step === 3 && placementZones.length === 0) {
+    if (step === 3 && totalSelectedZones === 0) {
       setPlacementError(true);
       return;
     }
