@@ -658,62 +658,52 @@ const Wizard = () => {
   useEffect(() => {
     if (!photoAnalysis || !photoAnalysis.analysisComplete || photoAnalysis.analysisError) return;
     
-    
-    
-    // Pre-fill category if detected and not already set
-    if (photoAnalysis.detectedGarment && !selectedCategory) {
-      const mappedCategory = mapDetectedToCategory(photoAnalysis.detectedGarment);
-      if (mappedCategory) {
-        setSelectedCategory(mappedCategory);
-        setPhotoFromBadgeShown(prev => new Set([...prev, 'category']));
-        
+    setTimeout(() => {
+      if (photoAnalysis.detectedGarment && !selectedCategory) {
+        const mappedCategory = mapDetectedToCategory(photoAnalysis.detectedGarment);
+        if (mappedCategory) {
+          setSelectedCategory(mappedCategory);
+          setPhotoFromBadgeShown(prev => new Set([...prev, 'category']));
+        }
       }
-    }
-    
-    // Pre-fill occasion if detected and not already set
-    if (photoAnalysis.detectedOccasion && 
-        photoAnalysis.detectedOccasion !== 'Unable to determine' &&
-        !selectedOccasion) {
-      setSelectedOccasion(photoAnalysis.detectedOccasion);
-      setPhotoFromBadgeShown(prev => new Set([...prev, 'occasion']));
-      
-    }
-    
-    // Pre-fill fabric feel if detected and not already set
-    if (photoAnalysis.detectedFeel && 
-        photoAnalysis.detectedFeel !== 'Unable to determine' &&
-        !selectedFeel) {
-      setSelectedFeel(photoAnalysis.detectedFeel);
-      setPhotoFromBadgeShown(prev => new Set([...prev, 'feel']));
-      
-    }
-    
-    // Pre-fill colour mood if detected and not already set
-    if (photoAnalysis.detectedColour && !selectedColourMood) {
-      setSelectedColourMood(photoAnalysis.detectedColour);
-      setPhotoFromBadgeShown(prev => new Set([...prev, 'colour']));
-      
-    }
-    
-    // Pre-fill surfaces if detected and not already set
-    if (photoAnalysis.detectedSurfaces?.length > 0 && 
-        selectedSurfaces.length === 0) {
-      setSelectedSurfaces(photoAnalysis.detectedSurfaces);
-      setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
-      
-    }
 
-    // Pre-fill gender if detected and not already set
-    if (photoAnalysis.detectedGender && !gender) {
-      setGender(photoAnalysis.detectedGender as "men" | "women");
-    }
+      if (photoAnalysis.detectedGender && !gender) {
+        setGender(photoAnalysis.detectedGender as "men" | "women");
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'gender']));
+      }
 
-    // Pre-fill subcategory if detected and category matches
-    if (photoAnalysis.detectedSubCategory && 
-        photoAnalysis.detectedSubCategory !== '' &&
-        !selectedSubCategory) {
-      setSelectedSubCategory(photoAnalysis.detectedSubCategory);
-    }
+      if (photoAnalysis.detectedOccasion && 
+          photoAnalysis.detectedOccasion !== '' &&
+          !selectedOccasion) {
+        setSelectedOccasion(photoAnalysis.detectedOccasion);
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'occasion']));
+      }
+
+      if (photoAnalysis.detectedFeel && 
+          photoAnalysis.detectedFeel !== '' &&
+          photoAnalysis.detectedFeel !== 'Unable to determine' &&
+          !selectedFeel) {
+        setSelectedFeel(photoAnalysis.detectedFeel);
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'feel']));
+      }
+
+      if (photoAnalysis.detectedColour && !selectedColourMood) {
+        setSelectedColourMood(photoAnalysis.detectedColour);
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'colour']));
+      }
+
+      if (photoAnalysis.detectedSurfaces?.length > 0 && 
+          selectedSurfaces.length === 0) {
+        setSelectedSurfaces(photoAnalysis.detectedSurfaces);
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
+      }
+
+      if (photoAnalysis.detectedSubCategory && 
+          photoAnalysis.detectedSubCategory !== '' &&
+          !selectedSubCategory) {
+        setSelectedSubCategory(photoAnalysis.detectedSubCategory);
+      }
+    }, 100);
   }, [photoAnalysis]);
   // Dependency array intentionally excludes the selected* values
   // so pre-fill only fires once when analysis completes,
