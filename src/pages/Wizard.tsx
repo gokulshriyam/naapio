@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,54 @@ const showSleeve = ["Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Kurti"
 const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
 const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
 
+const feelOptions = [
+  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400" },
+  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=400" },
+  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400" },
+  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400" },
+  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400" },
+  { label: "No Preference", desc: "Let the tailor recommend", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400" },
+];
+
+const fabricTypesByFeel: Record<string, string[]> = {
+  "Light & Airy": ["Chiffon", "Georgette", "Organza", "Net", "Tissue", "Chanderi Silk", "Muslin", "Voile", "No preference"],
+  "Structured": ["Raw Silk", "Dupioni Silk", "Brocade", "Taffeta", "Canvas", "Denim", "Linen", "Tweed", "No preference"],
+  "Rich & Heavy": ["Velvet", "Banarasi Silk", "Kanjivaram Silk", "Zari Brocade", "Patola Silk", "Tussar Silk", "Jacquard", "No preference"],
+  "Crisp & Sharp": ["Cotton", "Poplin", "Oxford Cloth", "Chambray", "Linen", "Khadi", "Satin (matte)", "No preference"],
+  "Soft & Draped": ["Jersey Knit", "Crepe", "Rayon", "Modal", "Silk Crepe", "Chiffon", "Georgette", "No preference"],
+  "No Preference": ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet", "Linen", "Crepe", "Brocade", "Khadi", "Tussar", "Organza", "Net", "Rayon", "Modal", "Jacquard", "Banarasi", "No preference"],
+};
+
+const colourMoodOptions = [
+  { label: "Deep Reds", swatch: "#8B1A1A" },
+  { label: "Jewel Tones", swatch: "#2E4A7A" },
+  { label: "Pastels", swatch: "#E8B4C8" },
+  { label: "Golds & Champagne", swatch: "#C8963E" },
+  { label: "Ivory & Cream", swatch: "#F5EDD6" },
+  { label: "Greens & Teals", swatch: "#2D6A4F" },
+  { label: "Pinks & Mauves", swatch: "#C9748C" },
+  { label: "Blues & Indigos", swatch: "#3D405B" },
+  { label: "Blacks & Charcoals", swatch: "#2C2C2C" },
+  { label: "Whites & Silvers", swatch: "#E8E8E8" },
+  { label: "I'll upload a reference", swatch: null },
+];
+
+const surfaceOptions = [
+  { label: "Plain / No Embellishment", exclusive: true },
+  { label: "Heavy Embroidery", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300" },
+  { label: "Zardozi / Zari Work", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300" },
+  { label: "Mirror Work", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300" },
+  { label: "Sequence & Beadwork", img: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=300" },
+  { label: "Bandhani / Tie-Dye", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=300" },
+  { label: "Kalamkari / Block Print", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=300" },
+  { label: "Resham Thread Work", img: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300" },
+  { label: "Cutwork / Lace", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300" },
+  { label: "Smocking / Pintucks", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300" },
+  { label: "Digital Print", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=300" },
+  { label: "Appliqué", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=300" },
+  { label: "No Preference", img: null },
+];
+
 const quickBrackets = [
   { label: "₹5K – ₹15K", min: 5000, max: 15000 },
   { label: "₹15K – ₹35K", min: 15000, max: 35000 },
@@ -113,6 +161,9 @@ const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 const Wizard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const orderType = searchParams.get("type") || "new-order";
+  const isOwnFabric = orderType === "own-fabric";
   const [step, setStep] = useState(1);
   const [uploaded, setUploaded] = useState(false);
   const [description, setDescription] = useState("");
@@ -137,6 +188,16 @@ const Wizard = () => {
   const [flexibleDate, setFlexibleDate] = useState(false);
   const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
   const [fabricNotes, setFabricNotes] = useState("");
+  const [step3Phase, setStep3Phase] = useState<
+    "feel" | "fabricType" | "colour" | "surface" | "blend" | "brand" | "fabricBudget" | "embellishment" | "budgetDelivery"
+  >("feel");
+  const [selectedFeel, setSelectedFeel] = useState("");
+  const [selectedFabricTypes, setSelectedFabricTypes] = useState<string[]>([]);
+  const [selectedColourMood, setSelectedColourMood] = useState("");
+  const [colourNote, setColourNote] = useState("");
+  const [colourReferencePhoto, setColourReferencePhoto] = useState<File | null>(null);
+  const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>([]);
+  const [ownFabricDescription, setOwnFabricDescription] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -166,7 +227,14 @@ const Wizard = () => {
       if (step2Phase === "measurements") return consent1 && consent2;
       return false;
     }
-    if (step === 3) return budgetRange[0] >= 1000 && (flexibleDate || deliveryDate) && selectedFabrics.length > 0;
+    if (step === 3) {
+      if (isOwnFabric) return true;
+      if (step3Phase === "feel") return !!selectedFeel;
+      if (step3Phase === "fabricType") return true;
+      if (step3Phase === "colour") return true;
+      if (step3Phase === "surface") return true;
+      return true;
+    }
     if (step === 4) return otpVerified && termsAccepted;
     return true;
   };
@@ -206,6 +274,18 @@ const Wizard = () => {
                   : step2Phase === "design"
                   ? "Step 2d — Design Details"
                   : "Step 2e — Measurements"
+                : step === 3
+                ? isOwnFabric
+                  ? "Step 3 — Your Fabric"
+                  : step3Phase === "feel"
+                  ? "Step 3a — Fabric Feel"
+                  : step3Phase === "fabricType"
+                  ? "Step 3b — Fabric Type"
+                  : step3Phase === "colour"
+                  ? "Step 3c — Colour Mood"
+                  : step3Phase === "surface"
+                  ? "Step 3d — Surface & Texture"
+                  : `Step 3 of 4`
                 : `Step ${step} of 4`}
             </span>
           </div>
@@ -612,149 +692,239 @@ const Wizard = () => {
             </motion.div>
           )}
 
-          {/* STEP 3: Budget, Timeline & Fabric */}
+          {/* STEP 3: Fabric & Customisation */}
           {step === 3 && (
-            <motion.div key="s3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-                {/* Budget Section */}
-                <div>
-                  <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Budget</h2>
-                  <div className="p-6 bg-card rounded-2xl border border-border space-y-5">
-                    {/* Display selected range */}
-                    <div className="text-center">
-                      <span className="font-serif font-bold text-2xl text-accent">
-                        {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])}
-                      </span>
-                    </div>
+            <motion.div key={`s3-${step3Phase}`} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
 
-                    {/* Dual-handle range slider */}
+              {/* OWN FABRIC PATH */}
+              {isOwnFabric && (
+                <div>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Tell us about your fabric</h2>
+                  <p className="text-muted-foreground font-sans mb-6">Describe your fabric — type, colour, weight, condition</p>
+                  <Textarea
+                    value={ownFabricDescription}
+                    onChange={(e) => setOwnFabricDescription(e.target.value.slice(0, 300))}
+                    placeholder="e.g. Navy blue Kanjivaram silk saree fabric, about 6 metres, unused"
+                    className="font-sans min-h-[150px]"
+                    maxLength={300}
+                  />
+                  <p className="text-xs text-muted-foreground font-sans mt-2 text-right">{ownFabricDescription.length}/300</p>
+                </div>
+              )}
+
+              {/* STANDARD PATH */}
+              {!isOwnFabric && (
+                <>
+                  {/* STEP 3a: FABRIC FEEL */}
+                  {step3Phase === "feel" && (
                     <div>
-                      <div className="flex justify-between text-xs font-sans text-muted-foreground mb-2">
-                        <span>₹1,000</span>
-                        <span>₹5,00,000</span>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">How do you want the fabric to feel?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">Choose the quality that matches your vision</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {feelOptions.map((feel) => (
+                          <button
+                            key={feel.label}
+                            onClick={() => setSelectedFeel(feel.label)}
+                            className={`rounded-xl overflow-hidden text-left transition-all border-2 ${
+                              selectedFeel === feel.label
+                                ? "border-accent ring-2 ring-accent/30"
+                                : "border-border hover:border-accent/30"
+                            }`}
+                          >
+                            <img src={feel.img} alt={feel.label} className="w-full h-32 object-cover" />
+                            <div className="p-4">
+                              <p className="font-sans font-bold text-sm text-foreground mb-1 flex items-center gap-2">
+                                {selectedFeel === feel.label && <Check className="w-4 h-4 text-accent" />}
+                                {feel.label}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{feel.desc}</p>
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                      <Slider
-                        value={budgetRange}
-                        onValueChange={setBudgetRange}
-                        min={1000}
-                        max={500000}
-                        step={500}
-                        minStepsBetweenThumbs={1}
-                      />
                     </div>
+                  )}
 
-                    {/* Category context card */}
-                    <div className="p-4 bg-muted rounded-xl">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-sans font-semibold text-foreground">{catRange.label}</span>
-                        {selectedCategory && (
-                          <span className="text-xs font-sans text-muted-foreground">typical range</span>
-                        )}
+                  {/* STEP 3b: FABRIC TYPE */}
+                  {step3Phase === "fabricType" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Which fabrics do you have in mind?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">Select all that appeal to you — your tailor will confirm availability</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(fabricTypesByFeel[selectedFeel] || fabricTypesByFeel["No Preference"]).map((fab) => (
+                          <button
+                            key={fab}
+                            onClick={() => {
+                              if (fab === "No preference") {
+                                setSelectedFabricTypes(["No preference"]);
+                              } else {
+                                setSelectedFabricTypes((prev) => {
+                                  const without = prev.filter((f) => f !== "No preference");
+                                  return without.includes(fab) ? without.filter((f) => f !== fab) : [...without, fab];
+                                });
+                              }
+                            }}
+                            className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                              selectedFabricTypes.includes(fab)
+                                ? "border-accent bg-accent text-accent-foreground font-medium"
+                                : "border-border bg-card text-foreground hover:border-accent/40"
+                            } ${selectedFabricTypes.includes("No preference") && fab !== "No preference" ? "opacity-40 pointer-events-none" : ""}`}
+                          >
+                            {fab}
+                          </button>
+                        ))}
                       </div>
-                      <p className="text-sm font-sans text-accent font-medium">
-                        {formatINR(catRange.min)} – {formatINR(catRange.max)}
-                      </p>
-                    </div>
-
-                    {/* Quick-select chips */}
-                    <div className="flex flex-wrap gap-2">
-                      {quickBrackets.map((b) => (
-                        <button
-                          key={b.label}
-                          onClick={() => setBudgetRange([b.min, b.max])}
-                          className={`px-3 py-1.5 rounded-full text-xs font-sans font-medium transition-all border ${
-                            budgetRange[0] === b.min && budgetRange[1] === b.max
-                              ? "border-accent bg-accent/10 text-accent"
-                              : "border-border bg-card text-foreground hover:border-accent/40"
-                          }`}
-                        >
-                          {b.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Pricing tip */}
-                    <div className="flex items-start gap-2 p-3 bg-accent/5 border border-accent/20 rounded-lg">
-                      <Lightbulb className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                      <p className="text-xs font-sans text-muted-foreground">
-                        <span className="font-medium text-foreground">Pricing tip:</span> A wider budget range attracts more vendors and gives you better options. You can always negotiate the final price.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Delivery Date Section */}
-                <div>
-                  <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Delivery Date</h2>
-                  <div className="p-6 bg-card rounded-2xl border border-border space-y-4">
-                    <p className="text-sm text-muted-foreground font-sans">Minimum 14 days from today</p>
-                    <Input
-                      type="date"
-                      value={deliveryDate}
-                      min={minDate()}
-                      onChange={(e) => setDeliveryDate(e.target.value)}
-                      className={`font-sans ${flexibleDate ? "opacity-50 pointer-events-none" : ""}`}
-                      disabled={flexibleDate}
-                    />
-
-                    {/* Flexible date toggle */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div>
-                        <label htmlFor="flexible-date" className="text-sm font-sans font-medium text-foreground cursor-pointer">
-                          Flexible date
-                        </label>
-                        <p className="text-xs font-sans text-muted-foreground">I can wait for the right vendor</p>
-                      </div>
-                      <Switch
-                        id="flexible-date"
-                        checked={flexibleDate}
-                        onCheckedChange={setFlexibleDate}
-                      />
-                    </div>
-
-                    {flexibleDate && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-start gap-2 p-3 bg-muted rounded-lg"
+                      <button
+                        onClick={() => setStep3Phase("colour")}
+                        className="mt-4 text-sm font-sans text-accent hover:underline"
                       >
-                        <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <p className="text-xs font-sans text-muted-foreground">
-                          We'll match you with the best available vendor
-                        </p>
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Fabric Preference */}
-              <h2 className="text-3xl font-serif font-bold text-foreground mb-6">Fabric Preference</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
-                {fabricOptionsWithImages.map((fab) => (
-                  <button
-                    key={fab.name}
-                    onClick={() => toggleFabric(fab.name)}
-                    className={`rounded-xl text-center transition-all border overflow-hidden ${selectedFabrics.includes(fab.name) ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
-                  >
-                    <div className="w-full relative" style={{ aspectRatio: '1 / 1' }}>
-                      <img src={fab.image} alt={fab.name} className="w-full h-full object-cover object-center" style={{ aspectRatio: '1 / 1' }} />
-                      {selectedFabrics.includes(fab.name) && (
-                        <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
-                          <Check className="w-6 h-6 text-accent-foreground drop-shadow-lg" />
-                        </div>
-                      )}
+                        Skip this step →
+                      </button>
                     </div>
-                    <span className="text-xs font-sans font-medium text-foreground block py-2 px-1">{fab.name}</span>
-                  </button>
-                ))}
-              </div>
-              <Textarea
-                value={fabricNotes}
-                onChange={(e) => setFabricNotes(e.target.value)}
-                placeholder="Any specific fabric notes or requirements..."
-                className="font-sans"
-              />
+                  )}
+
+                  {/* STEP 3c: COLOUR MOOD */}
+                  {step3Phase === "colour" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What colour are you drawn to?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">Choose a mood — your tailor will suggest specific shades</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {colourMoodOptions.map((cm) => (
+                          <button
+                            key={cm.label}
+                            onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
+                            className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${
+                              selectedColourMood === cm.label
+                                ? "border-accent bg-gold-light ring-2 ring-accent/30"
+                                : "border-border bg-card hover:border-accent/30"
+                            }`}
+                          >
+                            {cm.swatch ? (
+                              <div
+                                className="w-10 h-10 rounded-full mb-3 border border-border"
+                                style={{ backgroundColor: cm.swatch }}
+                              />
+                            ) : (
+                              <Upload className="w-10 h-10 text-muted-foreground mb-3" />
+                            )}
+                            <span className="leading-tight block font-medium">{cm.label}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Upload reference photo */}
+                      {selectedColourMood === "I'll upload a reference" && (
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+                          <label className="font-sans text-sm font-medium text-foreground mb-2 block">Upload a colour reference photo</label>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file && file.size <= 5 * 1024 * 1024) {
+                                setColourReferencePhoto(file);
+                              } else if (file) {
+                                toast.error("File must be under 5MB");
+                              }
+                            }}
+                            className="font-sans text-sm"
+                          />
+                          {colourReferencePhoto && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <img
+                                src={URL.createObjectURL(colourReferencePhoto)}
+                                alt="Colour reference"
+                                className="w-16 h-16 rounded-lg object-cover border border-border"
+                              />
+                              <span className="text-xs text-muted-foreground font-sans">{colourReferencePhoto.name}</span>
+                              <button onClick={() => setColourReferencePhoto(null)} className="text-muted-foreground hover:text-foreground">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+
+                      {/* Optional shade note */}
+                      <div className="mt-6">
+                        <Input
+                          value={colourNote}
+                          onChange={(e) => setColourNote(e.target.value)}
+                          placeholder="Any specific shade or note? (optional)"
+                          className="font-sans"
+                        />
+                      </div>
+
+                      <button
+                        onClick={() => setStep3Phase("surface")}
+                        className="mt-4 text-sm font-sans text-accent hover:underline"
+                      >
+                        Skip this step →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* STEP 3d: SURFACE & TEXTURE */}
+                  {step3Phase === "surface" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any embellishment or surface work?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">Select everything that interests you — your tailor will advise what works for your garment</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {surfaceOptions.map((sopt) => {
+                          const isSelected = selectedSurfaces.includes(sopt.label);
+                          const isExclusive = 'exclusive' in sopt && sopt.exclusive;
+                          const plainSelected = selectedSurfaces.includes("Plain / No Embellishment");
+                          return (
+                            <button
+                              key={sopt.label}
+                              onClick={() => {
+                                if (isExclusive) {
+                                  setSelectedSurfaces(isSelected ? [] : [sopt.label]);
+                                } else {
+                                  setSelectedSurfaces((prev) => {
+                                    const without = prev.filter((s) => s !== "Plain / No Embellishment");
+                                    return without.includes(sopt.label)
+                                      ? without.filter((s) => s !== sopt.label)
+                                      : [...without, sopt.label];
+                                  });
+                                }
+                              }}
+                              className={`rounded-xl overflow-hidden text-left transition-all border ${
+                                isSelected
+                                  ? "border-accent ring-2 ring-accent/30"
+                                  : "border-border hover:border-accent/30"
+                              } ${plainSelected && !isExclusive ? "opacity-40 pointer-events-none" : ""}`}
+                            >
+                              {'img' in sopt && sopt.img ? (
+                                <img src={sopt.img} alt={sopt.label} className="w-full h-24 object-cover" />
+                              ) : (
+                                <div className="w-full h-24 bg-muted flex items-center justify-center">
+                                  <span className="text-muted-foreground font-sans text-xs">
+                                    {isExclusive ? "None" : "—"}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="p-3">
+                                <p className="font-sans text-xs font-medium text-foreground flex items-center gap-1">
+                                  {isSelected && <Check className="w-3 h-3 text-accent" />}
+                                  {sopt.label}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <button
+                        onClick={() => { setStep(4); setStep3Phase("feel"); }}
+                        className="mt-4 text-sm font-sans text-accent hover:underline"
+                      >
+                        Skip this step →
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+
             </motion.div>
           )}
 
@@ -797,13 +967,27 @@ const Wizard = () => {
                   </div>
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-sans font-semibold text-foreground">Budget & Timeline</h3>
-                      <button onClick={() => setStep(3)} className="text-accent font-sans text-sm font-medium">Edit</button>
+                      <h3 className="font-sans font-semibold text-foreground">Fabric & Surface</h3>
+                      <button onClick={() => { setStep(3); setStep3Phase("feel"); }} className="text-accent font-sans text-sm font-medium">Edit</button>
                     </div>
-                    <p className="text-sm text-muted-foreground font-sans">
-                      {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])} • {flexibleDate ? "Flexible delivery" : `Deliver by ${deliveryDate}`}
-                    </p>
-                    <p className="text-sm text-muted-foreground font-sans mt-1">Fabrics: {selectedFabrics.length > 0 ? selectedFabrics.join(", ") : "Silk, Velvet"}</p>
+                    {isOwnFabric ? (
+                      <p className="text-sm text-muted-foreground font-sans">Own fabric: {ownFabricDescription || "Not described"}</p>
+                    ) : (
+                      <>
+                        <p className="text-sm text-muted-foreground font-sans">
+                          Feel: {selectedFeel || "No preference"}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-sans mt-1">
+                          Fabric: {selectedFabricTypes.length > 0 ? selectedFabricTypes.join(", ") : "No preference"}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-sans mt-1">
+                          Colour: {selectedColourMood || "Not selected"}{colourNote ? ` · Note: ${colourNote}` : ""}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-sans mt-1">
+                          Surface: {selectedSurfaces.length > 0 ? selectedSurfaces.join(", ") : "No preference"}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -875,7 +1059,18 @@ const Wizard = () => {
           <Button
             variant="outline"
             onClick={() => {
-              if (step === 2) {
+              if (step === 3 && !isOwnFabric) {
+                if (step3Phase === "surface") {
+                  setStep3Phase("colour");
+                } else if (step3Phase === "colour") {
+                  setStep3Phase("fabricType");
+                } else if (step3Phase === "fabricType") {
+                  setStep3Phase("feel");
+                } else {
+                  setStep(2);
+                  setStep2Phase("measurements");
+                }
+              } else if (step === 2) {
                 if (step2Phase === "measurements") {
                   setStep2Phase("design");
                 } else if (step2Phase === "design") {
@@ -889,6 +1084,8 @@ const Wizard = () => {
                 }
               } else if (step > 1) {
                 setStep(step - 1);
+                if (step === 4) setStep3Phase("feel");
+                if (step === 3) setStep2Phase("measurements");
               } else {
                 navigate("/");
               }
