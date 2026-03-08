@@ -155,6 +155,12 @@ type ChatMessage = {
     url: string; // TODO: FILE_STORAGE — replace with CDN URL
     size?: string;
   };
+  changeRequest?: {
+    id: string;
+    description: string;
+    amount: number;
+    status: 'pending' | 'accepted' | 'declined';
+  };
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -431,7 +437,32 @@ const ActiveOrdersPage = () => {
     setTimeout(() => { setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' as const } : m)); }, 2000);
   };
 
-  const handleSubmitReview = () => {
+  const handleChangeRequestResponse = (messageId: string, response: 'accepted' | 'declined') => {
+    setChatMessages(prev => prev.map(m => {
+      if (m.id === messageId && m.changeRequest) {
+        return { ...m, changeRequest: { ...m.changeRequest, status: response } };
+      }
+      return m;
+    }));
+    if (response === 'accepted') {
+      const msg = chatMessages.find(m => m.id === messageId);
+      const extra = msg?.changeRequest?.amount || 0;
+      try {
+        const order = JSON.parse(localStorage.getItem('naapio_active_order') || '{}');
+        order.bidAmount = (order.bidAmount || 0) + extra;
+        order.netPayable = (order.netPayable || 0) + extra;
+        order.changeRequests = [...(order.changeRequests || []), { description: msg?.changeRequest?.description, amount: extra, acceptedAt: new Date().toISOString() }];
+        localStorage.setItem('naapio_active_order', JSON.stringify(order));
+        setActiveOrder(order);
+      } catch {}
+      toast.success(`₹${extra.toLocaleString('en-IN')} change request accepted. Payment confirmed.`);
+      // TODO: PAYMENT_INTEGRATION — trigger Razorpay for `extra` amount here
+    } else {
+      toast.info('Change request declined. Artisan has been notified.');
+    }
+  };
+
+
     const avg = (review.quality + review.communication + review.timeliness + review.value) / 4;
     const history = JSON.parse(localStorage.getItem('naapio_order_history') || '[]');
     history.push({
@@ -618,10 +649,31 @@ const ActiveOrdersPage = () => {
             </p>
           </div>
         </div>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" className="text-xs" onClick={() => setChatOpen(!chatOpen)}>
             💬 Message {artisanRealName}
           </Button>
+          <button
+            onClick={() => {
+              const demoRequest: ChatMessage = {
+                id: 'cr-' + Date.now(),
+                from: 'artisan',
+                status: 'read',
+                timestamp: Date.now(),
+                changeRequest: {
+                  id: 'cr-demo-1',
+                  description: 'Add mirror work embellishment to dupatta border (as discussed)',
+                  amount: 4500,
+                  status: 'pending',
+                },
+              };
+              setChatMessages(prev => [...prev, demoRequest]);
+              setChatOpen(true);
+            }}
+            className="text-[10px] font-sans text-muted-foreground underline"
+          >
+            [Demo] Simulate Change Request
+          </button>
         </div>
 
         {/* Chat panel */}
@@ -640,6 +692,49 @@ const ActiveOrdersPage = () => {
             <div className="h-40 overflow-y-auto p-3 space-y-2 bg-card">
               {chatMessages.length === 0 && <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about progress, timeline, or changes.</p>}
               {chatMessages.map((m) => {
+                if (m.changeRequest) {
+                  const cr = m.changeRequest;
+                  return (
+                    <div key={m.id} className="mx-0 my-2 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">📋</span>
+                        <div>
+                          <p className="text-xs font-sans font-semibold text-foreground uppercase tracking-wide">Change Request from Artisan</p>
+                          <p className="text-sm font-sans text-foreground mt-1">{cr.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-muted-foreground font-sans">Additional cost</p>
+                          <p className="text-lg font-serif font-bold text-accent">+₹{cr.amount.toLocaleString('en-IN')}</p>
+                        </div>
+                        {cr.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-xs border-destructive/40 text-destructive"
+                              onClick={() => handleChangeRequestResponse(m.id, 'declined')}>
+                              Decline
+                            </Button>
+                            <Button size="sm" variant="gold" className="text-xs"
+                              onClick={() => handleChangeRequestResponse(m.id, 'accepted')}>
+                              Accept & Pay ₹{cr.amount.toLocaleString('en-IN')} →
+                            </Button>
+                          </div>
+                        )}
+                        {cr.status === 'accepted' && (
+                          <span className="text-xs font-sans text-success font-medium bg-success-light px-3 py-1.5 rounded-full">✓ Accepted & Paid</span>
+                        )}
+                        {cr.status === 'declined' && (
+                          <span className="text-xs font-sans text-muted-foreground bg-muted px-3 py-1.5 rounded-full">Declined</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-sans">
+                        🔒 Payment is escrow-protected. Funds release only after your final approval.
+                      </p>
+                      {/* TODO: PAYMENT_INTEGRATION — replace handleChangeRequestResponse with Razorpay trigger */}
+                      {/* TODO: ARTISAN_PORTAL — in production, vendor raises this card from their portal */}
+                    </div>
+                  );
+                }
                 if (m.from === 'system') {
                   return (
                     <div key={m.id} className="text-center my-2">
