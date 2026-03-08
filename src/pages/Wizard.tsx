@@ -2043,17 +2043,48 @@ Return a JSON object with ONLY these fields, no other text:
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's the occasion?</h2>
                   <p className="text-muted-foreground font-sans mb-6">This helps your tailor understand the formality, fabric weight, and embellishment level needed</p>
 
+                  {/* Photo pre-fill notice */}
+                  {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                   photoAnalysis.detectedOccasion && photoAnalysis.detectedOccasion !== 'Unable to determine' && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                      <span className="text-sm">✨</span>
+                      <span className="text-xs font-sans text-amber-800">
+                        Based on your photo, this looks like a <span className="font-semibold">{photoAnalysis.detectedOccasion}</span> outfit.
+                      </span>
+                    </motion.div>
+                  )}
+
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {occasions.map((occ) => (
-                      <button
-                        key={occ.label}
-                        onClick={() => setSelectedOccasion(occ.label)}
-                        className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedOccasion === occ.label ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
-                      >
-                        <span className="text-2xl block mb-2">{occ.emoji}</span>
-                        <span className="leading-tight block">{occ.label}</span>
-                      </button>
-                    ))}
+                    {occasions.map((occ) => {
+                      const isDetected = photoAnalysis?.analysisComplete && 
+                        !photoAnalysis?.analysisError && 
+                        photoAnalysis.detectedOccasion === occ.label;
+                      const isSelected = selectedOccasion === occ.label;
+                      
+                      // Auto pre-select detected occasion if nothing selected yet
+                      if (isDetected && !selectedOccasion && !photoFromBadgeShown.has('occasion')) {
+                        setTimeout(() => {
+                          setSelectedOccasion(occ.label);
+                          setPhotoFromBadgeShown(prev => new Set(prev).add('occasion'));
+                        }, 100);
+                      }
+                      
+                      return (
+                        <button
+                          key={occ.label}
+                          onClick={() => setSelectedOccasion(occ.label)}
+                          className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                        >
+                          <span className="text-2xl block mb-2">{occ.emoji}</span>
+                          <span className="leading-tight block">{occ.label}</span>
+                          {isDetected && isSelected && (
+                            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                              ✨ From photo
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Garba warning */}
