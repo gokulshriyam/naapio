@@ -162,8 +162,7 @@ const CustomiseFlow = () => {
   const [customiseStyleNotes, setCustomiseStyleNotes] = useState("");
 
   // C5
-  const [customiseBudgetMin, setCustomiseBudgetMin] = useState("");
-  const [customiseBudgetMax, setCustomiseBudgetMax] = useState("");
+  const [customiseBudgetRange, setCustomiseBudgetRange] = useState([1000, 8000]);
   const [customiseDeliveryDate, setCustomiseDeliveryDate] = useState("");
   const [customiseFlexibleDate, setCustomiseFlexibleDate] = useState(false);
 
