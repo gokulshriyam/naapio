@@ -247,6 +247,43 @@ const ownFabricTypeOptions = ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet"
 const ownFabricWidthOptions = ["36 inches (narrow)", "44 inches (standard)", "54 inches (wide)", "I don't know"];
 const ownFabricConditionOptions = ["New / Unwashed", "Washed / Pre-treated", "Vintage / Heirloom", "Recycled (from another garment)"];
 
+// Helper functions for robust JSON extraction from Gemini responses
+const extractField = (text: string, field: string): string => {
+  const match = text.match(
+    new RegExp(`"${field}"\\s*:\\s*"([^"]+)"`)
+  );
+  return match ? match[1] : '';
+};
+
+const extractArrayField = (text: string, field: string): string[] => {
+  const match = text.match(
+    new RegExp(`"${field}"\\s*:\\s*\\[([^\\]]*)\\]`)
+  );
+  if (!match) return [];
+  return match[1]
+    .split(',')
+    .map(s => s.replace(/"/g, '').trim())
+    .filter(Boolean);
+};
+
+// Map detected garment to category (moved outside component for useEffect access)
+const mapDetectedToCategory = (detected: string): string | null => {
+  const map: Record<string, string> = {
+    'Saree Blouse': 'Saree Blouse',
+    'Kurti': 'Kurti',
+    'Salwar Kameez': 'Salwar Kameez',
+    'Anarkali': 'Anarkali',
+    'Lehenga': 'Lehenga',
+    'Gown': 'Gown',
+    'Kurta': 'Kurta',
+    'Sherwani': 'Sherwani',
+    'Bandhgala': 'Bandhgala',
+    'Chaniya Choli': 'Lehenga',
+    'Suit': 'Suit',
+  };
+  return map[detected] || null;
+};
+
 const Wizard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -515,7 +552,59 @@ const Wizard = () => {
     setDeliveryDate(min.toISOString().split("T")[0]);
   }, [selectedCategory, isRushOrder]);
 
-  // beforeunload warning on payment step
+  // === FIX 4: Pre-fill wizard state from photo analysis ===
+  useEffect(() => {
+    if (!photoAnalysis || !photoAnalysis.analysisComplete || photoAnalysis.analysisError) return;
+    
+    console.log('Applying pre-fills from photo analysis:', photoAnalysis);
+    
+    // Pre-fill category if detected and not already set
+    if (photoAnalysis.detectedGarment && !selectedCategory) {
+      const mappedCategory = mapDetectedToCategory(photoAnalysis.detectedGarment);
+      if (mappedCategory) {
+        setSelectedCategory(mappedCategory);
+        setPhotoFromBadgeShown(prev => new Set([...prev, 'category']));
+        console.log('Pre-filled category:', mappedCategory);
+      }
+    }
+    
+    // Pre-fill occasion if detected and not already set
+    if (photoAnalysis.detectedOccasion && 
+        photoAnalysis.detectedOccasion !== 'Unable to determine' &&
+        !selectedOccasion) {
+      setSelectedOccasion(photoAnalysis.detectedOccasion);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'occasion']));
+      console.log('Pre-filled occasion:', photoAnalysis.detectedOccasion);
+    }
+    
+    // Pre-fill fabric feel if detected and not already set
+    if (photoAnalysis.detectedFeel && 
+        photoAnalysis.detectedFeel !== 'Unable to determine' &&
+        !selectedFeel) {
+      setSelectedFeel(photoAnalysis.detectedFeel);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'feel']));
+      console.log('Pre-filled feel:', photoAnalysis.detectedFeel);
+    }
+    
+    // Pre-fill colour mood if detected and not already set
+    if (photoAnalysis.detectedColour && !selectedColourMood) {
+      setSelectedColourMood(photoAnalysis.detectedColour);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'colour']));
+      console.log('Pre-filled colour:', photoAnalysis.detectedColour);
+    }
+    
+    // Pre-fill surfaces if detected and not already set
+    if (photoAnalysis.detectedSurfaces?.length > 0 && 
+        selectedSurfaces.length === 0) {
+      setSelectedSurfaces(photoAnalysis.detectedSurfaces);
+      setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
+      console.log('Pre-filled surfaces:', photoAnalysis.detectedSurfaces);
+    }
+  }, [photoAnalysis]);
+  // Dependency array intentionally excludes the selected* values
+  // so pre-fill only fires once when analysis completes,
+  // not every time customer changes a selection.
+
   useEffect(() => {
     if (step === 4) {
       const handler = (e: BeforeUnloadEvent) => {
@@ -931,6 +1020,7 @@ const Wizard = () => {
   // ── Gemini Vision Analysis for Inspiration Photo ──
   const analyseInspirationPhoto = async (photoFile: File) => {
     setAnalysisLoading(true);
+    let rawText = ''; // Declare outside try for catch block access
     
     try {
       // Convert file to base64
@@ -957,7 +1047,7 @@ Return a JSON object with ONLY these fields, no other text:
 
       const apiKey = "AIzaSyBTMDZOq0B2x7xEgVX6Sis-U80jgXohICg"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -982,18 +1072,46 @@ Return a JSON object with ONLY these fields, no other text:
       );
 
       const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts
+      rawText = data.candidates?.[0]?.content?.parts
         ?.filter((p: any) => p.text)
         ?.map((p: any) => p.text)
         ?.join('') || '';
 
-      // Strip markdown fences if present
-      const cleanText = rawText
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim();
+      // === FIX 2: Robust JSON Extraction ===
+      let cleanText = rawText || '';
+      // Strip markdown fences
+      cleanText = cleanText.replace(/```json\s*/gi, '');
+      cleanText = cleanText.replace(/```\s*/gi, '');
+      cleanText = cleanText.trim();
 
-      const analysis = JSON.parse(cleanText);
+      // If there's text before the JSON object, extract just the JSON
+      const jsonStart = cleanText.indexOf('{');
+      const jsonEnd = cleanText.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
+      }
+
+      let analysis;
+      try {
+        analysis = JSON.parse(cleanText);
+      } catch (parseErr) {
+        console.error('JSON parse failed. Raw text:', rawText);
+        // Fallback: try to extract values manually with regex
+        analysis = {
+          detectedGarment: extractField(rawText, 'detectedGarment'),
+          detectedColour: extractField(rawText, 'detectedColour'),
+          detectedFeel: extractField(rawText, 'detectedFeel'),
+          detectedSurfaces: extractArrayField(rawText, 'detectedSurfaces'),
+          detectedOccasion: extractField(rawText, 'detectedOccasion'),
+          confidence: extractField(rawText, 'confidence') || 'medium',
+        };
+      }
+
+      // === FIX 1: Debug Logging ===
+      console.log('=== GEMINI PHOTO ANALYSIS RESULT ===');
+      console.log('Raw response text:', rawText);
+      console.log('Parsed analysis:', analysis);
+      console.log('=====================================');
       
       setPhotoAnalysis({
         ...analysis,
@@ -1001,7 +1119,12 @@ Return a JSON object with ONLY these fields, no other text:
         analysisError: false,
       });
     } catch (err) {
-      console.error('Photo analysis failed:', err);
+      // === FIX 1 & 6: Logging + Fallback ===
+      console.error('Photo analysis parse/fetch error:', err);
+      console.log('Raw text that failed to parse:', rawText);
+      
+      // Silent fail — wizard continues normally
+      // No pre-fills, no error shown to customer
       setPhotoAnalysis({
         detectedGarment: '',
         detectedColour: '',
@@ -1017,23 +1140,6 @@ Return a JSON object with ONLY these fields, no other text:
     }
   };
 
-  // Map detected garment to category
-  const mapDetectedToCategory = (detected: string): string | null => {
-    const map: Record<string, string> = {
-      'Saree Blouse': 'Saree Blouse',
-      'Kurti': 'Kurti',
-      'Salwar Kameez': 'Salwar Kameez',
-      'Anarkali': 'Anarkali',
-      'Lehenga': 'Lehenga',
-      'Gown': 'Gown',
-      'Kurta': 'Kurta',
-      'Sherwani': 'Sherwani',
-      'Bandhgala': 'Bandhgala',
-      'Chaniya Choli': 'Lehenga',
-      'Suit': 'Suit',
-    };
-    return map[detected] || null;
-  };
 
   // Handle inspiration photo upload
   const handleInspirationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1970,28 +2076,32 @@ Return a JSON object with ONLY these fields, no other text:
                         !photoAnalysis?.analysisError && 
                         mapDetectedToCategory(photoAnalysis?.detectedGarment || '') === cat;
                       const isSelected = selectedCategory === cat;
-                      
-                      // Auto pre-select detected category if nothing selected yet
-                      if (isDetected && !selectedCategory && !photoFromBadgeShown.has('category')) {
-                        setTimeout(() => {
-                          setSelectedCategory(cat);
-                          setPhotoFromBadgeShown(prev => new Set(prev).add('category'));
-                        }, 100);
-                      }
+                      const showPhotoIndicator = photoFromBadgeShown.has('category') && isSelected && isDetected;
                       
                       return (
                         <button
                           key={cat}
-                          onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
+                          onClick={() => { 
+                            setSelectedCategory(cat); 
+                            setSelectedSubCategory("");
+                            // Remove pre-fill indicator when user manually selects different option
+                            if (photoFromBadgeShown.has('category') && !isDetected) {
+                              setPhotoFromBadgeShown(prev => {
+                                const next = new Set(prev);
+                                next.delete('category');
+                                return next;
+                              });
+                            }
+                          }}
                           className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                         >
                           {categoryImages[cat] && (
                             <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
                           )}
                           <span className="block p-3">{cat}</span>
-                          {isDetected && isSelected && (
+                          {showPhotoIndicator && (
                             <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                              ✨ From photo
+                              ✨ from photo
                             </span>
                           )}
                         </button>
@@ -2060,26 +2170,29 @@ Return a JSON object with ONLY these fields, no other text:
                         !photoAnalysis?.analysisError && 
                         photoAnalysis.detectedOccasion === occ.label;
                       const isSelected = selectedOccasion === occ.label;
-                      
-                      // Auto pre-select detected occasion if nothing selected yet
-                      if (isDetected && !selectedOccasion && !photoFromBadgeShown.has('occasion')) {
-                        setTimeout(() => {
-                          setSelectedOccasion(occ.label);
-                          setPhotoFromBadgeShown(prev => new Set(prev).add('occasion'));
-                        }, 100);
-                      }
+                      const showPhotoIndicator = photoFromBadgeShown.has('occasion') && isSelected && isDetected;
                       
                       return (
                         <button
                           key={occ.label}
-                          onClick={() => setSelectedOccasion(occ.label)}
+                          onClick={() => {
+                            setSelectedOccasion(occ.label);
+                            // Remove pre-fill indicator when user manually selects different option
+                            if (photoFromBadgeShown.has('occasion') && !isDetected) {
+                              setPhotoFromBadgeShown(prev => {
+                                const next = new Set(prev);
+                                next.delete('occasion');
+                                return next;
+                              });
+                            }
+                          }}
                           className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                         >
                           <span className="text-2xl block mb-2">{occ.emoji}</span>
                           <span className="leading-tight block">{occ.label}</span>
-                          {isDetected && isSelected && (
+                          {showPhotoIndicator && (
                             <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                              ✨ From photo
+                              ✨ from photo
                             </span>
                           )}
                         </button>
@@ -2740,18 +2853,22 @@ Return a JSON object with ONLY these fields, no other text:
                             photoAnalysis.detectedFeel === feel.label;
                           const isSelected = selectedFeel === feel.label;
                           
-                          // Auto pre-select detected feel if nothing selected yet
-                          if (isDetected && !selectedFeel && !photoFromBadgeShown.has('feel')) {
-                            setTimeout(() => {
-                              setSelectedFeel(feel.label);
-                              setPhotoFromBadgeShown(prev => new Set(prev).add('feel'));
-                            }, 100);
-                          }
+                          const showPhotoIndicator = photoFromBadgeShown.has('feel') && isSelected && isDetected;
                           
                           return (
                             <button
                               key={feel.label}
-                              onClick={() => setSelectedFeel(feel.label)}
+                              onClick={() => {
+                                setSelectedFeel(feel.label);
+                                // Remove pre-fill indicator when user manually selects different option
+                                if (photoFromBadgeShown.has('feel') && !isDetected) {
+                                  setPhotoFromBadgeShown(prev => {
+                                    const next = new Set(prev);
+                                    next.delete('feel');
+                                    return next;
+                                  });
+                                }
+                              }}
                               className={`rounded-xl overflow-hidden text-left transition-all border-2 relative ${
                                 isSelected
                                   ? "border-accent ring-2 ring-accent/30"
@@ -2766,9 +2883,9 @@ Return a JSON object with ONLY these fields, no other text:
                                 </p>
                                 <p className="text-xs text-muted-foreground">{feel.desc}</p>
                               </div>
-                              {isDetected && isSelected && (
+                              {showPhotoIndicator && (
                                 <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                                  ✨ From photo
+                                  ✨ from photo
                                 </span>
                               )}
                             </button>
@@ -2839,18 +2956,22 @@ Return a JSON object with ONLY these fields, no other text:
                             photoAnalysis.detectedColour === cm.label;
                           const isSelected = selectedColourMood === cm.label;
                           
-                          // Auto pre-select detected colour if nothing selected yet
-                          if (isDetected && !selectedColourMood && !photoFromBadgeShown.has('colour')) {
-                            setTimeout(() => {
-                              setSelectedColourMood(cm.label);
-                              setPhotoFromBadgeShown(prev => new Set(prev).add('colour'));
-                            }, 100);
-                          }
+                          const showPhotoIndicator = photoFromBadgeShown.has('colour') && isSelected && isDetected;
                           
                           return (
                             <button
                               key={cm.label}
-                              onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
+                              onClick={() => {
+                                setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label);
+                                // Remove pre-fill indicator when user manually selects different option
+                                if (photoFromBadgeShown.has('colour') && !isDetected) {
+                                  setPhotoFromBadgeShown(prev => {
+                                    const next = new Set(prev);
+                                    next.delete('colour');
+                                    return next;
+                                  });
+                                }
+                              }}
                               className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${
                                 isSelected
                                   ? "border-accent bg-gold-light ring-2 ring-accent/30"
@@ -2866,9 +2987,9 @@ Return a JSON object with ONLY these fields, no other text:
                                 <Upload className="w-10 h-10 text-muted-foreground mb-3" />
                               )}
                               <span className="leading-tight block font-medium">{cm.label}</span>
-                              {isDetected && isSelected && (
+                              {showPhotoIndicator && (
                                 <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                                  ✨ From photo
+                                  ✨ from photo
                                 </span>
                               )}
                             </button>
@@ -2954,13 +3075,7 @@ Return a JSON object with ONLY these fields, no other text:
                             !photoAnalysis?.analysisError && 
                             photoAnalysis.detectedSurfaces?.includes(sopt.label);
                           
-                          // Auto pre-select detected surfaces if nothing selected yet
-                          if (isDetected && selectedSurfaces.length === 0 && !photoFromBadgeShown.has('surfaces')) {
-                            setTimeout(() => {
-                              setSelectedSurfaces(photoAnalysis.detectedSurfaces || []);
-                              setPhotoFromBadgeShown(prev => new Set(prev).add('surfaces'));
-                            }, 100);
-                          }
+                          const showPhotoIndicator = photoFromBadgeShown.has('surfaces') && isSelected && isDetected;
                           
                           return (
                             <button
@@ -2974,6 +3089,14 @@ Return a JSON object with ONLY these fields, no other text:
                                     return without.includes(sopt.label)
                                       ? without.filter((s) => s !== sopt.label)
                                       : [...without, sopt.label];
+                                  });
+                                }
+                                // Remove pre-fill indicator when user manually changes selection
+                                if (photoFromBadgeShown.has('surfaces')) {
+                                  setPhotoFromBadgeShown(prev => {
+                                    const next = new Set(prev);
+                                    next.delete('surfaces');
+                                    return next;
                                   });
                                 }
                               }}
@@ -2998,9 +3121,9 @@ Return a JSON object with ONLY these fields, no other text:
                                   {sopt.label}
                                 </p>
                               </div>
-                              {isDetected && isSelected && (
+                              {showPhotoIndicator && (
                                 <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                                  ✨ From photo
+                                  ✨ from photo
                                 </span>
                               )}
                             </button>
