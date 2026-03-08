@@ -1028,8 +1028,56 @@ const Wizard = () => {
                 variant="outline"
                 onClick={() => {
                   localStorage.removeItem("naapio_wizard_draft");
+                  localStorage.removeItem("naapio_prefill");
                   setDraftRestored(false);
                   setRestoredDraft(null);
+                  // Reset all wizard state to initial values
+                  setStep(0);
+                  setStep2Phase('category');
+                  setStep3Phase('feel');
+                  setGender('women');
+                  setSelectedCategory('');
+                  setSelectedSubCategory('');
+                  setSelectedOccasion('');
+                  setSelectedFit('');
+                  setSelectedNeckline('');
+                  setSelectedSleeve('');
+                  setSelectedDupatta('');
+                  setSelectedLining('');
+                  setSelectedFeel('');
+                  setSelectedFabricTypes([]);
+                  setSelectedColourMood('');
+                  setColourNote('');
+                  setSelectedSurfaces([]);
+                  setSelectedBlend('');
+                  setSelectedBrand('');
+                  setFabricBudgetBand('');
+                  setEmbellishmentBudget('');
+                  setBudgetRange([5000, 50000]);
+                  setDeliveryDate('');
+                  setFlexibleDate(false);
+                  setIsRushOrder(false);
+                  setDescription('');
+                  setMeasurements({});
+                  setMeasurementType('standard');
+                  setPhone('');
+                  setOtp('');
+                  setOtpVerified(false);
+                  setOtpSent(false);
+                  setOrderSuccess(false);
+                  setGiftOrder(false);
+                  setRecipientName('');
+                  setRecipientPhone('');
+                  setRecipientRelation('');
+                  setIsGroupOrder(false);
+                  setGroupSize(2);
+                  setOrderingFor('');
+                  setUploaded(false);
+                  setShowAdvancedFabric(window.innerWidth >= 768);
+                  setShowOwnFabricInput(false);
+                  setTermsAccepted(false);
+                  setLoading(false);
+                  navigate('/start');
                 }}
               >
                 Start Fresh
