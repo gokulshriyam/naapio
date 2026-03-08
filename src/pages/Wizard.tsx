@@ -598,7 +598,7 @@ const Wizard = () => {
         selectedSurfaces.length === 0) {
       setSelectedSurfaces(photoAnalysis.detectedSurfaces);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
-      console.log('Pre-filled surfaces:', photoAnalysis.detectedSurfaces);
+      
     }
   }, [photoAnalysis]);
   // Dependency array intentionally excludes the selected* values
