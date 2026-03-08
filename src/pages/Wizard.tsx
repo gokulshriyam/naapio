@@ -3076,79 +3076,41 @@ Important rules:
               )}
 
               {/* SUB-PHASE: MEASUREMENTS */}
-              {step2Phase === "measurements" && (
-                <div>
-                  {/* Measurement Guide */}
-                  <div className="mb-6">
-                    <button
-                      onClick={() => setMeasureGuideOpen(!measureGuideOpen)}
-                      className="font-sans text-sm font-medium text-accent hover:underline"
-                    >
-                      📏 How to take your measurements {measureGuideOpen ? "↑" : "→"}
-                    </button>
-                    {measureGuideOpen && (
-                      <div className="mt-3 p-5 bg-card rounded-xl border border-border">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                          {[
-                            { title: "Bust / Chest", tip: "Measure around the fullest part of your chest, keeping the tape parallel to the floor." },
-                            { title: "Waist", tip: "Measure around your natural waist — the narrowest part of your torso, usually 2–3 inches above your navel." },
-                            { title: "Hips", tip: "Measure around the fullest part of your hips and seat, about 7–9 inches below your natural waist." },
-                            { title: "Height", tip: "Stand straight without shoes. Measure from the top of your head to the floor." },
-                            { title: "Shoulder Width", tip: "Measure from the edge of one shoulder to the other across your back." },
-                            { title: "Sleeve Length", tip: "From the shoulder edge, down the outside of your arm to your wrist with arm slightly bent." },
-                          ].map((item) => (
-                            <div key={item.title}>
-                              <p className="font-sans text-sm font-semibold text-foreground">{item.title}</p>
-                              <p className="font-sans text-xs text-muted-foreground mt-0.5">{item.tip}</p>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground font-sans mb-3">
-                          📌 Tip: Ask someone to help measure you — self-measurements are often inaccurate. Your tailor will confirm all measurements at Milestone 1 before cutting any fabric.
-                        </p>
-                        <button
-                          onClick={() => setMeasureGuideOpen(false)}
-                          className="text-xs text-accent font-sans hover:underline"
-                        >
-                          Got it — close guide ↑
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              {step2Phase === "measurements" && (() => {
+                const garmentConfig = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
+                const garmentLabel = selectedSubCategory || selectedCategory;
+                const garmentFields = garmentConfig.fields;
+                const defaultTab = garmentConfig.supportsStandard ? 'standard' : 'custom';
+                
+                // Pre-fill from localStorage
+                const savedMeasData = (() => {
+                  try { return JSON.parse(localStorage.getItem('naapio_measurements') || '{}'); } catch { return {}; }
+                })();
+                const hasPrefill = savedMeasData.measurements && Object.keys(savedMeasData.measurements).length > 0;
 
-                {/* Saved measurements card for reorder */}
-                {isReorder && measurementType === 'saved' && (() => {
-                  const savedMeasurements = localStorage.getItem("naapio_measurements");
-                  if (!savedMeasurements) return null;
-                  const parsed = JSON.parse(savedMeasurements);
+                // No-stitching shortcut
+                if (garmentConfig.noStitching) {
                   return (
-                    <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <span className="text-xl">📏</span>
-                        <div className="flex-1">
-                          <p className="font-sans font-semibold text-foreground text-sm">Using your saved measurements</p>
-                          <p className="text-xs text-muted-foreground font-sans mt-0.5">From your previous order {reorderFrom}</p>
-                          {parsed.standardSize && (
-                            <p className="text-xs text-foreground font-sans mt-1">Size: {parsed.standardSize} ({parsed.sizeRegion})</p>
-                          )}
-                          <div className="flex gap-2 mt-2">
-                            <Button size="sm" variant="default" onClick={() => { /* use as-is */ }}>Use these measurements ✓</Button>
-                            <Button size="sm" variant="outline" onClick={() => setMeasurementType('custom')}>Update measurements →</Button>
-                          </div>
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements for {garmentLabel}</h2>
+                      <div className="p-5 bg-teal-50 border border-teal-200 rounded-xl mt-4">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">ℹ️</span>
+                          <p className="font-sans text-sm text-foreground">{garmentConfig.noStitchingMessage}</p>
                         </div>
                       </div>
                     </div>
                   );
-                })()}
+                }
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                const sizeTable = gender === 'women' ? WOMEN_SIZES : MEN_SIZES;
+                
+                return (
                   <div>
-                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements</h2>
-                    <p className="text-muted-foreground font-sans mb-6">
-                      For <span className="font-semibold text-foreground">{gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}</span>
-                    </p>
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements for {garmentLabel}</h2>
+                    <p className="text-muted-foreground font-sans mb-6">All measurements in inches unless noted.</p>
 
-                    {/* Gift order: measurement request option */}
+                    {/* Gift order measurement request */}
                     {giftOrder && recipientPhone && (
                       <div className="mb-4 p-4 bg-teal-50 border border-teal-200 rounded-xl">
                         <div className="flex items-start gap-3">
@@ -3159,142 +3121,346 @@ Important rules:
                             <Button size="sm" variant="outline" className="mt-2" onClick={() => toast.success(`Measurement request will be sent to ${recipientPhone} after you post your brief.`)}>
                               Send Measurement Request →
                             </Button>
-                            {/* TODO: API_INTEGRATION_POINT — POST measurement request to recipientPhone via WhatsApp Business API */}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {(["standard", "custom", "later", "photo"] as const).map((t) => (
+                    {/* THREE-TAB LAYOUT */}
+                    <div className="flex gap-2 mb-6">
+                      {garmentConfig.supportsStandard && (
                         <button
-                          key={t}
-                          onClick={() => { if (t === "photo") { setMeasurementType("custom"); setMeasurementPhoto(null); } else { setMeasurementType(t); } }}
-                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[48px] ${
-                            (t === "photo" ? !!measurementPhoto : measurementType === t && !measurementPhoto)
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-card border border-border text-foreground hover:bg-muted"
+                          onClick={() => setMeasurementTab('standard')}
+                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[44px] ${
+                            measurementTab === 'standard' ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"
                           }`}
                         >
-                          {t === "photo" ? "📷 Upload Measurement Card"
-                            : t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later")
-                            : t.charAt(0).toUpperCase() + t.slice(1)}
+                          📐 Standard Size
                         </button>
-                      ))}
+                      )}
+                      <button
+                        onClick={() => setMeasurementTab('custom')}
+                        className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[44px] ${
+                          measurementTab === 'custom' ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        ✏️ Custom
+                      </button>
+                      <button
+                        onClick={() => setMeasurementTab('later')}
+                        className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[44px] ${
+                          measurementTab === 'later' ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        ⏱ Provide Later
+                      </button>
                     </div>
 
-                    {/* Measurement Photo Upload */}
-                    {measurementPhoto !== undefined && (
-                      <div className="mb-6">
-                        <label
-                          className="block p-4 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 cursor-pointer transition-all"
-                        >
-                          {measurementPhoto ? (
-                            <div className="flex items-center gap-3">
-                              <img src={URL.createObjectURL(measurementPhoto)} alt="Measurement card" className="w-16 h-16 rounded-lg object-cover border border-border" />
-                              <div>
-                                <p className="font-sans text-sm font-medium text-foreground">Measurement card uploaded</p>
-                                <button onClick={(e) => { e.preventDefault(); setMeasurementPhoto(null); }} className="text-xs text-accent font-sans hover:underline">Remove</button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="text-center py-2">
-                              <p className="font-sans text-sm font-medium text-foreground mb-1">📷 Upload your darzi card / measurement slip</p>
-                              <p className="text-xs text-muted-foreground font-sans">Photo of your tailor's measurement card, notebook, or any written measurements</p>
-                            </div>
-                          )}
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png"
-                            className="hidden"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0] || null;
-                              if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
-                              setMeasurementPhoto(f);
-                            }}
-                          />
-                        </label>
-                        {measurementPhoto && (
-                          <p className="text-xs text-muted-foreground font-sans mt-2">
-                            Your tailor will read your measurements from this photo. If any values are unclear, they'll ask during Milestone 1.
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {measurementType === "standard" && (
+                    {/* ── STANDARD TAB ── */}
+                    {measurementTab === 'standard' && garmentConfig.supportsStandard && (
                       <div className="space-y-4">
-                        <div className="flex gap-2 mb-3">
-                          {["UK", "US", "EU"].map((r) => (
-                            <button key={r} onClick={() => setSizeRegion(r)} className={`px-3 py-1.5 rounded-md text-xs font-sans font-medium ${sizeRegion === r ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>{r}</button>
-                          ))}
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm font-sans">
+                            <thead>
+                              <tr className="border-b border-border">
+                                <th className="py-2 px-3 text-left text-muted-foreground font-medium">Size</th>
+                                {gender === 'women' ? (
+                                  <>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Bust</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Waist</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Hip</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">EU</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">US</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">UK</th>
+                                  </>
+                                ) : (
+                                  <>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Chest</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Waist</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">Shoulder</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">EU</th>
+                                    <th className="py-2 px-3 text-left text-muted-foreground font-medium">US/UK</th>
+                                  </>
+                                )}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sizeTable.map((row: any) => {
+                                const isSelected = selectedStandardSize === row.size;
+                                return (
+                                  <tr
+                                    key={row.size}
+                                    onClick={() => {
+                                      setSelectedStandardSize(row.size);
+                                      const filled = autoFillFromStandardSize(row, gender, garmentFields);
+                                      setMeasurements(prev => ({ ...prev, ...filled }));
+                                      setAutoFilledFromSize(row.size);
+                                      setMeasurementTab('custom');
+                                    }}
+                                    className={`cursor-pointer transition-colors border-b border-border ${
+                                      isSelected ? "bg-accent/20 font-semibold" : "hover:bg-muted/50"
+                                    }`}
+                                  >
+                                    <td className="py-2.5 px-3 font-semibold">{row.size}</td>
+                                    {gender === 'women' ? (
+                                      <>
+                                        <td className="py-2.5 px-3">{row.bust}"</td>
+                                        <td className="py-2.5 px-3">{row.waist}"</td>
+                                        <td className="py-2.5 px-3">{row.hip}"</td>
+                                        <td className="py-2.5 px-3">{row.eu}</td>
+                                        <td className="py-2.5 px-3">{row.us}</td>
+                                        <td className="py-2.5 px-3">{row.uk}</td>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <td className="py-2.5 px-3">{row.chest}"</td>
+                                        <td className="py-2.5 px-3">{row.waist}"</td>
+                                        <td className="py-2.5 px-3">{row.shoulder}"</td>
+                                        <td className="py-2.5 px-3">{row.eu}</td>
+                                        <td className="py-2.5 px-3">{row.usuk}</td>
+                                      </>
+                                    )}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((s) => (
-                            <button key={s} onClick={() => setStandardSize(s)} className={`w-14 h-14 rounded-xl font-sans font-medium text-sm transition-all ${standardSize === s ? "bg-accent text-accent-foreground" : "bg-card border border-border text-foreground hover:border-accent/30"}`}>{s}</button>
-                          ))}
-                        </div>
+                        <p className="text-xs text-muted-foreground font-sans">
+                          📏 Clicking a row auto-fills custom measurements as a starting point — you can review and adjust.
+                        </p>
+                        <p className="text-xs text-muted-foreground font-sans italic">
+                          Measurements shown are in inches. Standard sizes are a reference — your artisan works to the exact custom measurements you confirm.
+                        </p>
                       </div>
                     )}
 
-                    {measurementType === "custom" && (
-                      <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                        {measurementFields.map((field) => (
-                          <div key={field}>
-                            <label className="text-xs font-sans text-muted-foreground mb-1 block">{field}</label>
-                            <Input
-                              type="number"
-                              placeholder="0.0"
-                              value={measurements[field] || ""}
-                              onChange={(e) => setMeasurements({ ...measurements, [field]: e.target.value })}
-                              className="font-sans"
-                            />
+                    {/* ── CUSTOM TAB ── */}
+                    {measurementTab === 'custom' && (
+                      <div className="space-y-4">
+                        {/* Pre-fill banner */}
+                        {hasPrefill && (
+                          <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl flex items-start gap-2">
+                            <span>📏</span>
+                            <p className="text-xs font-sans text-teal-800">We've pre-filled measurements from your previous session. Please review and confirm.</p>
                           </div>
-                        ))}
+                        )}
+                        {autoFilledFromSize && (
+                          <div className="p-3 bg-accent/10 border border-accent/20 rounded-xl flex items-start gap-2">
+                            <span>📐</span>
+                            <p className="text-xs font-sans text-foreground">Auto-filled from size <span className="font-semibold">{autoFilledFromSize}</span>. Review and adjust as needed.</p>
+                          </div>
+                        )}
+
+                        {/* Height field */}
+                        {garmentConfig.heightRequired && (
+                          <div className="p-4 bg-muted/50 rounded-xl border border-border mb-2">
+                            <label className="font-sans font-semibold text-sm text-foreground mb-2 block">Your Height (required for length calibration)</label>
+                            <div className="flex items-center gap-2">
+                              {heightUnit === 'ftin' ? (
+                                <>
+                                  <Input type="number" min="3" max="7" value={heightFeet} onChange={(e) => setHeightFeet(e.target.value)} placeholder="5" className="w-16 font-sans" />
+                                  <span className="text-xs text-muted-foreground font-sans">ft</span>
+                                  <Input type="number" min="0" max="11" value={heightInches} onChange={(e) => setHeightInches(e.target.value)} placeholder="6" className="w-16 font-sans" />
+                                  <span className="text-xs text-muted-foreground font-sans">in</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Input type="number" min="100" max="220" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="168" className="w-24 font-sans" />
+                                  <span className="text-xs text-muted-foreground font-sans">cm</span>
+                                </>
+                              )}
+                              <button
+                                onClick={() => setHeightUnit(heightUnit === 'ftin' ? 'cm' : 'ftin')}
+                                className="ml-2 px-2 py-1 rounded text-xs font-sans bg-muted text-foreground hover:bg-border transition-colors"
+                              >
+                                {heightUnit === 'ftin' ? 'Use cm' : 'Use ft/in'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Measurement fields */}
+                        <div className="space-y-3">
+                          {garmentFields.map((mf) => {
+                            const isOptional = mf.field.toLowerCase().includes('heel');
+                            const wasAutoFilled = autoFilledFromSize && measurements[mf.field];
+                            return (
+                              <div key={mf.field} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-card">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="font-sans font-semibold text-sm text-foreground">{mf.field}</p>
+                                    {isOptional && <span className="text-[10px] text-muted-foreground font-sans">(optional)</span>}
+                                    {wasAutoFilled && (
+                                      <span className="px-1.5 py-0.5 rounded text-[9px] font-sans font-medium bg-muted text-muted-foreground">From size {autoFilledFromSize}</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground font-sans">{mf.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    step="0.5"
+                                    placeholder="e.g. 36"
+                                    value={measurements[mf.field] || ""}
+                                    onChange={(e) => {
+                                      setMeasurements(prev => ({ ...prev, [mf.field]: e.target.value }));
+                                      if (autoFilledFromSize) setAutoFilledFromSize('');
+                                    }}
+                                    className="w-20 font-sans text-center"
+                                  />
+                                  <span className="text-xs text-muted-foreground font-sans w-8">in</span>
+                                  <button
+                                    onClick={() => setActiveTip(mf)}
+                                    className="text-xs text-accent font-sans hover:underline whitespace-nowrap"
+                                  >
+                                    ▶ Tip
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* DPDP Consent */}
+                        <div className="mt-6 space-y-3 pt-4 border-t border-border">
+                          <p className="font-sans font-semibold text-sm text-foreground">Data & Consent</p>
+                          <div className="flex items-start gap-3">
+                            <Checkbox id="mc1" checked={consent1} onCheckedChange={(v) => setConsent1(!!v)} />
+                            <label htmlFor="mc1" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                              I confirm these measurements are accurate and consent to sharing them with matched artisans for this order only.
+                            </label>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <Checkbox id="mc2" checked={consent2} onCheckedChange={(v) => setConsent2(!!v)} />
+                            <label htmlFor="mc2" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                              I understand my measurements are stored securely under Naapio's{' '}
+                              <a href="/privacy" target="_blank" className="text-accent underline">Privacy Policy</a> and DPDP Act 2023.
+                            </label>
+                          </div>
+                        </div>
                       </div>
                     )}
 
-                    {measurementType === "later" && (
-                      <p className="text-muted-foreground font-sans text-sm p-4 bg-card rounded-xl border border-border">
-                        No worries! Your accepted tailor will guide you through measurements via a video call. You have 48 hours after going live to submit measurements.
-                      </p>
+                    {/* ── PROVIDE LATER TAB ── */}
+                    {measurementTab === 'later' && (
+                      <div className="space-y-4">
+                        <div className="p-5 bg-amber-50 border border-amber-200 rounded-xl">
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl">⏱</span>
+                            <div>
+                              <p className="font-sans font-semibold text-foreground text-sm mb-1">No worries! You can submit measurements later.</p>
+                              <p className="text-xs text-muted-foreground font-sans">
+                                Measurements must be submitted at Milestone 1 before your artisan can begin stitching. You'll have 48 hours after order placement.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <Checkbox id="mc-later" checked={measureLaterConsent} onCheckedChange={(v) => setMeasureLaterConsent(!!v)} />
+                          <label htmlFor="mc-later" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
+                            I understand measurements must be submitted within 48 hours of artisan acceptance.
+                          </label>
+                        </div>
+                      </div>
                     )}
-                  </div>
 
-                  <div>
-                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Data & Consent</h2>
-                    <p className="text-muted-foreground font-sans mb-6">Required before your order goes live</p>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Checkbox id="c1" checked={consent1} onCheckedChange={(v) => setConsent1(!!v)} />
-                        <label htmlFor="c1" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
-                          I consent to my measurement data being stored securely and shared only with my accepted vendor per Naapio's Privacy Policy (DPDP Act 2023)
-                        </label>
+                    {/* ── DARZI CARD UPLOAD (below all tabs) ── */}
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="flex-1 h-px bg-border" />
+                        <span className="font-sans text-xs text-muted-foreground font-medium">OR</span>
+                        <div className="flex-1 h-px bg-border" />
                       </div>
-                      <div className="flex items-start gap-3">
-                        <Checkbox id="c2" checked={consent2} onCheckedChange={(v) => setConsent2(!!v)} />
-                        <label htmlFor="c2" className="text-xs font-sans text-muted-foreground leading-relaxed cursor-pointer">
-                          I understand my data will be deleted upon request within 72 hours
-                        </label>
-                      </div>
+                      <label className="block p-4 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 cursor-pointer transition-all">
+                        {darziCardPhoto ? (
+                          <div className="flex items-center gap-3">
+                            <img src={URL.createObjectURL(darziCardPhoto)} alt="Darzi card" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                            <div>
+                              <p className="font-sans text-sm font-medium text-foreground">Darzi card uploaded ✓</p>
+                              <button onClick={(e) => { e.preventDefault(); setDarziCardPhoto(null); }} className="text-xs text-accent font-sans hover:underline">Remove</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-2">
+                            <p className="text-2xl mb-1">📷</p>
+                            <p className="font-sans text-sm font-medium text-foreground mb-1">Upload your darzi card / measurement slip</p>
+                            <p className="text-xs text-muted-foreground font-sans">Photo of your tailor's measurement notebook, card, or any written measurements</p>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0] || null;
+                            if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                            setDarziCardPhoto(f);
+                            if (f) toast.success("Darzi card uploaded ✓");
+                          }}
+                        />
+                      </label>
+                      {darziCardPhoto && (
+                        <p className="text-xs text-muted-foreground font-sans mt-2">
+                          {/* TODO: OCR_INTEGRATION — send to Gemini Vision to extract values */}
+                          Your artisan will read measurements from this photo. If values are unclear, they'll ask during Milestone 1.
+                        </p>
+                      )}
                     </div>
 
-                    {/* Order summary so far */}
+                    {/* Order summary */}
                     <div className="mt-6 p-4 bg-card rounded-xl border border-border">
                       <p className="font-sans text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your order so far</p>
                       <div className="space-y-1">
                         <p className="font-sans text-sm text-foreground">
-                          <span className="text-muted-foreground">Garment:</span> {gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}
+                          <span className="text-muted-foreground">Garment:</span> {gender === "women" ? "Women's" : "Men's"} {garmentLabel}
                         </p>
                         <p className="font-sans text-sm text-foreground">
                           <span className="text-muted-foreground">Occasion:</span> {selectedOccasion}
                         </p>
                       </div>
                     </div>
+
+                    {/* Measurement Tip Modal */}
+                    {activeTip && (
+                      <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4" onClick={() => setActiveTip(null)}>
+                        <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                          <h3 className="font-serif font-bold text-foreground text-lg mb-3">How to measure: {activeTip.field}</h3>
+                          <div className="text-center text-4xl mb-3">
+                            {activeTip.field.toLowerCase().includes('bust') || activeTip.field.toLowerCase().includes('chest') ? '📏' :
+                             activeTip.field.toLowerCase().includes('waist') ? '〰️' :
+                             activeTip.field.toLowerCase().includes('shoulder') ? '🫱' :
+                             activeTip.field.toLowerCase().includes('length') || activeTip.field.toLowerCase().includes('height') ? '📐' :
+                             activeTip.field.toLowerCase().includes('sleeve') || activeTip.field.toLowerCase().includes('bicep') ? '💪' :
+                             activeTip.field.toLowerCase().includes('hip') || activeTip.field.toLowerCase().includes('seat') ? '🧍' : '📏'}
+                          </div>
+                          <p className="font-sans text-sm text-muted-foreground mb-1">{activeTip.description}</p>
+                          <p className="font-sans text-sm text-foreground mt-2">{activeTip.tip}</p>
+                          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-xs font-sans text-amber-800">💡 Always measure over regular undergarments. Keep tape snug but not tight.</p>
+                          </div>
+                          <div className="mt-3">
+                            {activeTip.videoUrl ? (
+                              <a href={activeTip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-accent font-sans hover:underline">
+                                🎬 Watch measurement video →
+                              </a>
+                            ) : (
+                              <p className="text-xs text-muted-foreground font-sans italic">
+                                🎬 Video coming soon — will be linked before platform launch.
+                              </p>
+                            )}
+                          </div>
+                          <Button variant="gold" className="w-full mt-4" onClick={() => setActiveTip(null)}>
+                            Got it ✓
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                </div>
-              )}
+                );
+              })()}
 
             </motion.div>
           )}
