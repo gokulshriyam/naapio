@@ -21,24 +21,7 @@ import { toast } from "sonner";
 import redLehenga from "@/assets/red-lehenga.jpg";
 import virtualTrialCover from "@/assets/virtualtrialcover.jpg";
 
-// ═══════════════════════════════════════
-// Measurement Config System (Spec v2.0)
-// ═══════════════════════════════════════
-
-type MeasurementField = {
-  field: string;
-  unit: 'inches';
-  description: string;
-  videoTip: string;
-};
-
-type GarmentMeasurementConfig = {
-  supportsStandard: boolean;
-  heightRequired: boolean;
-  fields: MeasurementField[];
-  noMeasurementNeeded?: boolean;
-  noMeasurementMessage?: string;
-};
+import { resolveGarmentConfig, type GarmentMeasurementConfig, type MeasurementField } from "@/data/measurementConfig";
 
 const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
   'Saree (fabric only)': {

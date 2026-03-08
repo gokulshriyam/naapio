@@ -947,24 +947,27 @@ const Wizard = () => {
     }
   }, []);
 
-  // Save draft on step changes
+  // Save draft on step changes (debounced 500ms)
   useEffect(() => {
     if (step > 1) {
-      const draft = {
-        step, step2Phase, step3Phase, orderType, gender,
-        selectedCategory, selectedSubCategory, selectedOccasion,
-        selectedFit, selectedNeckline, selectedSleeve, selectedDupatta,
-        selectedLining, measurementType, standardSize, sizeRegion,
-        selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
-        selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
-        embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
-        isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
-        isGroupOrder, groupSize, groupMembers: groupMembers.map(m => ({ name: m.name, phone: m.phone, size: m.size, notes: m.notes })),
-        blouseFrontNeck, blouseBackNeck, blouseBackClosure, blouseSleeveStyle,
-        blouseSleeveLength, blousePadding, blouseCupSize, blouseLength, blouseExtraNotes,
-        ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
-      };
-      localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+      const timer = setTimeout(() => {
+        const draft = {
+          step, step2Phase, step3Phase, orderType, gender,
+          selectedCategory, selectedSubCategory, selectedOccasion,
+          selectedFit, selectedNeckline, selectedSleeve, selectedDupatta,
+          selectedLining, measurementType, standardSize, sizeRegion,
+          selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
+          selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
+          embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
+          isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
+          isGroupOrder, groupSize, groupMembers: groupMembers.map(m => ({ name: m.name, phone: m.phone, size: m.size, notes: m.notes })),
+          blouseFrontNeck, blouseBackNeck, blouseBackClosure, blouseSleeveStyle,
+          blouseSleeveLength, blousePadding, blouseCupSize, blouseLength, blouseExtraNotes,
+          ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
+        };
+        localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [step, step2Phase, step3Phase, gender, selectedCategory,
       selectedOccasion, selectedFit, measurementType,
