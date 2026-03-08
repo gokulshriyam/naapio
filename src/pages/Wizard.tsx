@@ -268,20 +268,120 @@ const extractArrayField = (text: string, field: string): string[] => {
 
 // Map detected garment to category (moved outside component for useEffect access)
 const mapDetectedToCategory = (detected: string): string | null => {
-  const map: Record<string, string> = {
-    'Saree Blouse': 'Saree Blouse',
-    'Kurti': 'Kurti',
-    'Salwar Kameez': 'Salwar Kameez',
-    'Anarkali': 'Anarkali',
-    'Lehenga': 'Lehenga',
-    'Gown': 'Gown',
-    'Kurta': 'Kurta',
-    'Sherwani': 'Sherwani',
-    'Bandhgala': 'Bandhgala',
-    'Chaniya Choli': 'Lehenga',
-    'Suit': 'Suit',
+  if (!detected) return null;
+  const d = detected.toLowerCase().trim();
+
+  // ── WOMEN'S ──────────────────────────
+
+  // Saree Blouse variants
+  if (d.includes('blouse') || d.includes('choli') && d.includes('blouse'))
+    return 'Saree Blouse';
+
+  // Saree (suggest blouse as the stitchable part)
+  if (d === 'saree' || d === 'sari')
+    return 'Saree Blouse';
+
+  // Kurti variants
+  if (d === 'kurti' || d === 'short kurti' || d.includes('kurti'))
+    return 'Kurti';
+
+  // Salwar Kameez variants
+  if (d.includes('salwar') || d.includes('kameez') || 
+      d.includes('patiala') || d.includes('churidar') ||
+      d.includes('shalwar') || d.includes('punjabi suit') ||
+      d.includes('straight suit'))
+    return 'Salwar Kameez';
+
+  // Anarkali variants
+  if (d.includes('anarkali') || d.includes('a-line kurta') ||
+      d.includes('floor length kurta') || d.includes('frock suit'))
+    return 'Anarkali';
+
+  // Lehenga variants
+  if (d.includes('lehenga') || d.includes('lehnga') ||
+      d.includes('ghagra') || d.includes('skirt and blouse') ||
+      d.includes('bridal skirt'))
+    return 'Lehenga';
+
+  // Chaniya Choli (garba/navratri)
+  if (d.includes('chaniya') || d.includes('chania') ||
+      d.includes('garba') || d.includes('navratri dress') ||
+      (d.includes('choli') && !d.includes('blouse')))
+    return 'Chaniya Choli';
+
+  // Gown variants
+  if (d.includes('gown') || d.includes('maxi dress') ||
+      d.includes('indo western') || d.includes('indowestern') ||
+      d.includes('long dress') || d.includes('floor gown'))
+    return 'Gown';
+
+  // Co-ord Set
+  if (d.includes('co-ord') || d.includes('coord') ||
+      d.includes('matching set') || d.includes('two piece set') ||
+      d.includes('co ord'))
+    return 'Co-ord Set';
+
+  // Sharara
+  if (d.includes('sharara') || d.includes('palazzo set') ||
+      d.includes('wide leg set'))
+    return 'Sharara Set';
+
+  // Dupatta
+  if (d === 'dupatta' || d === 'chunni' || d === 'chunri' ||
+      d.includes('dupatta'))
+    return 'Dupatta';
+
+  // ── MEN'S ─────────────────────────────
+
+  // Kurta variants
+  if (d === 'kurta' || d === 'casual kurta' ||
+      d.includes('kurta') || d.includes('pathani') ||
+      d.includes('kutra'))
+    return 'Kurta';
+
+  // Sherwani variants
+  if (d.includes('sherwani') || d.includes('sherwaani') ||
+      d.includes('wedding sherwani') || d.includes('achkan'))
+    return 'Sherwani';
+
+  // Bandhgala / Jodhpuri
+  if (d.includes('bandhgala') || d.includes('jodhpuri') ||
+      d.includes('nehru collar suit') || d.includes('mandarin collar') ||
+      d.includes('prince coat'))
+    return 'Bandhgala';
+
+  // Nehru Jacket
+  if (d.includes('nehru jacket') || d.includes('modi jacket') ||
+      d.includes('waistcoat') && d.includes('ethnic'))
+    return 'Nehru Jacket';
+
+  // Suit / Blazer
+  if (d.includes('suit') || d.includes('blazer') ||
+      d.includes('two piece') || d.includes('three piece') ||
+      d.includes('tuxedo') || d.includes('lounge suit') ||
+      d.includes('business suit') || d.includes('formal suit'))
+    return 'Suit/Blazer';
+
+  // ── EXACT CATALOG MATCH (already correct) ──
+  const exactMatches: Record<string, string> = {
+    'saree blouse': 'Saree Blouse',
+    'kurti': 'Kurti',
+    'salwar kameez': 'Salwar Kameez',
+    'anarkali': 'Anarkali',
+    'lehenga': 'Lehenga',
+    'gown': 'Gown',
+    'co-ord set': 'Co-ord Set',
+    'sharara set': 'Sharara Set',
+    'chaniya choli': 'Chaniya Choli',
+    'dupatta': 'Dupatta',
+    'kurta': 'Kurta',
+    'sherwani': 'Sherwani',
+    'bandhgala': 'Bandhgala',
+    'suit/blazer': 'Suit/Blazer',
+    'nehru jacket': 'Nehru Jacket',
   };
-  return map[detected] || null;
+
+  return exactMatches[d] || null;
 };
 
 const Wizard = () => {
