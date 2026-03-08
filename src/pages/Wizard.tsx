@@ -40,7 +40,6 @@ const categoryBudgetRanges: Record<string, { min: number; max: number; label: st
 const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
 
 const subCategories: Record<string, string[]> = {
-  // Men's
   "Sherwani": ["Achkan", "Indo-Western Sherwani", "Jodhpuri Sherwani", "Double-Breasted Sherwani", "Nehru Collar Sherwani"],
   "Kurta": ["Straight Kurta", "Pathani Kurta", "Kaftan Kurta", "Embroidered / Festive Kurta", "Plain / Daily Wear Kurta", "Nehru Collar Kurta"],
   "Bandhgala": ["Single-Breasted Bandhgala", "Double-Breasted Bandhgala", "Jodhpuri Suit with Trousers", "Jodhpuri Suit with Churidar"],
@@ -48,7 +47,6 @@ const subCategories: Record<string, string[]> = {
   "Blazer": ["Single-Breasted Blazer", "Double-Breasted Blazer", "Casual Blazer"],
   "Trousers": ["Formal Trousers", "Churidar", "Pyjama / Salwar", "Dhoti", "Jodhpuri Pants"],
   "Indo-Western": ["Indo-Western Jacket + Kurta", "Cape + Kurta", "Fusion Sherwani-Suit", "Draped Dhoti Pant Set"],
-  // Women's
   "Saree Blouse": ["Backless Blouse", "High-neck Blouse", "Halter Neck", "Peplum Blouse", "Off-shoulder", "Boat Neck", "Sheer / Net Blouse", "Princess-cut Blouse", "Sweetheart Neck", "One-shoulder"],
   "Lehenga": ["Bridal Lehenga (Full 3-piece Set)", "Party Lehenga", "Lehenga Skirt Only", "Half-and-Half Lehenga", "Layered / Ruffle Lehenga", "Sharara Lehenga", "Chaniya Choli"],
   "Salwar Kameez": ["Straight Suit", "Patiala Suit", "Palazzo Suit", "Churidar Suit", "Afghani Suit", "Pakistani Style Suit", "Gharara Suit"],
@@ -208,6 +206,21 @@ const quickBrackets = [
 
 const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
+// Blouse-specific options
+// TODO: I18N_NEEDED — blouse field labels and options
+const blouseFrontNeckOptions = ["Round / Gol Gala", "Boat Neck / Bateau", "Square Neck", "V-Neck / Deep V", "Sweetheart", "Halter", "High Neck / Collar", "No Preference"];
+const blouseBackNeckOptions = ["Deep U-Back", "Keyhole Back", "Tie-Up Back", "Backless / Low Back", "High Back / Full Coverage", "Matches Front", "No Preference"];
+const blouseBackClosureOptions = ["Hook & Eye (traditional)", "Zip (concealed)", "Zip (visible)", "Tie / Dori", "Buttons", "Tailor suggests"];
+const blouseSleeveStyleOptions = ["Sleeveless", "Cap Sleeve", "Elbow Length", "Full Sleeve", "Bell Sleeve", "Cold Shoulder", "No Preference"];
+const blousePaddingOptions = ["No Padding", "Light Padding", "Full Cup Padding", "Removable Padding", "Tailor suggests"];
+const blouseCupSizeOptions = ["A", "B", "C", "D", "D+", "Prefer not to say"];
+const blouseLengthOptions = ["Standard (ends at waist)", "Cropped (above navel)", "Long / Peplum (below waist)", "Custom (inches)"];
+
+// Own fabric type options
+const ownFabricTypeOptions = ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet", "Brocade / Zari", "Linen", "Net / Tulle", "Banarasi", "Kanjivaram", "Chanderi", "Other"];
+const ownFabricWidthOptions = ["36 inches (narrow)", "44 inches (standard)", "54 inches (wide)", "I don't know"];
+const ownFabricConditionOptions = ["New / Unwashed", "Washed / Pre-treated", "Vintage / Heirloom", "Recycled (from another garment)"];
+
 const Wizard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -271,11 +284,30 @@ const Wizard = () => {
   const [briefShared, setBriefShared] = useState(false);
 
   // Gift / Ordering for someone else
-  const [orderingFor, setOrderingFor] = useState<'self' | 'someone' | ''>('');
+  const [orderingFor, setOrderingFor] = useState<'self' | 'someone' | 'group' | ''>('');
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
   const [recipientRelation, setRecipientRelation] = useState('');
   const [giftOrder, setGiftOrder] = useState(false);
+
+  // Group Order (PART 3)
+  const [isGroupOrder, setIsGroupOrder] = useState(false);
+  const [groupSize, setGroupSize] = useState(2);
+  const [groupMembers, setGroupMembers] = useState<Array<{
+    name: string;
+    phone: string;
+    size: string;
+    notes: string;
+    differentColour: boolean;
+    colourNote: string;
+  }>>([
+    { name: '', phone: '', size: '', notes: '', differentColour: false, colourNote: '' },
+    { name: '', phone: '', size: '', notes: '', differentColour: false, colourNote: '' },
+  ]);
+  const [groupSizeBreakdown, setGroupSizeBreakdown] = useState<Record<string, number>>({});
+  const [groupCoordinatorPhone, setGroupCoordinatorPhone] = useState('');
+  const [groupSameColour, setGroupSameColour] = useState(true);
+  const [groupColourNotes, setGroupColourNotes] = useState('');
 
   // Kids lead capture
   const [kidsExpanded, setKidsExpanded] = useState(false);
@@ -283,12 +315,34 @@ const Wizard = () => {
   const [kidsAgeRange, setKidsAgeRange] = useState('');
   const [kidsNotified, setKidsNotified] = useState(false);
 
+  // Blouse-specific design brief (PART 1)
+  const [blouseFrontNeck, setBlouseFrontNeck] = useState('');
+  const [blouseBackNeck, setBlouseBackNeck] = useState('');
+  const [blouseBackClosure, setBlouseBackClosure] = useState('');
+  const [blouseSleeveStyle, setBlouseSleeveStyle] = useState('');
+  const [blouseSleeveLength, setBlouseSleeveLength] = useState('');
+  const [blouseSleeveLengthType, setBlouseSleeveLengthType] = useState<'standard' | 'custom'>('standard');
+  const [blousePadding, setBlousePadding] = useState('');
+  const [blouseCupSize, setBlouseCupSize] = useState('');
+  const [blouseLength, setBlouseLength] = useState('');
+  const [blouseLengthCustom, setBlouseLengthCustom] = useState('');
+  const [blouseExtraNotes, setBlouseExtraNotes] = useState('');
+
+  // Own Fabric structured fields (PART 2)
+  const [ownFabricType, setOwnFabricType] = useState('');
+  const [ownFabricYards, setOwnFabricYards] = useState('');
+  const [ownFabricYardUnit, setOwnFabricYardUnit] = useState<'metres' | 'yards'>('metres');
+  const [ownFabricWidth, setOwnFabricWidth] = useState('');
+  const [ownFabricCondition, setOwnFabricCondition] = useState('');
+
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
   const [generatedOutfitImage, setGeneratedOutfitImage] = useState<string>("");
   const [visualiserLoading, setVisualiserLoading] = useState<boolean>(false);
   const [visualiserError, setVisualiserError] = useState<string>("");
   const [visualiserDismissed, setVisualiserDismissed] = useState<boolean>(false);
+
+  const isBlouseCategory = selectedCategory === "Saree Blouse" || (selectedSubCategory || "").toLowerCase().includes("blouse");
 
   const hasEmbellishment = selectedSurfaces.length > 0 &&
     !selectedSurfaces.every((s) => s === "Plain / No Embellishment" || s === "No Preference");
@@ -341,18 +395,37 @@ const Wizard = () => {
         selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
         embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
         isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
+        isGroupOrder, groupSize, groupMembers: groupMembers.map(m => ({ name: m.name, phone: m.phone, size: m.size, notes: m.notes })),
+        blouseFrontNeck, blouseBackNeck, blouseBackClosure, blouseSleeveStyle,
+        blouseSleeveLength, blousePadding, blouseCupSize, blouseLength, blouseExtraNotes,
+        ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
       };
       localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
     }
   }, [step, step2Phase, step3Phase, gender, selectedCategory,
       selectedOccasion, selectedFit, measurementType,
-      selectedFeel, selectedColourMood, budgetRange, isRushOrder]);
+      selectedFeel, selectedColourMood, budgetRange, isRushOrder,
+      blouseFrontNeck, blouseBackNeck, blouseSleeveStyle,
+      ownFabricType, ownFabricYards, isGroupOrder, groupSize]);
 
+  // Sync group members array when groupSize changes (for small groups)
+  useEffect(() => {
+    if (groupSize <= 6 && groupSize > groupMembers.length) {
+      const newMembers = [...groupMembers];
+      while (newMembers.length < groupSize) {
+        newMembers.push({ name: '', phone: '', size: '', notes: '', differentColour: false, colourNote: '' });
+      }
+      setGroupMembers(newMembers);
+    } else if (groupSize <= 6 && groupSize < groupMembers.length) {
+      setGroupMembers(groupMembers.slice(0, groupSize));
+    }
+  }, [groupSize]);
 
   const canProceed = () => {
     if (step === 0) {
       if (orderingFor === 'self') return true;
       if (orderingFor === 'someone') return !!recipientName.trim() && !!recipientRelation;
+      if (orderingFor === 'group') return true;
       return false;
     }
     if (step === 1) return uploaded;
@@ -360,7 +433,10 @@ const Wizard = () => {
       if (step2Phase === "category") return !!selectedCategory && (!!selectedSubCategory || !subCategories[selectedCategory]);
       if (step2Phase === "occasion") return !!selectedOccasion;
       if (step2Phase === "fit") return !!selectedFit;
-      if (step2Phase === "design") return true;
+      if (step2Phase === "design") {
+        if (isBlouseCategory) return !!blouseFrontNeck && !!blouseBackNeck && !!blouseSleeveStyle;
+        return true;
+      }
       if (step2Phase === "measurements") return consent1 && consent2;
       return false;
     }
@@ -399,6 +475,7 @@ const Wizard = () => {
       budgetRange ? `*Budget:* ${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}` : null,
       deliveryDate ? `*Delivery by:* ${deliveryDate}` : null,
       isRushOrder ? `⚡ *Rush Order*` : null,
+      isGroupOrder ? `*Group Order:* ${groupSize} pieces` : null,
       "",
       "Review my brief and let me know what you think!",
       "Ordering via Naapio — naapio.in"
@@ -420,6 +497,9 @@ const Wizard = () => {
         deliveryDate,
         rushOrder: isRushOrder,
         giftOrder, recipientName, recipientRelation, recipientPhone,
+        isGroupOrder, groupSize, groupMembers: groupMembers.map(m => ({ name: m.name, phone: m.phone, size: m.size })),
+        blouseFrontNeck, blouseBackNeck, blouseBackClosure, blouseSleeveStyle, blouseSleeveLength, blousePadding, blouseCupSize, blouseLength, blouseExtraNotes,
+        ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
         timestamp: new Date().toISOString()
       }));
       localStorage.removeItem("naapio_wizard_draft");
@@ -564,6 +644,47 @@ const Wizard = () => {
   const categories = gender === "men" ? menCategories : womenCategories;
   const catRange = categoryBudgetRanges[selectedCategory] || defaultRange;
 
+  const updateGroupMember = (index: number, field: string, value: any) => {
+    setGroupMembers(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const getEffectiveGroupSize = () => {
+    if (groupSize <= 6) return groupSize;
+    if (groupSize <= 10) return 8; // "7–10"
+    return 12; // "10+"
+  };
+
+  // Pill select helper component
+  const PillSelect = ({ options, value, onChange, multi = false }: { options: string[], value: string | string[], onChange: (v: any) => void, multi?: boolean }) => (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const isSelected = multi ? (value as string[]).includes(opt) : value === opt;
+        return (
+          <button
+            key={opt}
+            onClick={() => {
+              if (multi) {
+                const arr = value as string[];
+                onChange(arr.includes(opt) ? arr.filter(v => v !== opt) : [...arr, opt]);
+              } else {
+                onChange(isSelected ? '' : opt);
+              }
+            }}
+            className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+              isSelected ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+            }`}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-secondary">
       {/* Draft Resume Banner */}
@@ -636,7 +757,7 @@ const Wizard = () => {
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
             <span className="font-sans text-sm text-muted-foreground">
                {step === 0
-                ? "Who is this for?"
+                ? "Who's ordering?"
                 : step === 2
                 ? step2Phase === "category"
                   ? "Step 2a — Category"
@@ -645,7 +766,7 @@ const Wizard = () => {
                   : step2Phase === "fit"
                   ? "Step 2c — Fit"
                   : step2Phase === "design"
-                  ? "Step 2d — Design Details"
+                  ? isBlouseCategory ? "Step 2d — Blouse Details" : "Step 2d — Design Details"
                   : "Step 2e — Measurements"
                : step === 3
                 ? isOwnFabric && showOwnFabricInput
@@ -691,6 +812,15 @@ const Wizard = () => {
         </div>
       )}
 
+      {/* Group order banner */}
+      {isGroupOrder && step > 0 && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-2">
+            <p className="font-sans text-xs text-amber-800">👯 Group order — {groupSize} pieces</p>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
           {/* STEP 0: Who are you ordering for? */}
@@ -699,9 +829,9 @@ const Wizard = () => {
               <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Who are you ordering for?</h2>
               <p className="text-muted-foreground font-sans mb-8">This helps us tailor the experience</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
                 <button
-                  onClick={() => { setOrderingFor('self'); setGiftOrder(false); }}
+                  onClick={() => { setOrderingFor('self'); setGiftOrder(false); setIsGroupOrder(false); }}
                   className={`p-6 rounded-2xl text-left transition-all border-2 ${
                     orderingFor === 'self' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
                   }`}
@@ -714,7 +844,7 @@ const Wizard = () => {
                   <p className="text-xs text-muted-foreground font-sans">I'm ordering this outfit for myself</p>
                 </button>
                 <button
-                  onClick={() => { setOrderingFor('someone'); setGiftOrder(true); }}
+                  onClick={() => { setOrderingFor('someone'); setGiftOrder(true); setIsGroupOrder(false); }}
                   className={`p-6 rounded-2xl text-left transition-all border-2 ${
                     orderingFor === 'someone' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
                   }`}
@@ -726,8 +856,22 @@ const Wizard = () => {
                   </p>
                   <p className="text-xs text-muted-foreground font-sans">Gift, surprise, or ordering on behalf of family</p>
                 </button>
+                <button
+                  onClick={() => { setOrderingFor('group'); setGiftOrder(false); setIsGroupOrder(true); }}
+                  className={`p-6 rounded-2xl text-left transition-all border-2 ${
+                    orderingFor === 'group' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
+                  }`}
+                >
+                  <span className="text-4xl block mb-3">👯</span>
+                  <p className="font-sans font-bold text-foreground mb-1 flex items-center gap-2">
+                    {orderingFor === 'group' && <Check className="w-4 h-4 text-accent" />}
+                    Group / Bridesmaids
+                  </p>
+                  <p className="text-xs text-muted-foreground font-sans">Same design, multiple people — family sets, bridesmaid outfits, dance costumes</p>
+                </button>
               </div>
 
+              {/* Someone Else fields */}
               {orderingFor === 'someone' && (
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 max-w-lg space-y-4">
                   <div>
@@ -756,7 +900,180 @@ const Wizard = () => {
                     <p className="text-xs text-muted-foreground font-sans mt-1">
                       We'll WhatsApp them to submit their measurements directly. You won't need to collect measurements yourself.
                     </p>
+                    {/* TODO: API_INTEGRATION_POINT — send measurements request WhatsApp to recipientPhone after order is placed */}
                   </div>
+                </motion.div>
+              )}
+
+              {/* Group Order fields */}
+              {orderingFor === 'group' && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 max-w-2xl space-y-6">
+                  {/* Group Size */}
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-2 block">How many people in the group?</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[2, 3, 4, 5, 6].map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => setGroupSize(n)}
+                          className={`w-12 h-12 rounded-xl font-sans font-medium text-sm transition-all ${
+                            groupSize === n ? "bg-accent text-accent-foreground" : "bg-card border border-border text-foreground hover:border-accent/30"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                      {[{ label: "7–10", val: 8 }, { label: "10+", val: 12 }].map((item) => (
+                        <button
+                          key={item.label}
+                          onClick={() => setGroupSize(item.val)}
+                          className={`px-4 py-2 rounded-xl font-sans font-medium text-sm transition-all ${
+                            groupSize === item.val ? "bg-accent text-accent-foreground" : "bg-card border border-border text-foreground hover:border-accent/30"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Individual member cards for groups of 2-6 */}
+                  {groupSize <= 6 && (
+                    <div className="space-y-4">
+                      {groupMembers.slice(0, groupSize).map((member, i) => (
+                        <div key={i} className="p-4 bg-card rounded-xl border border-border space-y-3">
+                          <p className="font-sans font-semibold text-foreground text-sm">Person {i + 1}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Input
+                              value={member.name}
+                              onChange={(e) => updateGroupMember(i, 'name', e.target.value)}
+                              placeholder="e.g. Priya"
+                              className="font-sans"
+                            />
+                            <Input
+                              value={member.phone}
+                              onChange={(e) => updateGroupMember(i, 'phone', e.target.value)}
+                              placeholder="For measurements WhatsApp"
+                              type="tel"
+                              className="font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="font-sans text-xs text-muted-foreground mb-1 block">Size preference</label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {["XS", "S", "M", "L", "XL", "XXL", "XXXL", "Custom measurements"].map((s) => (
+                                <button
+                                  key={s}
+                                  onClick={() => updateGroupMember(i, 'size', s)}
+                                  className={`px-3 py-1 rounded-full font-sans text-xs border transition-all ${
+                                    member.size === s ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                                  }`}
+                                >
+                                  {s}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {!groupSameColour && (
+                            <Input
+                              value={member.colourNote}
+                              onChange={(e) => updateGroupMember(i, 'colourNote', e.target.value)}
+                              placeholder="e.g. Blush pink"
+                              className="font-sans"
+                            />
+                          )}
+                          <Input
+                            value={member.notes}
+                            onChange={(e) => updateGroupMember(i, 'notes', e.target.value)}
+                            placeholder="e.g. Petite — adjust length by -3 inches"
+                            className="font-sans"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Simplified mode for groups of 7+ */}
+                  {groupSize > 6 && (
+                    <div className="space-y-4">
+                      <p className="font-sans text-sm font-medium text-foreground">Group size: {groupSize >= 12 ? "10+" : "7–10"}</p>
+                      <div>
+                        <label className="font-sans text-sm font-medium text-foreground mb-2 block">How many of each size?</label>
+                        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                          {["XS", "S", "M", "L", "XL", "XXL", "XXXL", "Custom"].map((s) => (
+                            <div key={s}>
+                              <label className="text-xs font-sans text-muted-foreground block mb-1 text-center">{s}</label>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={groupSizeBreakdown[s] || ''}
+                                onChange={(e) => setGroupSizeBreakdown(prev => ({ ...prev, [s]: Number(e.target.value) || 0 }))}
+                                className="font-sans text-center"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans mt-2">For custom measurements in large groups, your tailor will coordinate directly with each member.</p>
+                      </div>
+                      <div>
+                        <label className="font-sans text-sm font-medium text-foreground mb-1 block">Group coordinator's phone</label>
+                        <Input
+                          value={groupCoordinatorPhone}
+                          onChange={(e) => setGroupCoordinatorPhone(e.target.value)}
+                          placeholder="10-digit mobile"
+                          type="tel"
+                          className="font-sans max-w-xs"
+                        />
+                      </div>
+                      {!groupSameColour && (
+                        <div>
+                          <label className="font-sans text-sm font-medium text-foreground mb-1 block">Describe the colour variants</label>
+                          <Textarea
+                            value={groupColourNotes}
+                            onChange={(e) => setGroupColourNotes(e.target.value)}
+                            placeholder="e.g. 3 in blush pink, 4 in dusty rose..."
+                            className="font-sans"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Colour variants */}
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-2 block">Do all members want the same colour?</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setGroupSameColour(true)}
+                        className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                          groupSameColour ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                        }`}
+                      >
+                        Same colour
+                      </button>
+                      <button
+                        onClick={() => setGroupSameColour(false)}
+                        className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                          !groupSameColour ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                        }`}
+                      >
+                        Different colours
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Group discount notice */}
+                  {groupSize >= 3 && (
+                    <div className="p-4 bg-accent/10 border border-accent/30 rounded-xl flex items-start gap-3">
+                      <span className="text-xl">🎉</span>
+                      <p className="font-sans text-sm text-foreground">
+                        Group orders of 3+ get priority placement and tailors often offer bundle pricing. Mention your group size in the special requirements for best bids.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* TODO: API_INTEGRATION_POINT — send individual measurement requests to each member's phone after order is placed */}
+                  {/* TODO: API_INTEGRATION_POINT — group discount logic to be implemented in bidding engine */}
                 </motion.div>
               )}
             </motion.div>
@@ -864,6 +1181,7 @@ const Wizard = () => {
                       <Button size="sm" onClick={() => { if (kidsEmail.trim()) { setKidsNotified(true); } }}>
                         Notify Me →
                       </Button>
+                      {/* TODO: API_INTEGRATION_POINT — POST kids interest lead { email: kidsEmail, ageRange: kidsAgeRange } to backend */}
                     </motion.div>
                   )}
                   {kidsExpanded && kidsNotified && (
@@ -888,7 +1206,7 @@ const Wizard = () => {
                     ))}
                   </div>
 
-                  {/* Subcategory Accordion — shown when category is selected */}
+                  {/* Subcategory Accordion */}
                   {selectedCategory && subCategories[selectedCategory] && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -912,7 +1230,7 @@ const Wizard = () => {
                     </motion.div>
                   )}
 
-                  {/* If category has no subcategories, auto-select and show confirmation */}
+                  {/* If category has no subcategories */}
                   {selectedCategory && !subCategories[selectedCategory] && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -991,116 +1309,240 @@ const Wizard = () => {
               {/* SUB-PHASE: DESIGN DETAILS */}
               {step2Phase === "design" && (
                 <div>
-                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Design details</h2>
-                  <p className="text-muted-foreground font-sans mb-2">
-                    For <span className="font-semibold text-foreground">{selectedSubCategory || selectedCategory}</span>. All fields are optional — skip anything you don't have a preference for.
-                  </p>
+                  {isBlouseCategory ? (
+                    /* BLOUSE-SPECIFIC DESIGN BRIEF (PART 1) */
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Blouse Details</h2>
+                      <p className="text-muted-foreground font-sans mb-6">The more specific you are, the better your tailor's bid</p>
 
-                  <div className="space-y-8 mt-6">
+                      <div className="space-y-8">
+                        {/* Front Neckline */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <p className="font-sans font-semibold text-foreground">Front Neckline</p>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">Required</span>
+                          </div>
+                          <PillSelect options={blouseFrontNeckOptions} value={blouseFrontNeck} onChange={setBlouseFrontNeck} />
+                        </div>
 
-                    {/* Neckline */}
-                    {showNeckline.includes(selectedCategory) && (
-                      <div>
-                        <p className="font-sans font-semibold text-foreground mb-3">Neckline</p>
-                        <div className="flex flex-wrap gap-2">
-                          {necklineOptions.map((opt) => (
-                            <button
-                              key={opt}
-                              onClick={() => setSelectedNeckline(selectedNeckline === opt ? "" : opt)}
-                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
-                                selectedNeckline === opt
-                                  ? "border-accent bg-accent text-accent-foreground font-medium"
-                                  : "border-border bg-card text-foreground hover:border-accent/40"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          ))}
+                        {/* Back Neckline */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <p className="font-sans font-semibold text-foreground">Back Neckline <span className="text-muted-foreground font-normal">(often different from front)</span></p>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">Required</span>
+                          </div>
+                          <PillSelect options={blouseBackNeckOptions} value={blouseBackNeck} onChange={setBlouseBackNeck} />
+                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                            <span className="text-sm">💡</span>
+                            <p className="text-xs text-amber-800 font-sans">Back neckline is usually the most personalised part of a blouse — most women have a strong preference here.</p>
+                          </div>
+                        </div>
+
+                        {/* Back Closure */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <p className="font-sans font-semibold text-foreground">Back Closure</p>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground">Optional</span>
+                          </div>
+                          <PillSelect options={blouseBackClosureOptions} value={blouseBackClosure} onChange={setBlouseBackClosure} />
+                        </div>
+
+                        {/* Sleeve Style */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <p className="font-sans font-semibold text-foreground">Sleeve Style</p>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">Required</span>
+                          </div>
+                          <PillSelect options={blouseSleeveStyleOptions} value={blouseSleeveStyle} onChange={setBlouseSleeveStyle} />
+                        </div>
+
+                        {/* Sleeve Length (only if not sleeveless) */}
+                        {blouseSleeveStyle && blouseSleeveStyle !== "Sleeveless" && (
+                          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                            <p className="font-sans font-semibold text-foreground mb-3">Sleeve Length</p>
+                            <div className="flex gap-4 items-center">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="sleeveLen" checked={blouseSleeveLengthType === 'standard'} onChange={() => setBlouseSleeveLengthType('standard')} className="accent-[hsl(var(--accent))]" />
+                                <span className="font-sans text-sm text-foreground">Standard length for selected style</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="sleeveLen" checked={blouseSleeveLengthType === 'custom'} onChange={() => setBlouseSleeveLengthType('custom')} className="accent-[hsl(var(--accent))]" />
+                                <span className="font-sans text-sm text-foreground">Custom length</span>
+                              </label>
+                              {blouseSleeveLengthType === 'custom' && (
+                                <Input
+                                  type="number"
+                                  value={blouseSleeveLength}
+                                  onChange={(e) => setBlouseSleeveLength(e.target.value)}
+                                  placeholder="e.g. 12 inches"
+                                  className="font-sans w-32"
+                                />
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* Padding */}
+                        <div>
+                          <p className="font-sans font-semibold text-foreground mb-1">Padding / Cup Lining</p>
+                          <p className="text-xs text-muted-foreground font-sans mb-3">(Optional — select if you have a preference)</p>
+                          <PillSelect options={blousePaddingOptions} value={blousePadding} onChange={setBlousePadding} />
+                        </div>
+
+                        {/* Cup Size (only if padding selected and not "No Padding") */}
+                        {blousePadding && blousePadding !== "No Padding" && (
+                          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                            <p className="font-sans font-semibold text-foreground mb-3">Cup Size (for padding / structured lining)</p>
+                            <PillSelect options={blouseCupSizeOptions} value={blouseCupSize} onChange={setBlouseCupSize} />
+                            <p className="text-xs text-muted-foreground font-sans mt-2">
+                              This is used only to ensure your blouse fits perfectly. Your tailor treats this with full confidentiality.
+                            </p>
+                          </motion.div>
+                        )}
+
+                        {/* Blouse Length */}
+                        <div>
+                          <p className="font-sans font-semibold text-foreground mb-3">Blouse Length</p>
+                          <PillSelect options={blouseLengthOptions} value={blouseLength} onChange={setBlouseLength} />
+                          {blouseLength === "Custom (inches)" && (
+                            <Input
+                              type="number"
+                              value={blouseLengthCustom}
+                              onChange={(e) => setBlouseLengthCustom(e.target.value)}
+                              placeholder="e.g. 15 inches"
+                              className="font-sans mt-3 w-40"
+                            />
+                          )}
+                        </div>
+
+                        {/* Special Notes */}
+                        <div>
+                          <p className="font-sans font-semibold text-foreground mb-2">Anything else your tailor should know?</p>
+                          <Textarea
+                            value={blouseExtraNotes}
+                            onChange={(e) => setBlouseExtraNotes(e.target.value.slice(0, 300))}
+                            placeholder="e.g. 'My previous blouse was 13 inches — make this the same length' or 'I want a princess cut' or 'Please match the border of my saree exactly'"
+                            className="font-sans"
+                            maxLength={300}
+                          />
+                          <p className="text-xs text-muted-foreground font-sans mt-1 text-right">{blouseExtraNotes.length}/300</p>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  ) : (
+                    /* STANDARD DESIGN DETAILS (existing) */
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Design details</h2>
+                      <p className="text-muted-foreground font-sans mb-2">
+                        For <span className="font-semibold text-foreground">{selectedSubCategory || selectedCategory}</span>. All fields are optional — skip anything you don't have a preference for.
+                      </p>
 
-                    {/* Sleeve */}
-                    {showSleeve.includes(selectedCategory) && (
-                      <div>
-                        <p className="font-sans font-semibold text-foreground mb-3">Sleeve Style</p>
-                        <div className="flex flex-wrap gap-2">
-                          {sleeveOptions.map((opt) => (
-                            <button
-                              key={opt}
-                              onClick={() => setSelectedSleeve(selectedSleeve === opt ? "" : opt)}
-                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
-                                selectedSleeve === opt
-                                  ? "border-accent bg-accent text-accent-foreground font-medium"
-                                  : "border-border bg-card text-foreground hover:border-accent/40"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
+                      <div className="space-y-8 mt-6">
+
+                        {/* Neckline */}
+                        {showNeckline.includes(selectedCategory) && (
+                          <div>
+                            <p className="font-sans font-semibold text-foreground mb-3">Neckline</p>
+                            <div className="flex flex-wrap gap-2">
+                              {necklineOptions.map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => setSelectedNeckline(selectedNeckline === opt ? "" : opt)}
+                                  className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                    selectedNeckline === opt
+                                      ? "border-accent bg-accent text-accent-foreground font-medium"
+                                      : "border-border bg-card text-foreground hover:border-accent/40"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Sleeve */}
+                        {showSleeve.includes(selectedCategory) && (
+                          <div>
+                            <p className="font-sans font-semibold text-foreground mb-3">Sleeve Style</p>
+                            <div className="flex flex-wrap gap-2">
+                              {sleeveOptions.map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => setSelectedSleeve(selectedSleeve === opt ? "" : opt)}
+                                  className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                    selectedSleeve === opt
+                                      ? "border-accent bg-accent text-accent-foreground font-medium"
+                                      : "border-border bg-card text-foreground hover:border-accent/40"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Dupatta */}
+                        {showDupatta.includes(selectedCategory) && (
+                          <div>
+                            <p className="font-sans font-semibold text-foreground mb-3">Dupatta / Set Inclusion</p>
+                            <div className="flex flex-wrap gap-2">
+                              {dupatttaOptions.map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => setSelectedDupatta(selectedDupatta === opt ? "" : opt)}
+                                  className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                    selectedDupatta === opt
+                                      ? "border-accent bg-accent text-accent-foreground font-medium"
+                                      : "border-border bg-card text-foreground hover:border-accent/40"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Lining */}
+                        {showLining.includes(selectedCategory) && (
+                          <div>
+                            <p className="font-sans font-semibold text-foreground mb-3">Lining Preference</p>
+                            <div className="flex flex-wrap gap-2">
+                              {liningOptions.map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => setSelectedLining(selectedLining === opt ? "" : opt)}
+                                  className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                                    selectedLining === opt
+                                      ? "border-accent bg-accent text-accent-foreground font-medium"
+                                      : "border-border bg-card text-foreground hover:border-accent/40"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Skip message */}
+                        {!showNeckline.includes(selectedCategory) &&
+                         !showSleeve.includes(selectedCategory) &&
+                         !showDupatta.includes(selectedCategory) &&
+                         !showLining.includes(selectedCategory) && (
+                          <div className="p-4 bg-card rounded-xl border border-border text-center">
+                            <p className="text-muted-foreground font-sans text-sm">No specific design details needed for {selectedCategory}. Tap Next to continue to measurements.</p>
+                          </div>
+                        )}
                       </div>
-                    )}
-
-                    {/* Dupatta */}
-                    {showDupatta.includes(selectedCategory) && (
-                      <div>
-                        <p className="font-sans font-semibold text-foreground mb-3">Dupatta / Set Inclusion</p>
-                        <div className="flex flex-wrap gap-2">
-                          {dupatttaOptions.map((opt) => (
-                            <button
-                              key={opt}
-                              onClick={() => setSelectedDupatta(selectedDupatta === opt ? "" : opt)}
-                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
-                                selectedDupatta === opt
-                                  ? "border-accent bg-accent text-accent-foreground font-medium"
-                                  : "border-border bg-card text-foreground hover:border-accent/40"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Lining */}
-                    {showLining.includes(selectedCategory) && (
-                      <div>
-                        <p className="font-sans font-semibold text-foreground mb-3">Lining Preference</p>
-                        <div className="flex flex-wrap gap-2">
-                          {liningOptions.map((opt) => (
-                            <button
-                              key={opt}
-                              onClick={() => setSelectedLining(selectedLining === opt ? "" : opt)}
-                              className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
-                                selectedLining === opt
-                                  ? "border-accent bg-accent text-accent-foreground font-medium"
-                                  : "border-border bg-card text-foreground hover:border-accent/40"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Skip message */}
-                    {!showNeckline.includes(selectedCategory) &&
-                     !showSleeve.includes(selectedCategory) &&
-                     !showDupatta.includes(selectedCategory) &&
-                     !showLining.includes(selectedCategory) && (
-                      <div className="p-4 bg-card rounded-xl border border-border text-center">
-                        <p className="text-muted-foreground font-sans text-sm">No specific design details needed for {selectedCategory}. Tap Next to continue to measurements.</p>
-                      </div>
-                    )}
-
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* SUB-PHASE: MEASUREMENTS — existing UI preserved exactly */}
+              {/* SUB-PHASE: MEASUREMENTS */}
               {step2Phase === "measurements" && (
                 <div>
                   {/* Measurement Guide */}
@@ -1147,6 +1589,24 @@ const Wizard = () => {
                     <p className="text-muted-foreground font-sans mb-6">
                       For <span className="font-semibold text-foreground">{gender === "women" ? "Women's" : "Men's"} {selectedSubCategory || selectedCategory}</span>
                     </p>
+
+                    {/* Gift order: measurement request option */}
+                    {giftOrder && recipientPhone && (
+                      <div className="mb-4 p-4 bg-teal-50 border border-teal-200 rounded-xl">
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl">📱</span>
+                          <div className="flex-1">
+                            <p className="font-sans font-semibold text-foreground text-sm">Request measurements from {recipientName}</p>
+                            <p className="text-xs text-muted-foreground font-sans mt-0.5">We'll send them a WhatsApp with a simple measurement form to fill directly.</p>
+                            <Button size="sm" variant="outline" className="mt-2" onClick={() => toast.success(`Measurement request will be sent to ${recipientPhone} after you post your brief.`)}>
+                              Send Measurement Request →
+                            </Button>
+                            {/* TODO: API_INTEGRATION_POINT — POST measurement request to recipientPhone via WhatsApp Business API */}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex gap-2 mb-6">
                       {(["standard", "custom", "later"] as const).map((t) => (
                         <button
@@ -1154,7 +1614,7 @@ const Wizard = () => {
                           onClick={() => setMeasurementType(t)}
                           className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${measurementType === t ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
                         >
-                          {t === "later" ? "Provide Later" : t.charAt(0).toUpperCase() + t.slice(1)}
+                          {t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later") : t.charAt(0).toUpperCase() + t.slice(1)}
                         </button>
                       ))}
                     </div>
@@ -1240,20 +1700,91 @@ const Wizard = () => {
           {step === 3 && (
             <motion.div key={`s3-${step3Phase}`} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
 
-              {/* OWN FABRIC PATH */}
-              {/* OWN FABRIC PATH */}
+              {/* OWN FABRIC PATH (PART 2 — structured fields) */}
               {isOwnFabric && showOwnFabricInput && (
                 <div>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Tell us about your fabric</h2>
-                  <p className="text-muted-foreground font-sans mb-6">Describe your fabric — type, colour, weight, condition</p>
-                  <Textarea
-                    value={ownFabricDescription}
-                    onChange={(e) => setOwnFabricDescription(e.target.value.slice(0, 300))}
-                    placeholder="e.g. Navy blue Kanjivaram silk saree fabric, about 6 metres, unused"
-                    className="font-sans min-h-[150px]"
-                    maxLength={300}
-                  />
-                  <p className="text-xs text-muted-foreground font-sans mt-2 text-right">{ownFabricDescription.length}/300</p>
+                  <p className="text-muted-foreground font-sans mb-6">The more detail you provide, the better your tailor can plan</p>
+
+                  <div className="space-y-6 mb-6">
+                    {/* Fabric Type */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <p className="font-sans font-semibold text-foreground">What fabric do you have?</p>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground">Optional but helpful</span>
+                      </div>
+                      <PillSelect options={ownFabricTypeOptions} value={ownFabricType} onChange={setOwnFabricType} />
+                    </div>
+
+                    {/* Quantity */}
+                    <div>
+                      <p className="font-sans font-semibold text-foreground mb-3">How much fabric do you have?</p>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="number"
+                          value={ownFabricYards}
+                          onChange={(e) => setOwnFabricYards(e.target.value)}
+                          placeholder="e.g. 2.5"
+                          className="font-sans w-32"
+                          step="0.1"
+                        />
+                        <div className="flex gap-1">
+                          {(["metres", "yards"] as const).map((unit) => (
+                            <button
+                              key={unit}
+                              onClick={() => setOwnFabricYardUnit(unit)}
+                              className={`px-3 py-2 rounded-full font-sans text-sm border transition-all ${
+                                ownFabricYardUnit === unit ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                              }`}
+                            >
+                              {unit.charAt(0).toUpperCase() + unit.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                        <span className="text-sm">💡</span>
+                        <p className="text-xs text-amber-800 font-sans">
+                          Standard quantities needed: Saree Blouse: 0.8–1.2m · Kurti: 2–2.5m · Salwar Kameez: 3.5–4m · Lehenga: 4–6m · Sherwani: 3–4m. Your tailor will confirm if your quantity is sufficient.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Fabric Width */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <p className="font-sans font-semibold text-foreground">Fabric width (if you know it)</p>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground">Optional</span>
+                      </div>
+                      <PillSelect options={ownFabricWidthOptions} value={ownFabricWidth} onChange={setOwnFabricWidth} />
+                    </div>
+
+                    {/* Fabric Condition */}
+                    <div>
+                      <p className="font-sans font-semibold text-foreground mb-3">Condition of your fabric</p>
+                      <PillSelect options={ownFabricConditionOptions} value={ownFabricCondition} onChange={setOwnFabricCondition} />
+                      {(ownFabricCondition === "Vintage / Heirloom" || ownFabricCondition === "Recycled (from another garment)") && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                          <span className="text-sm">🔒</span>
+                          <p className="text-xs text-amber-800 font-sans">Heirloom fabrics are treated with extra care. Your tailor will inspect before cutting and flag any concerns at Milestone 1 before proceeding.</p>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Existing free text area */}
+                  <div>
+                    <p className="font-sans font-semibold text-foreground mb-2">Additional details about your fabric</p>
+                    <Textarea
+                      value={ownFabricDescription}
+                      onChange={(e) => setOwnFabricDescription(e.target.value.slice(0, 300))}
+                      placeholder="e.g. Navy blue Kanjivaram silk saree fabric, about 6 metres, unused"
+                      className="font-sans min-h-[120px]"
+                      maxLength={300}
+                    />
+                    <p className="text-xs text-muted-foreground font-sans mt-2 text-right">{ownFabricDescription.length}/300</p>
+                  </div>
+                  {/* TODO: API_INTEGRATION_POINT — ownFabricYards used by tailor to confirm fabric sufficiency during bid */}
                 </div>
               )}
 
@@ -1765,6 +2296,15 @@ const Wizard = () => {
                   </div>
                 )}
 
+                {isGroupOrder && (
+                  <div className="mt-4 p-4 bg-accent/10 border border-accent/30 rounded-xl text-center">
+                    <p className="font-sans text-sm font-semibold text-foreground">🎉 Group order placed for {groupSize} people!</p>
+                    {groupMembers.some(m => m.phone) && (
+                      <p className="text-xs text-muted-foreground font-sans mt-1">We'll WhatsApp each member to collect their measurements.</p>
+                    )}
+                  </div>
+                )}
+
                 <p className="text-xs text-muted-foreground font-sans mt-6">
                   A summary has been sent to your WhatsApp number {phone}
                 </p>
@@ -1783,7 +2323,6 @@ const Wizard = () => {
                   {!visualiserDismissed && (
                     <div className="rounded-xl border border-amber-200/60 overflow-hidden" style={{ backgroundColor: '#FDF3E3' }}>
                       <div className="p-5 relative">
-                        {/* Skip button */}
                         <button
                           onClick={() => setVisualiserDismissed(true)}
                           className="absolute top-3 right-3 text-xs font-sans text-muted-foreground hover:text-foreground transition-colors"
@@ -1791,7 +2330,6 @@ const Wizard = () => {
                           Skip →
                         </button>
 
-                        {/* NO PHOTO YET */}
                         {!selfiePhoto && !visualiserLoading && !generatedOutfitImage && !visualiserError && (
                           <div>
                             <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground">NEW · OUTFIT PREVIEW</span>
@@ -1819,7 +2357,6 @@ const Wizard = () => {
                           </div>
                         )}
 
-                        {/* LOADING STATE */}
                         {visualiserLoading && (
                           <div className="flex flex-col items-center justify-center py-8">
                             <div className="w-10 h-10 border-4 border-accent/30 border-t-accent rounded-full animate-spin mb-4" />
@@ -1828,7 +2365,6 @@ const Wizard = () => {
                           </div>
                         )}
 
-                        {/* IMAGE GENERATED */}
                         {generatedOutfitImage && !visualiserLoading && (
                           <div>
                             <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground">OUTFIT INSPIRATION · AI GENERATED</span>
@@ -1864,7 +2400,6 @@ const Wizard = () => {
                           </div>
                         )}
 
-                        {/* ERROR STATE */}
                         {visualiserError && !visualiserLoading && (
                           <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                             <p className="text-sm text-amber-800 font-sans">⚠️ {visualiserError}</p>
@@ -1894,6 +2429,20 @@ const Wizard = () => {
                         <p className="text-xs text-muted-foreground font-sans mt-1">Measurements will be requested from {recipientPhone}</p>
                       ) : (
                         <p className="text-xs text-amber-600 font-sans mt-1">⏱ Measurements to be provided — remind {recipientName}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* GROUP ORDER SECTION */}
+                  {isGroupOrder && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Group Order</span>
+                        <button onClick={() => { setStep(0); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                      </div>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-100 text-amber-800 mb-2">👯 Group Order — {groupSize} pieces</span>
+                      {groupSize <= 6 && (
+                        <p className="text-sm text-foreground font-sans">{groupMembers.filter(m => m.name).map(m => m.name).join(', ') || 'Members to be confirmed'}</p>
                       )}
                     </div>
                   )}
@@ -1962,15 +2511,46 @@ const Wizard = () => {
                   {/* DESIGN DETAILS */}
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Design Details</span>
+                      <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">{isBlouseCategory ? "Blouse Details" : "Design Details"}</span>
                       <button onClick={() => { setStep(2); setStep2Phase("design"); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    {(selectedNeckline || selectedSleeve || selectedDupatta || selectedLining) ? (
-                      <p className="text-sm text-foreground font-sans">
-                        {[selectedNeckline, selectedSleeve, selectedDupatta, selectedLining].filter(Boolean).join(", ")}
-                      </p>
+                    {isBlouseCategory ? (
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                        <p className="text-xs text-muted-foreground font-sans">Front Neckline</p>
+                        <p className="text-sm text-foreground font-sans">{blouseFrontNeck || "Not selected"}</p>
+                        <p className="text-xs text-muted-foreground font-sans">Back Neckline</p>
+                        <p className="text-sm text-foreground font-sans">{blouseBackNeck || "Not selected"}</p>
+                        {blouseBackClosure && <>
+                          <p className="text-xs text-muted-foreground font-sans">Back Closure</p>
+                          <p className="text-sm text-foreground font-sans">{blouseBackClosure}</p>
+                        </>}
+                        <p className="text-xs text-muted-foreground font-sans">Sleeve Style</p>
+                        <p className="text-sm text-foreground font-sans">{blouseSleeveStyle || "Not selected"}</p>
+                        {blouseSleeveLength && <>
+                          <p className="text-xs text-muted-foreground font-sans">Sleeve Length</p>
+                          <p className="text-sm text-foreground font-sans">{blouseSleeveLength} inches</p>
+                        </>}
+                        {blousePadding && <>
+                          <p className="text-xs text-muted-foreground font-sans">Padding</p>
+                          <p className="text-sm text-foreground font-sans">{blousePadding}{blouseCupSize ? ` (${blouseCupSize})` : ''}</p>
+                        </>}
+                        {blouseLength && <>
+                          <p className="text-xs text-muted-foreground font-sans">Blouse Length</p>
+                          <p className="text-sm text-foreground font-sans">{blouseLength}{blouseLength === "Custom (inches)" && blouseLengthCustom ? ` — ${blouseLengthCustom}"` : ''}</p>
+                        </>}
+                        {blouseExtraNotes && <>
+                          <p className="text-xs text-muted-foreground font-sans">Notes</p>
+                          <p className="text-sm text-foreground font-sans">{blouseExtraNotes}</p>
+                        </>}
+                      </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground font-sans">Standard (tailor to advise)</p>
+                      (selectedNeckline || selectedSleeve || selectedDupatta || selectedLining) ? (
+                        <p className="text-sm text-foreground font-sans">
+                          {[selectedNeckline, selectedSleeve, selectedDupatta, selectedLining].filter(Boolean).join(", ")}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground font-sans">Standard (tailor to advise)</p>
+                      )
                     )}
                   </div>
 
@@ -2004,7 +2584,26 @@ const Wizard = () => {
                       }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
                     {isOwnFabric ? (
-                      <p className="text-sm text-foreground font-sans">{ownFabricDescription || "Not described"}</p>
+                      <div className="space-y-1.5">
+                        {ownFabricType && (
+                          <p className="text-sm text-foreground font-sans"><span className="text-muted-foreground text-xs">Type:</span> {ownFabricType}</p>
+                        )}
+                        {ownFabricYards && (
+                          <p className="text-sm text-foreground font-sans"><span className="text-muted-foreground text-xs">Quantity:</span> {ownFabricYards} {ownFabricYardUnit}</p>
+                        )}
+                        {ownFabricWidth && (
+                          <p className="text-sm text-foreground font-sans"><span className="text-muted-foreground text-xs">Width:</span> {ownFabricWidth}</p>
+                        )}
+                        {ownFabricCondition && (
+                          <p className="text-sm text-foreground font-sans"><span className="text-muted-foreground text-xs">Condition:</span> {ownFabricCondition}</p>
+                        )}
+                        {ownFabricDescription && (
+                          <p className="text-sm text-foreground font-sans"><span className="text-muted-foreground text-xs">Notes:</span> {ownFabricDescription}</p>
+                        )}
+                        {!ownFabricType && !ownFabricYards && !ownFabricDescription && (
+                          <p className="text-sm text-muted-foreground font-sans">Not described</p>
+                        )}
+                      </div>
                     ) : (
                       <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                         <p className="text-xs text-muted-foreground font-sans">Feel</p>
@@ -2033,7 +2632,7 @@ const Wizard = () => {
                     )}
                   </div>
 
-                  {/* EMBELLISHMENT BUDGET — only if applicable */}
+                  {/* EMBELLISHMENT BUDGET */}
                   {hasEmbellishment && (
                     <div className="p-5 bg-card rounded-xl border border-border">
                       <div className="flex items-center justify-between mb-2">
@@ -2066,7 +2665,7 @@ const Wizard = () => {
                     </p>
                   </div>
 
-                  {/* Rush Order badge in Budget & Delivery section */}
+                  {/* Rush Order badge */}
                   {isRushOrder && (
                     <div className="p-5 bg-card rounded-xl border border-border">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-100 text-amber-800">⚡ Rush Order</span>
