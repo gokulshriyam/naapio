@@ -1756,6 +1756,15 @@ const Wizard = () => {
                   </Button>
                 </div>
 
+                {giftOrder && (
+                  <div className="mt-4 p-4 bg-accent/10 border border-accent/30 rounded-xl text-center">
+                    <p className="font-sans text-sm font-semibold text-foreground">🎁 Gift order placed for {recipientName}!</p>
+                    {recipientPhone && (
+                      <p className="text-xs text-muted-foreground font-sans mt-1">We'll WhatsApp {recipientPhone} to collect their measurements within 48 hours.</p>
+                    )}
+                  </div>
+                )}
+
                 <p className="text-xs text-muted-foreground font-sans mt-6">
                   A summary has been sent to your WhatsApp number {phone}
                 </p>
