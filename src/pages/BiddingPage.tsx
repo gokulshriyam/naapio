@@ -596,9 +596,6 @@ const BiddingPage = () => {
   const [acceptBid, setAcceptBid] = useState<typeof mockBids[0] | null>(null);
   const [acceptOrderId, setAcceptOrderId] = useState<string | null>(null);
 
-  const needsMeasurementsBanner = activeOrders.some(
-    (o) => !o.measurementsSubmitted && o.status !== "completed" && o.status !== "expired"
-  );
 
   const handleCloseBid = (orderId: string) => {
     setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
@@ -672,21 +669,6 @@ const BiddingPage = () => {
         </Button>
       </div>
 
-      {/* Measurements Banner */}
-      {needsMeasurementsBanner && (
-        <div className="mb-5 p-4 bg-warning-light rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">📏</span>
-            <div>
-              <p className="font-sans font-semibold text-sm text-foreground">Measurements missing on one or more orders</p>
-              <p className="text-xs text-muted-foreground font-sans">Tailors cannot finalise bids without your measurements. Submit them now to avoid delays.</p>
-            </div>
-          </div>
-          <Button size="sm" variant="gold" className="shrink-0" onClick={() => navigate("/wizard")}>
-            Submit Measurements →
-          </Button>
-        </div>
-      )}
 
       {/* Tabs */}
       <Tabs defaultValue="active">
