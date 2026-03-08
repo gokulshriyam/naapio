@@ -297,12 +297,20 @@ const BiddingRoom = ({
 
   const handleSendChat = (bidId: string) => {
     if (!chatInput.trim()) return;
-    const msg = chatInput.trim();
+    const rawMsg = chatInput.trim();
+    const maskedMsg = maskContactInfo(rawMsg);
+    const wasContactMasked = rawMsg !== maskedMsg;
+    
     setChatMessages((prev) => ({
       ...prev,
-      [bidId]: [...(prev[bidId] || []), { text: msg, from: "you" }],
+      [bidId]: [...(prev[bidId] || []), { text: maskedMsg, from: "you", masked: wasContactMasked }],
     }));
     setChatInput("");
+    
+    if (wasContactMasked) {
+      toast.info("ℹ️ Contact info was hidden — share after selection");
+    }
+    
     setTimeout(() => {
       setChatMessages((prev) => ({
         ...prev,
