@@ -2236,7 +2236,7 @@ const Wizard = () => {
                   )}
 
                   {/* STEP 3f: BRAND PREFERENCE */}
-                  {step3Phase === "brand" && (
+                  {step3Phase === "brand" && showAdvancedFabric && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any preferred fabric brand?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Optional — leave blank if you have no preference</p>
