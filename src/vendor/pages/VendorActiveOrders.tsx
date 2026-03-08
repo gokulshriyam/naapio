@@ -565,10 +565,10 @@ const VendorActiveOrders = () => {
             <MessageSquare className="w-3.5 h-3.5 mr-1" /> Message {order.customerFirstName}
           </Button>
           {chatOpen && <InlineChat customerName={order.customerFirstName} onClose={() => setChatOpen(false)} orderId={order.orderId} bidAmount={order.bidAmount} />}
-        </div>
+        </aside>
 
         {/* RIGHT COLUMN — Milestone content */}
-        <div className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 w-full">
           <AnimatePresence mode="wait">
             {/* ═══ M1 — Measurements Review (read-only if m1ReadOnly) ═══ */}
             {activeMilestone === 1 && (
