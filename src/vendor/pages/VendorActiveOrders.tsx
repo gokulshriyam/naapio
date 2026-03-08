@@ -395,7 +395,7 @@ const VendorActiveOrders = () => {
                 </div>
                 <Progress value={progress} className="h-1 mb-4" />
                 <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => setSelectedOrderId(order.orderId)}>
-                  Track Order →
+                  {order.currentMilestone === 1 ? 'Review Measurements →' : `Continue — M${order.currentMilestone} →`}
                 </Button>
               </div>
             );
