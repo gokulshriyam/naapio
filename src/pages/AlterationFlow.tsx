@@ -912,14 +912,70 @@ const AlterationFlow = () => {
                     {/* Budget */}
                     <div>
                       <h3 className="font-sans font-semibold text-foreground mb-4">Budget for the alteration work</h3>
+                      {/* Intelligence Card */}
+                      {alterationGarment && (
+                        <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>💡</span>
+                            <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                            <span className="font-sans text-[10px] text-amber-600">Based on your selections</span>
+                          </div>
+                          <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                            <div className="absolute h-full bg-accent rounded-full" style={{ left: '0%', right: `${Math.max(0, 100 - ((altIntelligence.max - altIntelligence.min) / (altIntelligence.max)) * 100)}%` }} />
+                            <div className="absolute w-2 h-4 bg-accent rounded-full -top-1" style={{ left: `${((altIntelligence.avg - altIntelligence.min) / (altIntelligence.max - altIntelligence.min)) * 100}%` }} />
+                          </div>
+                          <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                            <span>{formatBudget(altIntelligence.min)}</span>
+                            <span className="font-semibold">Avg {formatBudget(altIntelligence.avg)}</span>
+                            <span>{formatBudget(altIntelligence.max)}</span>
+                          </div>
+                          {altIntelligence.explanation.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-[10px] text-amber-800 font-sans font-semibold mb-1">What's included:</p>
+                              {altIntelligence.explanation.map((f, i) => (
+                                <p key={i} className="text-[10px] text-amber-700 font-sans">• {f}</p>
+                              ))}
+                            </div>
+                          )}
+                          <Button variant="outline" size="sm" className="text-xs" onClick={() => setAlterationBudgetRange([altIntelligence.min, altIntelligence.max])}>
+                            Use Suggested Range
+                          </Button>
+                          <p className="text-[10px] text-amber-600 font-sans mt-2">This is an estimate — final amount is what you agree with your chosen artisan.</p>
+                        </div>
+                      )}
+
+                      {/* Dual Handle Slider */}
+                      <div className="mb-4">
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm font-sans font-semibold text-accent">{formatBudget(alterationBudgetRange[0])}</span>
+                          <span className="text-sm font-sans font-semibold text-accent">{formatBudget(alterationBudgetRange[1])}</span>
+                        </div>
+                        <Slider
+                          value={alterationBudgetRange}
+                          onValueChange={(val) => { if (val[1] - val[0] >= 2000) setAlterationBudgetRange(val); }}
+                          min={1000}
+                          max={200000}
+                          step={alterationBudgetRange[0] < 10000 ? 500 : alterationBudgetRange[0] < 50000 ? 1000 : 5000}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
+                          <span>₹1K</span>
+                          <span>₹2L</span>
+                        </div>
+                      </div>
+
+                      {/* Manual override inputs */}
                       <div className="flex gap-3 mb-3">
                         <div className="flex-1">
                           <label className="text-xs font-sans text-muted-foreground mb-1 block">Min ₹</label>
                           <Input
                             type="number"
-                            placeholder="300"
-                            value={alterationBudgetMin}
-                            onChange={(e) => setAlterationBudgetMin(e.target.value)}
+                            placeholder="1,000"
+                            value={alterationBudgetRange[0] || ""}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setAlterationBudgetRange([val, Math.max(val + 2000, alterationBudgetRange[1])]);
+                            }}
                             className="font-sans"
                           />
                         </div>
@@ -927,20 +983,17 @@ const AlterationFlow = () => {
                           <label className="text-xs font-sans text-muted-foreground mb-1 block">Max ₹</label>
                           <Input
                             type="number"
-                            placeholder="1,500"
-                            value={alterationBudgetMax}
-                            onChange={(e) => setAlterationBudgetMax(e.target.value)}
+                            placeholder="5,000"
+                            value={alterationBudgetRange[1] || ""}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setAlterationBudgetRange([Math.min(alterationBudgetRange[0], val - 2000), val]);
+                            }}
                             className="font-sans"
                           />
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground font-sans">
-                        {alterationGuidance[alterationGarment] || 'Enter your comfortable range'}
-                      </p>
-                      {Number(alterationBudgetMin) > 0 && Number(alterationBudgetMax) > 0 && Number(alterationBudgetMin) > Number(alterationBudgetMax) && (
-                        <p className="text-xs text-destructive font-sans mt-1">Min budget can't be higher than max</p>
-                      )}
-                      <p className="text-xs text-muted-foreground font-sans mt-2">
                         💡 Set a realistic range — tailors bid within it.
                       </p>
                     </div>
