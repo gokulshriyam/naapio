@@ -30,7 +30,7 @@ const StartPage = () => {
       title: "Customise My Garment",
       description: "Add embroidery, artwork, sequins, prints or patches to an existing piece.",
       color: "bg-purple-50 border-purple-200 hover:border-purple-400",
-      route: "/wizard?type=customise",
+      route: "/customise",
     },
   ];
 
