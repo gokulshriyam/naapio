@@ -919,7 +919,7 @@ const BiddingPage = () => {
 
       {/* Accept Bid Confirmation */}
       <AlertDialog open={!!acceptBid} onOpenChange={() => { setAcceptBid(null); setAcceptOrderId(null); }}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md sm:max-w-md max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>Accept {acceptBid?.alias}'s bid?</AlertDialogTitle>
           </AlertDialogHeader>
