@@ -387,6 +387,10 @@ const Wizard = () => {
   const [ownFabricWidth, setOwnFabricWidth] = useState('');
   const [ownFabricCondition, setOwnFabricCondition] = useState('');
 
+  // Multi-piece from same fabric
+  const [multiplePieces, setMultiplePieces] = useState<boolean>(false);
+  const [additionalPieces, setAdditionalPieces] = useState<string[]>([]);
+
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
   const [generatedOutfitImage, setGeneratedOutfitImage] = useState<string>("");
