@@ -801,6 +801,18 @@ const Wizard = () => {
   // Step transition
   const [stepTransitioning, setStepTransitioning] = useState(false);
 
+  // Measurement tab & tip modal state
+  const [measurementTab, setMeasurementTab] = useState<'standard' | 'custom' | 'later'>('custom');
+  const [activeTip, setActiveTip] = useState<MeasurementField | null>(null);
+  const [heightFeet, setHeightFeet] = useState('');
+  const [heightInches, setHeightInches] = useState('');
+  const [heightCm, setHeightCm] = useState('');
+  const [heightUnit, setHeightUnit] = useState<'ftin' | 'cm'>('ftin');
+  const [selectedStandardSize, setSelectedStandardSize] = useState('');
+  const [autoFilledFromSize, setAutoFilledFromSize] = useState('');
+  const [darziCardPhoto, setDarziCardPhoto] = useState<File | null>(null);
+  const [measureLaterConsent, setMeasureLaterConsent] = useState(false);
+
   // Measurement Photo
   const [measurementPhoto, setMeasurementPhoto] = useState<File | null>(null);
 
