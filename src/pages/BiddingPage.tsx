@@ -454,13 +454,23 @@ const BiddingPage = () => {
           <p className="text-sm text-muted-foreground font-sans">Your tailor uploads proof at each stage — you approve before work continues</p>
         </div>
 
-        {milestones.every((m) => m.status === "pending") && (
+        {(milestones.every((m) => m.status === "pending") || milestones.some((m) => m.status === "changes_requested")) && (
           <button
-            onClick={() =>
-              setMilestones((prev) =>
-                prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
-              )
-            }
+            onClick={() => {
+              // If any milestone has changes_requested, reset it to awaiting_approval
+              const crMilestone = milestones.find((m) => m.status === "changes_requested");
+              if (crMilestone) {
+                setMilestones((prev) =>
+                  prev.map((m) => m.id === crMilestone.id ? { ...m, status: "awaiting_approval" as MilestoneStatus } : m)
+                );
+                setChangeRequestSent((prev) => ({ ...prev, [crMilestone.id]: false }));
+                setChangeNotes((prev) => ({ ...prev, [crMilestone.id]: "" }));
+              } else {
+                setMilestones((prev) =>
+                  prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
+                );
+              }
+            }}
             className="text-[11px] text-muted-foreground/60 font-sans hover:text-muted-foreground transition-colors"
           >
             Simulate tailor activity →
