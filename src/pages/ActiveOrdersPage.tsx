@@ -649,10 +649,31 @@ const ActiveOrdersPage = () => {
             </p>
           </div>
         </div>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" className="text-xs" onClick={() => setChatOpen(!chatOpen)}>
             💬 Message {artisanRealName}
           </Button>
+          <button
+            onClick={() => {
+              const demoRequest: ChatMessage = {
+                id: 'cr-' + Date.now(),
+                from: 'artisan',
+                status: 'read',
+                timestamp: Date.now(),
+                changeRequest: {
+                  id: 'cr-demo-1',
+                  description: 'Add mirror work embellishment to dupatta border (as discussed)',
+                  amount: 4500,
+                  status: 'pending',
+                },
+              };
+              setChatMessages(prev => [...prev, demoRequest]);
+              setChatOpen(true);
+            }}
+            className="text-[10px] font-sans text-muted-foreground underline"
+          >
+            [Demo] Simulate Change Request
+          </button>
         </div>
 
         {/* Chat panel */}
