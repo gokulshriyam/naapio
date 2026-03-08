@@ -123,35 +123,6 @@ const colourMoodOptions = [
   { label: "Match my garment", swatch: null },
 ];
 
-// SVG zone definitions for a kurta front-view
-const svgZones: { id: string; label: string; d: string }[] = [
-  {
-    id: "Collar / Neckline",
-    label: "Neckline",
-    d: "M 95,38 Q 120,28 150,30 Q 180,28 205,38 Q 195,50 150,52 Q 105,50 95,38 Z",
-  },
-  {
-    id: "Chest / Front Panel",
-    label: "Chest",
-    d: "M 90,55 L 210,55 L 210,130 L 90,130 Z",
-  },
-  {
-    id: "Sleeves",
-    label: "Sleeves",
-    d: "M 40,55 L 88,55 L 88,120 L 40,100 Z M 212,55 L 260,55 L 260,100 L 212,120 Z",
-  },
-  {
-    id: "Waistband",
-    label: "Waist",
-    d: "M 90,132 L 210,132 L 210,155 L 90,155 Z",
-  },
-  {
-    id: "Hem / Border",
-    label: "Hem",
-    d: "M 85,230 L 215,230 L 218,260 L 82,260 Z",
-  },
-];
-
 // ── Component ───────────────────────────────────────────────────
 
 const CustomiseFlow = () => {
