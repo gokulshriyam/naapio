@@ -130,7 +130,12 @@ const CategoryPreview = () => {
                         key={item}
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate("/start", { state: { prefilledGender: gender, prefilledCategory: item } });
+                          localStorage.setItem('naapio_prefill', JSON.stringify({
+                            gender: gender,
+                            category: item,
+                            orderType: 'New Order',
+                          }));
+                          navigate('/start');
                         }}
                         className="px-3 py-1 text-xs font-sans font-medium bg-primary-foreground/20 text-primary-foreground rounded-full backdrop-blur-sm hover:bg-primary-foreground/40 transition-colors"
                       >
