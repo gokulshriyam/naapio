@@ -1136,17 +1136,35 @@ const Wizard = () => {
         reader.readAsDataURL(photoFile);
       });
       
-      const prompt = `Analyse this Indian ethnic fashion garment image.
-    
-Return a JSON object with ONLY these fields, no other text:
+      const prompt = `You are a fashion analyst for Naapio, an Indian ethnic wear platform. Analyse this garment image carefully.
+
+Return ONLY a valid JSON object. No other text, no markdown, no explanation. Just the raw JSON.
+
+Use ONLY the exact values listed for each field:
+
 {
-  "detectedGarment": "one of: Saree Blouse, Kurti, Salwar Kameez, Anarkali, Lehenga, Gown, Kurta, Sherwani, Bandhgala, Suit, Chaniya Choli, Dupatta, or Other",
-  "detectedColour": "one of: Deep Reds, Jewel Tones, Pastels, Golds & Champagne, Ivory & Cream, Greens & Teals, Pinks & Mauves, Blues & Indigos, Blacks & Charcoals, Whites & Silvers, or Other",
-  "detectedFeel": "one of: Light & Airy, Structured, Rich & Heavy, Crisp & Sharp, Soft & Draped, or Unable to determine",
-  "detectedSurfaces": ["array of visible work from: Heavy Embroidery, Zardozi / Zari Work, Mirror Work, Sequence & Beadwork, Resham Thread Work, Kalamkari / Block Print, Bandhani / Tie-Dye, Cutwork / Lace, Smocking / Pintucks, Digital Print, Appliqué, Plain / No Embellishment"],
-  "detectedOccasion": "one of: Wedding / Baraat / Nikah, Reception / Cocktail, Engagement / Roka, Festival (Diwali / Eid / Navratri), Party / Night Out, Casual / Daily Wear, Formal Office / Corporate, or Unable to determine",
-  "confidence": "high if 3+ attributes clearly visible, medium if 2 attributes visible, low if image is unclear"
-}`;
+  "detectedGarment": "Must be exactly one of: Saree Blouse, Kurti, Salwar Kameez, Anarkali, Lehenga, Gown, Co-ord Set, Sharara Set, Chaniya Choli, Dupatta, Kurta, Sherwani, Bandhgala, Suit/Blazer, Nehru Jacket, Other",
+  
+  "detectedSubCategory": "Most specific match from: High-neck Blouse, Backless Blouse, Embroidered Blouse, Short Kurti, Patiala Suit, Churidar Set, Party Lehenga, Bridal Lehenga, Festive Lehenga, Indo-Western Gown, Trail Gown, Casual Kurta, Pathani Suit, Wedding Sherwani, Jodhpuri, or leave empty string if unclear",
+  
+  "detectedGender": "Women or Men",
+  
+  "detectedColour": "Must be exactly one of: Deep Reds, Pinks & Roses, Blues & Indigos, Greens & Teals, Purples & Violets, Yellows & Golds, Oranges & Corals, Whites & Ivories, Blacks & Charcoals, Jewel Tones, Pastels & Soft, Earthy & Neutrals, Multicolour",
+  
+  "detectedFeel": "Must be exactly one of: Rich & Heavy (Silk, Velvet), Structured (Cotton Silk, Georgette), Light & Airy (Cotton, Chiffon), Crisp & Formal (Linen, Silk), Stretchy & Comfortable, or empty string if unclear",
+  
+  "detectedSurfaces": ["Array using only these exact values: Zardozi / Heavy Zari Work, Hand Embroidery, Machine Embroidery, Mirror Work, Sequins & Beadwork, Thread Work / Kantha, Block Print, Bandhani / Tie-Dye, Appliqué / Patch Work, Digital Print, Plain / No Embellishment"],
+  
+  "detectedOccasion": "Must be exactly one of: Wedding, Bridal / Wedding, Reception / Cocktail, Engagement, Mehendi / Sangeet, Pre-Wedding / Photoshoot, Festival / Puja, Garba / Navratri, Party / Night Out, Formal Office, Casual / Daily Wear, or empty string if unclear",
+  
+  "confidence": "high if 4+ attributes clearly visible, medium if 2-3 attributes visible, low if image is unclear or not a garment"
+}
+
+Important rules:
+- If the person is WEARING the garment, analyse the garment not the person
+- For partial images, analyse what is visible
+- For non-garment images, return confidence: low and empty strings
+- detectedSurfaces must be an array even if empty: []`;
 
       const apiKey = "AIzaSyAm_EQ6hw4d6eJa3o4hH3mHn4JAikLsaKA"; // TODO: move server-side before launch
       const response = await fetch(
