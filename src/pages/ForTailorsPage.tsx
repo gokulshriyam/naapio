@@ -253,7 +253,7 @@ const ForTailorsPage = () => {
           >
             Why Join Naapio?
           </motion.h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {benefits.map((b, i) => (
               <motion.div
                 key={b.title}
