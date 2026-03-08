@@ -396,33 +396,37 @@ const Wizard = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            instances: [{
-              prompt: prompt,
-              referenceImages: [{
-                referenceType: "STYLE",
-                referenceId: 1,
-                referenceImage: {
-                  bytesBase64Encoded: base64,
-                  mimeType: file.type || 'image/jpeg'
-                }
-              }]
-            }],
-            parameters: {
-              sampleCount: 1,
-              aspectRatio: "3:4"
+            contents: [
+              {
+                parts: [
+                  {
+                    inline_data: {
+                      mime_type: file.type || 'image/jpeg',
+                      data: base64
+                    }
+                  },
+                  {
+                    text: prompt
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"]
             }
           })
         }
       );
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
       const data = await response.json();
-      const imageData = data?.predictions?.[0]?.bytesBase64Encoded;
-      if (imageData) {
-        setGeneratedOutfitImage(`data:image/png;base64,${imageData}`);
+      const imagePart = data?.candidates?.[0]?.content?.parts?.find(
+        (part: any) => part.inlineData?.mimeType?.startsWith('image/')
+      );
+      if (imagePart?.inlineData?.data) {
+        setGeneratedOutfitImage(
+          `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`
+        );
       } else {
-        throw new Error("No image in response");
+        throw new Error(`No image in response. Raw: ${JSON.stringify(data).slice(0, 300)}`);
       }
     } catch (err: any) {
       console.error('Gemini error:', err);
