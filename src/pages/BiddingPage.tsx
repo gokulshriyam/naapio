@@ -1,742 +1,850 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Clock, Edit, Eye, X as XIcon, Star, RotateCcw,
-  CheckCircle2, Circle, AlertCircle, ChevronRight, Send, Plus,
+  Clock, Edit, Eye, X as XIcon, Star, RotateCcw, Plus,
+  CheckCircle2, ChevronDown, ChevronUp, Send, MapPin,
+  MessageSquare, Shield, Award, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { activeRequests, pastRequests } from "@/data/mockData";
-import redLehenga from "@/assets/red-lehenga.jpg";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 // ═══════════════════════════════════════
-// Demo state — replace with real data when backend is connected
+// Helpers
+// ═══════════════════════════════════════
+
+const formatBudget = (v: number): string => {
+  if (v >= 100000) return `₹${(v / 100000).toFixed(1).replace(".0", "")}L`;
+  if (v >= 1000) return `₹${(v / 1000).toFixed(1).replace(".0", "")}K`;
+  return `₹${v}`;
+};
+
+const calcTimeLeft = (deadline: Date) => {
+  const diff = Math.max(0, deadline.getTime() - Date.now());
+  return {
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor((diff % 86400000) / 3600000),
+    minutes: Math.floor((diff % 3600000) / 60000),
+    seconds: Math.floor((diff % 60000) / 1000),
+    total: diff,
+  };
+};
+
+const daysSince = (d: Date) => Math.floor((Date.now() - d.getTime()) / 86400000);
+
+// ═══════════════════════════════════════
+// Type badges
 // ═══════════════════════════════════════
 
 const ORDER_TYPE_STYLES: Record<string, { bg: string; text: string }> = {
   "New Order": { bg: "bg-pink-100 dark:bg-pink-900/30", text: "text-pink-800 dark:text-pink-300" },
-  "Alteration": { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-800 dark:text-amber-300" },
+  Alteration: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-800 dark:text-amber-300" },
   "Own Fabric": { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-800 dark:text-blue-300" },
-  "Customise": { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-800 dark:text-purple-300" },
+  Customise: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-800 dark:text-purple-300" },
 };
 
-const ORDER_STAGES = [
-  "Awaiting Bids",
-  "Bids Received",
-  "Tailor Selected",
-  "In Progress",
-  "Delivered",
-] as const;
-
-const STATUS_MESSAGES: Record<string, (o: typeof initialDemoOrder) => string> = {
-  "Awaiting Bids": (o) => `Your brief is live. Tailors have ${o.daysRemaining} days to bid.`,
-  "Bids Received": (o) => `${o.bidsReceived} tailors have submitted bids. Review and select yours.`,
-  "Tailor Selected": () => "Your tailor has been confirmed. Work begins shortly.",
-  "In Progress": () => "Your garment is being made. Approve each milestone as it arrives.",
-  "Delivered": () => "Your order is complete. Don't forget to leave a review.",
+const TIER_COLORS: Record<string, string> = {
+  Gold: "bg-amber-400 text-amber-950",
+  Silver: "bg-slate-300 text-slate-800",
+  Bronze: "bg-amber-700 text-amber-50",
 };
 
-// TODO: replace with real bid data from API
-const mockBids = [
-  { id: "A", name: "Tailor A", tier: "Silver" as const, rating: 4.2, price: 12500, days: 18 },
-  { id: "B", name: "Tailor B", tier: "Bronze" as const, rating: 3.8, price: 9800, days: 14 },
-  { id: "C", name: "Tailor C", tier: "Gold" as const, rating: 4.7, price: 15200, days: 22 },
-];
-
-const TIER_STYLES: Record<string, string> = {
-  Gold: "bg-accent/20 text-accent",
-  Silver: "bg-slate-200/60 text-slate-700 dark:bg-slate-700/40 dark:text-slate-300",
-  Bronze: "bg-amber-700/20 text-amber-800 dark:text-amber-400",
+const TIER_BORDER: Record<string, string> = {
+  Gold: "border-amber-400/60",
+  Silver: "border-slate-300/60",
+  Bronze: "border-amber-700/40",
 };
 
-type MilestoneStatus = "pending" | "awaiting_approval" | "approved" | "changes_requested";
+// ═══════════════════════════════════════
+// Mock Data
+// ═══════════════════════════════════════
 
-interface Milestone {
-  id: number;
-  label: string;
-  status: MilestoneStatus;
+interface ActiveOrder {
+  id: string;
+  orderType: string;
+  garment: string;
+  occasion: string;
+  budgetRange: { min: number; max: number };
+  deliveryDate: string;
+  postedAt: Date;
+  bidDeadline: Date;
+  status: string;
+  bidsReceived: number;
+  measurementsSubmitted: boolean;
+  rushOrder: boolean;
+  inspirationThumb: string;
 }
 
-const initialDemoOrder = {
-  id: "NP-2026-00142",
-  orderType: "New Order",
-  garment: "Women's · Lehenga · Bridal Lehenga",
-  occasion: "Wedding",
-  status: "Bids Received",
-  daysRemaining: 5,
-  bidsReceived: 3,
-  measurementsProvided: false,
-  hoursRemainingForMeasurements: 31,
-  milestones: [
-    { id: 1, label: "Measurement Confirmation", status: "pending" as MilestoneStatus },
-    { id: 2, label: "Fabric Approval", status: "pending" as MilestoneStatus },
-    { id: 3, label: "Stitching Preview", status: "pending" as MilestoneStatus },
-    { id: 4, label: "Final Fitting", status: "pending" as MilestoneStatus },
-    { id: 5, label: "Delivery", status: "pending" as MilestoneStatus },
-  ],
+const defaultActiveOrders: ActiveOrder[] = [
+  {
+    id: "NP-2026-00142",
+    orderType: "New Order",
+    garment: "Women's · Salwar Kameez · Embroidered",
+    occasion: "Festival / Puja",
+    budgetRange: { min: 45000, max: 60000 },
+    deliveryDate: "2026-04-20",
+    postedAt: new Date(Date.now() - 0.5 * 86400000),
+    bidDeadline: new Date(Date.now() + 6.5 * 86400000),
+    status: "awaiting_bids",
+    bidsReceived: 0,
+    measurementsSubmitted: false,
+    rushOrder: false,
+    inspirationThumb: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=80&h=80&fit=crop",
+  },
+  {
+    id: "NP-2026-00098",
+    orderType: "New Order",
+    garment: "Women's · Lehenga · Party Lehenga",
+    occasion: "Party / Night Out",
+    budgetRange: { min: 25000, max: 35000 },
+    deliveryDate: "2026-04-01",
+    postedAt: new Date(Date.now() - 5 * 86400000),
+    bidDeadline: new Date(Date.now() + 2 * 86400000),
+    status: "bids_received",
+    bidsReceived: 8,
+    measurementsSubmitted: true,
+    rushOrder: false,
+    inspirationThumb: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=80&h=80&fit=crop",
+  },
+];
+
+const mockBids = [
+  { id: "BID-001", orderId: "NP-2026-00098", alias: "Artisan Gold-7", tier: "Gold", rating: 4.9, reviewCount: 234, completionRate: 97, disputeRate: 1.2, speciality: "Bridal & Embroidered Lehenga", location: "Jayanagar, Bangalore", bidAmount: 31500, deliveryDays: 18, rankScore: 96, badge: "Best Match" as string | null, portfolioImages: ["https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=200&h=200&fit=crop", "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=200&h=200&fit=crop", "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=200&h=200&fit=crop"], note: "I specialise in heavily embroidered lehengas. Can match reference exactly." },
+  { id: "BID-002", orderId: "NP-2026-00098", alias: "Artisan Gold-3", tier: "Gold", rating: 4.7, reviewCount: 178, completionRate: 94, disputeRate: 2.1, speciality: "Lehenga & Anarkali", location: "Koramangala, Bangalore", bidAmount: 28800, deliveryDays: 22, rankScore: 91, badge: "Best Value" as string | null, portfolioImages: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=200&h=200&fit=crop", "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=200&h=200&fit=crop"], note: "15 years experience. Delivery guaranteed or full refund." },
+  { id: "BID-003", orderId: "NP-2026-00098", alias: "Artisan Silver-12", tier: "Silver", rating: 4.5, reviewCount: 89, completionRate: 91, disputeRate: 3.4, speciality: "Ethnic Wear", location: "Marathahalli, Bangalore", bidAmount: 26200, deliveryDays: 20, rankScore: 84, badge: null, portfolioImages: ["https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=200&h=200&fit=crop"], note: "Affordable pricing with quality focus." },
+  { id: "BID-004", orderId: "NP-2026-00098", alias: "Artisan Silver-5", tier: "Silver", rating: 4.3, reviewCount: 67, completionRate: 88, disputeRate: 4.1, speciality: "General Ethnic", location: "HSR Layout, Bangalore", bidAmount: 25500, deliveryDays: 25, rankScore: 79, badge: null, portfolioImages: [], note: "" },
+  { id: "BID-005", orderId: "NP-2026-00098", alias: "Artisan Bronze-19", tier: "Bronze", rating: 4.1, reviewCount: 45, completionRate: 85, disputeRate: 5.2, speciality: "General Tailoring", location: "Electronic City, Bangalore", bidAmount: 25000, deliveryDays: 21, rankScore: 73, badge: null, portfolioImages: [], note: "" },
+  { id: "BID-006", orderId: "NP-2026-00098", alias: "Artisan Bronze-8", tier: "Bronze", rating: 3.9, reviewCount: 34, completionRate: 82, disputeRate: 6.8, speciality: "General Tailoring", location: "Whitefield, Bangalore", bidAmount: 24500, deliveryDays: 28, rankScore: 67, badge: null, portfolioImages: [], note: "" },
+  { id: "BID-007", orderId: "NP-2026-00098", alias: "Artisan Bronze-2", tier: "Bronze", rating: 3.7, reviewCount: 28, completionRate: 79, disputeRate: 8.1, speciality: "Basic Stitching", location: "Hebbal, Bangalore", bidAmount: 25800, deliveryDays: 30, rankScore: 61, badge: null, portfolioImages: [], note: "" },
+  { id: "BID-008", orderId: "NP-2026-00098", alias: "Artisan Bronze-14", tier: "Bronze", rating: 3.5, reviewCount: 19, completionRate: 75, disputeRate: 10.2, speciality: "Basic Stitching", location: "Yelahanka, Bangalore", bidAmount: 25200, deliveryDays: 35, rankScore: 54, badge: null, portfolioImages: [], note: "" },
+];
+
+interface PastOrder {
+  id: string;
+  orderType: string;
+  garment: string;
+  status: string;
+  completedAt?: string;
+  artisanAlias?: string;
+  finalAmount?: number;
+  rating?: number;
+  postedAt?: string;
+  bidsReceived?: number;
+  note?: string;
+}
+
+const defaultPastOrders: PastOrder[] = [
+  { id: "NP-2025-00034", orderType: "Alteration", garment: "Women's · Saree Blouse", status: "completed", completedAt: "Dec 2025", artisanAlias: "Artisan Gold-7", finalAmount: 1200, rating: 4.8 },
+  { id: "NP-2025-00021", orderType: "New Order", garment: "Men's · Kurta · Casual Kurta", status: "expired", postedAt: "Nov 2025", bidsReceived: 0, note: "Bid window closed with no responses" },
+];
+
+// ═══════════════════════════════════════
+// Countdown Hook
+// ═══════════════════════════════════════
+
+function useCountdown(deadline: Date) {
+  const [tl, setTl] = useState(() => calcTimeLeft(deadline));
+  useEffect(() => {
+    const id = setInterval(() => setTl(calcTimeLeft(deadline)), 1000);
+    return () => clearInterval(id);
+  }, [deadline]);
+  return tl;
+}
+
+// ═══════════════════════════════════════
+// Sub-components
+// ═══════════════════════════════════════
+
+const CountdownTimer = ({ deadline, postedAt }: { deadline: Date; postedAt: Date }) => {
+  const tl = useCountdown(deadline);
+  const elapsed = daysSince(postedAt);
+  const pct = Math.min(100, (elapsed / 7) * 100);
+  const daysLeft = tl.days;
+  const barColor = daysLeft > 3 ? "bg-success" : daysLeft >= 1 ? "bg-warning" : "bg-destructive";
+
+  return (
+    <div className="mt-3">
+      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+      </div>
+      <div className="flex justify-between mt-1.5 text-xs font-sans text-muted-foreground">
+        <span>Posted {elapsed} day{elapsed !== 1 ? "s" : ""} ago</span>
+        <span className="font-medium">{tl.days}d {tl.hours}h {tl.minutes}m remaining</span>
+      </div>
+    </div>
+  );
 };
 
-const BiddingPage = () => {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [timers, setTimers] = useState(activeRequests.map((r) => ({ ...r.countdown, minutes: 0, seconds: 0 })));
+// ═══════════════════════════════════════
+// Bidding Room
+// ═══════════════════════════════════════
 
-  // Load last order from localStorage
-  const savedOrder = localStorage.getItem("naapio_last_order");
-  const lastOrder = savedOrder ? JSON.parse(savedOrder) : null;
+const sortFns: Record<string, (a: typeof mockBids[0], b: typeof mockBids[0]) => number> = {
+  Recommended: (a, b) => b.rankScore - a.rankScore,
+  Rating: (a, b) => b.rating - a.rating,
+  Delivery: (a, b) => a.deliveryDays - b.deliveryDays,
+  "Price: Low-High": (a, b) => a.bidAmount - b.bidAmount,
+  Nearest: () => 0,
+};
 
-  // Demo state
-  const [demoOrder, setDemoOrder] = useState(() => {
-    if (lastOrder) {
-      return {
-        ...initialDemoOrder,
-        id: lastOrder.orderId,
-        orderType: lastOrder.orderType || initialDemoOrder.orderType,
-        garment: lastOrder.garment || initialDemoOrder.garment,
-        occasion: lastOrder.occasion || initialDemoOrder.occasion,
-      };
-    }
-    return initialDemoOrder;
-  });
-  const [milestones, setMilestones] = useState<Milestone[]>(initialDemoOrder.milestones);
-  const [changeNotes, setChangeNotes] = useState<Record<number, string>>({});
-  const [confirmBid, setConfirmBid] = useState<typeof mockBids[0] | null>(null);
-  const [changeRequestSent, setChangeRequestSent] = useState<Record<number, boolean>>({});
-  const [changeSending, setChangeSending] = useState<Record<number, boolean>>({});
-  const [orderComplete, setOrderComplete] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+const BiddingRoom = ({
+  order,
+  onAccept,
+}: {
+  order: ActiveOrder;
+  onAccept: (bid: typeof mockBids[0]) => void;
+}) => {
+  const [sortBy, setSortBy] = useState("Recommended");
+  const [showAll, setShowAll] = useState(false);
+  const [showRankInfo, setShowRankInfo] = useState(false);
+  const [expandedPortfolio, setExpandedPortfolio] = useState<string | null>(null);
+  const [expandedChat, setExpandedChat] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<Record<string, { text: string; from: string }[]>>({});
+  const [chatInput, setChatInput] = useState("");
+  const [ignoredBids, setIgnoredBids] = useState<Set<string>>(new Set());
+  const [undoTimers, setUndoTimers] = useState<Record<string, NodeJS.Timeout>>({});
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimers((prev) =>
-        prev.map((t) => {
-          let s = t.seconds - 1;
-          let m = t.minutes;
-          let h = t.hours;
-          let d = t.days;
-          if (s < 0) { s = 59; m--; }
-          if (m < 0) { m = 59; h--; }
-          if (h < 0) { h = 23; d--; }
-          if (d < 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-          return { days: d, hours: h, minutes: m, seconds: s };
-        })
-      );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const tl = useCountdown(order.bidDeadline);
+  const sorted = [...mockBids].sort(sortFns[sortBy] || sortFns.Recommended);
+  const visible = sorted.filter((b) => !ignoredBids.has(b.id));
+  const displayed = showAll ? visible : visible.slice(0, 4);
+  const hiddenCount = visible.length - 4;
 
-  const handleApproveMilestone = (id: number) => {
-    setMilestones((prev) => {
-      const updated = prev.map((m) => {
-        if (m.id === id) return { ...m, status: "approved" as MilestoneStatus };
-        if (m.id === id + 1) return { ...m, status: "awaiting_approval" as MilestoneStatus };
-        return m;
+  const handleIgnore = (bidId: string) => {
+    setIgnoredBids((prev) => new Set(prev).add(bidId));
+    const timer = setTimeout(() => {
+      setUndoTimers((prev) => {
+        const n = { ...prev };
+        delete n[bidId];
+        return n;
       });
-      // Check if milestone 5 (Delivery) was just approved
-      const m5 = updated.find((m) => m.id === 5);
-      if (m5?.status === "approved") {
-        setTimeout(() => setOrderComplete(true), 1000);
-      }
-      return updated;
+    }, 5000);
+    setUndoTimers((prev) => ({ ...prev, [bidId]: timer }));
+  };
+
+  const handleUndo = (bidId: string) => {
+    setIgnoredBids((prev) => {
+      const n = new Set(prev);
+      n.delete(bidId);
+      return n;
+    });
+    if (undoTimers[bidId]) clearTimeout(undoTimers[bidId]);
+    setUndoTimers((prev) => {
+      const n = { ...prev };
+      delete n[bidId];
+      return n;
     });
   };
 
-  const handleRequestChanges = (id: number) => {
-    if (!changeNotes[id]?.trim()) return;
-    setChangeSending((prev) => ({ ...prev, [id]: true }));
+  const handleSendChat = (bidId: string) => {
+    if (!chatInput.trim()) return;
+    const msg = chatInput.trim();
+    setChatMessages((prev) => ({
+      ...prev,
+      [bidId]: [...(prev[bidId] || []), { text: msg, from: "you" }],
+    }));
+    setChatInput("");
     setTimeout(() => {
-      setMilestones((prev) =>
-        prev.map((m) => m.id === id ? { ...m, status: "changes_requested" as MilestoneStatus } : m)
-      );
-      setChangeSending((prev) => ({ ...prev, [id]: false }));
-      setChangeRequestSent((prev) => ({ ...prev, [id]: true }));
+      setChatMessages((prev) => ({
+        ...prev,
+        [bidId]: [...(prev[bidId] || []), { text: "Thank you for your message. I'll review your brief and respond shortly.", from: "tailor" }],
+      }));
     }, 1000);
   };
 
-  const handleConfirmTailor = () => {
-    if (!confirmBid) return;
-    setDemoOrder((prev) => ({ ...prev, status: "Tailor Selected" }));
-    setConfirmBid(null);
-  };
-
-  const currentStageIdx = ORDER_STAGES.indexOf(demoOrder.status as typeof ORDER_STAGES[number]);
-
-  const badgeStyle = ORDER_TYPE_STYLES[demoOrder.orderType] || ORDER_TYPE_STYLES["New Order"];
-
-  if (!lastOrder) {
-    return (
-      <div className="max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <span className="text-5xl mb-4">📋</span>
-        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">{t('dashboard.noOrders')}</h2>
-        <p className="text-muted-foreground font-sans mb-6">{t('dashboard.noOrdersSubtext')}</p>
-        <Button variant="gold" onClick={() => navigate("/start")}>
-          {t('dashboard.startOrder')}
-        </Button>
-      </div>
-    );
-  }
-
-  if (orderComplete) {
-    return (
-      <div className="max-w-lg mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center">
-        <span className="text-6xl mb-6 animate-pulse">🎉</span>
-        <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Your order is complete!</h2>
-        <p className="text-muted-foreground font-sans mb-6">Your garment has been delivered. We hope you love it.</p>
-        <p className="text-sm text-muted-foreground font-sans mb-8">Order {demoOrder.id}</p>
-
-        {!reviewSubmitted ? (
-          <div className="w-full space-y-4 mb-8">
-            <p className="font-sans font-semibold text-foreground text-sm">How was your experience?</p>
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => setRating(star)}
-                  className={`text-3xl transition-transform hover:scale-110 ${star <= rating ? "text-accent" : "text-muted-foreground/30"}`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-            {rating > 0 && (
-              <div className="space-y-3">
-                <textarea
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="Tell us what you loved (or what we can improve)..."
-                  className="w-full min-h-[100px] rounded-xl border border-border bg-card p-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <Button variant="gold" className="w-full" onClick={() => setReviewSubmitted(true)}>
-                  Submit Review
-                </Button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-green-600 font-sans mb-8">Thank you! Your review helps other customers.</p>
-        )}
-
-        <div className="w-full space-y-3">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => toast.info("Tag us @naapio.in on Instagram!")}
-          >
-            Share your look 📸
-          </Button>
-          <Button variant="gold" size="hero" className="w-full" onClick={() => navigate("/start")}>
-            Start a New Order →
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl space-y-6">
-      {/* ══════ Measurements Reminder Banner ══════ */}
-      {!demoOrder.measurementsProvided && (
-        <div className="bg-destructive text-destructive-foreground rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl mt-0.5">⏱</span>
-            <div>
-              <h3 className="font-sans font-semibold text-sm">Measurements not submitted</h3>
-              <p className="font-sans text-sm opacity-90">
-                Bids will not be finalised until your measurements are submitted. {demoOrder.hoursRemainingForMeasurements} hours remaining.
-              </p>
-            </div>
-          </div>
-          {/* TODO: deep-link to measurements sub-step */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-destructive-foreground text-destructive hover:bg-destructive-foreground/90 shrink-0"
-            onClick={() => navigate("/wizard")}
-          >
-            Submit Measurements <ChevronRight className="w-4 h-4" />
-          </Button>
+    <div className="border-t border-border pt-5 mt-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <h3 className="font-serif font-bold text-foreground">Bidding Room — {order.bidsReceived} tailors have responded</h3>
+          <p className="text-xs text-muted-foreground font-sans">Tailor identities are revealed only after you select and confirm payment.</p>
         </div>
+        <span className="text-xs font-sans text-muted-foreground shrink-0">{tl.days}d {tl.hours}h remaining to review</span>
+      </div>
+
+      {/* Sort */}
+      <div className="flex items-center gap-2 flex-wrap mb-3">
+        <span className="text-xs font-sans text-muted-foreground">Sort by:</span>
+        {Object.keys(sortFns).map((s) => (
+          <button
+            key={s}
+            onClick={() => setSortBy(s)}
+            className={`px-3 py-1 rounded-full text-xs font-sans transition-colors ${
+              sortBy === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            {s} {sortBy === s && "✓"}
+          </button>
+        ))}
+      </div>
+
+      {/* Ranking info */}
+      <button onClick={() => setShowRankInfo(!showRankInfo)} className="flex items-center gap-1 text-xs text-muted-foreground font-sans mb-4 hover:text-foreground">
+        <Info className="w-3 h-3" /> How is Recommended order calculated?
+        {showRankInfo ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {showRankInfo && (
+        <p className="text-xs font-sans text-muted-foreground mb-4 p-3 bg-muted rounded-lg">
+          ⭐ Customer ratings (40%) · ✅ Completion rate (30%) · 🛡️ Low dispute rate (20%) · 🏆 Tier (10%). Tailors who perform better rise in ranking — this is how quality artisans grow on Naapio.
+        </p>
       )}
 
-      {/* ══════ Order Status Stepper ══════ */}
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <div className="flex items-center justify-between mb-4 overflow-x-auto">
-          {ORDER_STAGES.map((stage, i) => {
-            const isCompleted = i < currentStageIdx;
-            const isCurrent = i === currentStageIdx;
+      {/* Bid cards */}
+      <div className="space-y-4">
+        {displayed.map((bid, idx) => {
+          const isIgnored = ignoredBids.has(bid.id) && undoTimers[bid.id];
+
+          if (isIgnored) {
             return (
-              <div key={stage} className="flex items-center flex-1 last:flex-none">
-                <div className="flex flex-col items-center text-center min-w-[80px]">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-sans font-bold mb-1 ${
-                      isCompleted
-                        ? "bg-green-500 text-white"
-                        : isCurrent
-                        ? "bg-accent text-accent-foreground ring-2 ring-accent/30"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
-                  </div>
-                  <span className={`text-[11px] font-sans leading-tight ${isCurrent ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                    {stage}
-                  </span>
-                </div>
-                {i < ORDER_STAGES.length - 1 && (
-                  <div className={`flex-1 h-0.5 mx-1 mt-[-14px] ${isCompleted ? "bg-green-500" : "bg-border"}`} />
-                )}
+              <div key={bid.id} className="p-4 bg-muted rounded-xl flex items-center justify-between">
+                <span className="text-sm text-muted-foreground font-sans">Bid ignored</span>
+                <button onClick={() => handleUndo(bid.id)} className="text-xs text-accent font-sans hover:underline">Undo ignore →</button>
               </div>
             );
-          })}
-        </div>
-        <p className="text-sm font-sans text-muted-foreground text-center">
-          {STATUS_MESSAGES[demoOrder.status]?.(demoOrder)}
-        </p>
-      </div>
+          }
 
-      {/* ══════ Order Summary Card ══════ */}
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <div className="flex flex-col sm:flex-row gap-5">
-          <img src={redLehenga} alt={demoOrder.garment} className="w-24 h-24 rounded-xl object-cover flex-shrink-0" />
-          <div className="flex-1">
-            <span className={`inline-block px-3 py-1 rounded-full text-xs font-sans font-medium mb-2 ${badgeStyle.bg} ${badgeStyle.text}`}>
-              {demoOrder.orderType}
-            </span>
-            <h3 className="font-sans font-semibold text-foreground">{demoOrder.garment}</h3>
-            <p className="text-xs text-muted-foreground font-sans mt-0.5">Order #{demoOrder.id}</p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <Button
-                variant="gold"
-                size="sm"
-                onClick={() => {
-                  const reorderDraft = {
-                    step: 3, step2Phase: 'fabric' as const, step3Phase: 'colour' as const,
-                    orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
-                    gender: lastOrder.gender || "women",
-                    selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
-                    selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
-                    selectedOccasion: lastOrder.occasion || "",
-                    selectedFit: lastOrder.selectedFit || "",
-                    selectedNeckline: lastOrder.selectedNeckline || "",
-                    selectedSleeve: lastOrder.selectedSleeve || "",
-                    measurementType: 'saved',
-                    selectedColourMood: '',
-                    selectedFabricTypes: [],
-                    selectedSurfaces: [],
-                    budgetRange: lastOrder.budgetRange,
-                    reorderFrom: lastOrder.orderId,
-                    isReorder: true,
-                    reorderMode: 'same',
-                  };
-                  localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
-                  navigate('/wizard');
-                }}
-              >
-                🔄 Reorder Same Design
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const reorderDraft = {
-                    step: 1, step2Phase: 'category' as const, step3Phase: 'feel' as const,
-                    orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
-                    gender: lastOrder.gender || "women",
-                    selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
-                    selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
-                    selectedOccasion: lastOrder.occasion || "",
-                    selectedFit: lastOrder.selectedFit || "",
-                    selectedNeckline: lastOrder.selectedNeckline || "",
-                    selectedSleeve: lastOrder.selectedSleeve || "",
-                    measurementType: lastOrder.measurementType || 'standard',
-                    budgetRange: lastOrder.budgetRange,
-                    reorderFrom: lastOrder.orderId,
-                    isReorder: true,
-                    reorderMode: 'changes',
-                  };
-                  localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
-                  navigate('/wizard');
-                }}
-              >
-                ✏️ Reorder with Changes
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ══════ Order Again Section ══════ */}
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-xl font-serif font-bold text-foreground">Order Again</h2>
-          <p className="text-sm text-muted-foreground font-sans">Your measurements and design details are saved</p>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div className="bg-card rounded-2xl border border-border p-5">
-            <span className="text-2xl block mb-2">🔄</span>
-            <h3 className="font-sans font-semibold text-foreground text-sm">Same Design, New Colour</h3>
-            <p className="text-xs text-muted-foreground font-sans mt-1 mb-3">Skip to colour & fabric selection — everything else stays the same</p>
-            <Button variant="gold" size="sm" onClick={() => {
-              const reorderDraft = {
-                step: 3, step2Phase: 'fabric' as const, step3Phase: 'colour' as const,
-                orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
-                gender: lastOrder.gender || "women",
-                selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
-                selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
-                selectedOccasion: lastOrder.occasion || "",
-                selectedFit: lastOrder.selectedFit || "",
-                measurementType: 'saved',
-                budgetRange: lastOrder.budgetRange,
-                reorderFrom: lastOrder.orderId,
-                isReorder: true,
-                reorderMode: 'same',
-              };
-              localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
-              navigate('/wizard');
-            }}>Reorder Same Design →</Button>
-          </div>
-          <div className="bg-card rounded-2xl border border-border p-5">
-            <span className="text-2xl block mb-2">✏️</span>
-            <h3 className="font-sans font-semibold text-foreground text-sm">Same Design, My Changes</h3>
-            <p className="text-xs text-muted-foreground font-sans mt-1 mb-3">Start with your last order pre-filled — change whatever you like</p>
-            <Button variant="outline" size="sm" onClick={() => {
-              const reorderDraft = {
-                step: 1, step2Phase: 'category' as const, step3Phase: 'feel' as const,
-                orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
-                gender: lastOrder.gender || "women",
-                selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
-                selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
-                selectedOccasion: lastOrder.occasion || "",
-                selectedFit: lastOrder.selectedFit || "",
-                budgetRange: lastOrder.budgetRange,
-                reorderFrom: lastOrder.orderId,
-                isReorder: true,
-                reorderMode: 'changes',
-              };
-              localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
-              navigate('/wizard');
-            }}>Reorder with Changes →</Button>
-          </div>
-        </div>
-      </div>
-
-      {/* ══════ Saved Measurements ══════ */}
-      {(() => {
-        const savedMeasurements = localStorage.getItem("naapio_measurements");
-        if (!savedMeasurements) return null;
-        const parsed = JSON.parse(savedMeasurements);
-        return (
-          <div className="bg-card rounded-2xl border border-border p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-xl">📏</span>
-              <div>
-                <h3 className="font-sans font-semibold text-foreground text-sm">Saved Measurements</h3>
-                <p className="text-xs text-muted-foreground font-sans">{parsed.garment} — saved {new Date(parsed.savedAt).toLocaleDateString()}</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground font-sans mb-2">Auto-filled for your next order</p>
-            <details className="group">
-              <summary className="text-xs text-accent font-sans cursor-pointer hover:underline">View measurements →</summary>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {parsed.measurements && Object.entries(parsed.measurements).map(([key, val]) => (
-                  val ? (
-                    <div key={key} className="text-xs font-sans">
-                      <span className="text-muted-foreground">{key}:</span> <span className="text-foreground font-medium">{val as string}</span>
+          return (
+            <div
+              key={bid.id}
+              className={`bg-card rounded-xl border p-4 ${TIER_BORDER[bid.tier] || "border-border"} ${idx < 3 ? "shadow-md" : "shadow-sm"}`}
+            >
+              {/* Top row */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold font-sans ${TIER_COLORS[bid.tier]}`}>
+                    #{sorted.indexOf(bid) + 1}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-medium ${TIER_COLORS[bid.tier]}`}>{bid.tier}</span>
+                      {bid.badge === "Best Match" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-success text-success-foreground font-sans font-medium">Best Match</span>}
+                      {bid.badge === "Best Value" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-info text-primary-foreground font-sans font-medium">Best Value</span>}
                     </div>
-                  ) : null
-                ))}
-                {parsed.standardSize && <div className="text-xs font-sans"><span className="text-muted-foreground">Size:</span> <span className="text-foreground font-medium">{parsed.standardSize} ({parsed.sizeRegion})</span></div>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-serif font-bold text-accent">{formatBudget(bid.bidAmount)}</p>
+                  <p className="text-xs text-muted-foreground font-sans">{bid.deliveryDays} days</p>
+                </div>
               </div>
-            </details>
-          </div>
-        );
-      })()}
 
-      {/* ══════ Bid Panel ══════ */}
-      {demoOrder.status === "Bids Received" && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl font-serif font-bold text-foreground">Tailor Bids</h2>
-            <p className="text-sm text-muted-foreground font-sans">Tailor identities are hidden until you select one</p>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {/* TODO: replace with real bid data from API */}
-            {mockBids.map((bid) => (
-              <div key={bid.id} className="bg-card rounded-2xl border border-border p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-sans font-semibold text-foreground">{bid.name}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold ${TIER_STYLES[bid.tier]}`}>
-                    {bid.tier}
-                  </span>
+              {/* Middle */}
+              <div className="mt-2">
+                <p className="font-sans font-semibold text-sm text-foreground">{bid.alias}</p>
+                <p className="text-xs text-muted-foreground font-sans italic">{bid.speciality}</p>
+                <p className="text-xs text-muted-foreground font-sans flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{bid.location}</p>
+              </div>
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-3 mt-3 text-xs font-sans text-muted-foreground">
+                <span>⭐ {bid.rating} ({bid.reviewCount} reviews)</span>
+                <span>✅ {bid.completionRate}% completed</span>
+                <span>🛡️ {bid.disputeRate}% disputes</span>
+              </div>
+
+              {/* Quality bar */}
+              <div className="mt-3">
+                <div className="flex justify-between text-[10px] font-sans text-muted-foreground mb-1">
+                  <span>Quality Score</span>
+                  <span>{bid.rankScore}/100</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-                  <span className="font-sans text-sm text-foreground">{bid.rating}</span>
+                <div className="h-1 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${bid.rankScore}%` }} />
                 </div>
-                <div className="font-sans text-sm text-muted-foreground space-y-1">
-                  <p>Price: <span className="font-medium text-foreground">₹{bid.price.toLocaleString("en-IN")}</span></p>
-                  <p>Delivery: <span className="font-medium text-foreground">{bid.days} days</span></p>
+              </div>
+
+              {/* Note */}
+              {bid.note && (
+                <div className="mt-3 p-2.5 bg-muted rounded-lg">
+                  <p className="text-xs font-sans text-foreground italic">"{bid.note}"</p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setConfirmBid(bid)}
+              )}
+
+              {/* Portfolio */}
+              <div className="mt-3 space-y-2">
+                <button
+                  onClick={() => setExpandedPortfolio(expandedPortfolio === bid.id ? null : bid.id)}
+                  className="text-xs font-sans text-accent hover:underline"
                 >
-                  Select This Tailor
+                  {expandedPortfolio === bid.id ? "Close Portfolio ↑" : "View Portfolio →"}
+                </button>
+                {expandedPortfolio === bid.id && (
+                  <div className="pt-2">
+                    <p className="text-xs font-sans font-medium text-foreground mb-2">Portfolio — {bid.alias}</p>
+                    {bid.portfolioImages.length > 0 ? (
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {bid.portfolioImages.map((img, i) => (
+                          <img key={i} src={img} alt={`Portfolio ${i + 1}`} className="w-32 h-32 rounded-lg object-cover shrink-0" />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground font-sans">Portfolio not yet submitted — this artisan is new to the platform.</p>
+                    )}
+                    <p className="text-[10px] text-muted-foreground font-sans mt-2">Work samples verified by Naapio quality team.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat */}
+              <div className="mt-2">
+                <button
+                  onClick={() => setExpandedChat(expandedChat === bid.id ? null : bid.id)}
+                  className="text-xs font-sans text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  <MessageSquare className="w-3 h-3" />
+                  {expandedChat === bid.id ? "Collapse chat ↑" : "Send Message"}
+                </button>
+                {expandedChat === bid.id && (
+                  <div className="mt-2 border border-border rounded-lg overflow-hidden">
+                    <div className="px-3 py-2 bg-muted flex items-center justify-between">
+                      <span className="text-xs font-sans font-medium text-foreground">Message {bid.alias}</span>
+                      <span className="text-[10px] text-muted-foreground font-sans">Contacts masked until selection</span>
+                    </div>
+                    <div className="h-40 overflow-y-auto p-3 space-y-2 bg-card">
+                      {(!chatMessages[bid.id] || chatMessages[bid.id].length === 0) && (
+                        <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about fabric options, timeline, or previous work.</p>
+                      )}
+                      {(chatMessages[bid.id] || []).map((m, i) => (
+                        <div key={i} className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}>
+                          <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
+                            m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
+                          }`}>
+                            {m.text}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 p-2 border-t border-border">
+                      <Input
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        placeholder="Type a message..."
+                        className="h-8 text-xs"
+                        onKeyDown={(e) => e.key === "Enter" && handleSendChat(bid.id)}
+                      />
+                      <Button size="sm" variant="gold" className="h-8 px-3" onClick={() => handleSendChat(bid.id)}>
+                        <Send className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 mt-4">
+                <Button size="sm" variant="outline" className="text-xs text-muted-foreground" onClick={() => handleIgnore(bid.id)}>
+                  <XIcon className="w-3 h-3 mr-1" /> Ignore
+                </Button>
+                <Button size="sm" variant="gold" className="text-xs flex-1" onClick={() => onAccept(bid)}>
+                  ✓ Accept This Bid
                 </Button>
               </div>
-            ))}
+            </div>
+          );
+        })}
+
+        {!showAll && hiddenCount > 0 && (
+          <button onClick={() => setShowAll(true)} className="w-full py-3 text-center text-sm font-sans text-accent hover:underline">
+            Show {hiddenCount} more bid{hiddenCount > 1 ? "s" : ""} ↓
+          </button>
+        )}
+        {showAll && hiddenCount > 0 && (
+          <button onClick={() => setShowAll(false)} className="w-full py-3 text-center text-sm font-sans text-accent hover:underline">
+            Show fewer ↑
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════
+// Main Dashboard
+// ═══════════════════════════════════════
+
+const BiddingPage = () => {
+  const navigate = useNavigate();
+
+  // Build active orders from mock + localStorage
+  const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>(() => {
+    const orders = [...defaultActiveOrders];
+    try {
+      const raw = localStorage.getItem("naapio_last_order");
+      if (raw) {
+        const lo = JSON.parse(raw);
+        if (!orders.find((o) => o.id === lo.orderId)) {
+          orders.unshift({
+            id: lo.orderId || `NP-${Date.now()}`,
+            orderType: lo.orderType || "New Order",
+            garment: lo.garment || `${lo.gender || "Women's"} · ${lo.selectedCategory || "Custom"} · ${lo.selectedSubCategory || ""}`,
+            occasion: lo.occasion || lo.selectedOccasion || "",
+            budgetRange: lo.budgetRange ? (typeof lo.budgetRange === "string" ? { min: 5000, max: 20000 } : lo.budgetRange) : { min: 5000, max: 20000 },
+            deliveryDate: lo.deliveryDate || "",
+            postedAt: new Date(lo.timestamp || Date.now()),
+            bidDeadline: new Date((lo.timestamp || Date.now()) + 7 * 86400000),
+            status: "awaiting_bids",
+            bidsReceived: 0,
+            measurementsSubmitted: !!lo.measurementType && lo.measurementType !== "later",
+            rushOrder: !!lo.isRushOrder,
+            inspirationThumb: lo.inspirationPhoto || "",
+          });
+        }
+      }
+    } catch {}
+    return orders;
+  });
+
+  const [pastOrders, setPastOrders] = useState<PastOrder[]>(defaultPastOrders);
+  const [biddingRoomOpen, setBiddingRoomOpen] = useState<string | null>(null);
+  const [whileYouWaitOpen, setWhileYouWaitOpen] = useState<string | null>(null);
+  const [closeBidDialog, setCloseBidDialog] = useState<string | null>(null);
+  const [acceptBid, setAcceptBid] = useState<typeof mockBids[0] | null>(null);
+  const [acceptOrderId, setAcceptOrderId] = useState<string | null>(null);
+
+  const needsMeasurementsBanner = activeOrders.some(
+    (o) => !o.measurementsSubmitted && o.status !== "completed" && o.status !== "expired"
+  );
+
+  const handleCloseBid = (orderId: string) => {
+    setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
+    setPastOrders((prev) => [
+      { id: orderId, orderType: "New Order", garment: activeOrders.find((o) => o.id === orderId)?.garment || "", status: "expired", postedAt: "Mar 2026", bidsReceived: 0, note: "Closed by customer" },
+      ...prev,
+    ]);
+    setCloseBidDialog(null);
+    toast.success("Brief closed.");
+  };
+
+  const handleAcceptBid = () => {
+    if (!acceptBid || !acceptOrderId) return;
+    setActiveOrders((prev) =>
+      prev.map((o) => (o.id === acceptOrderId ? { ...o, status: "tailor_selected" } : o))
+    );
+    toast.success(`✓ ${acceptBid.alias} selected! Order milestones are now active.`);
+    setAcceptBid(null);
+    setAcceptOrderId(null);
+    navigate(`/order/${acceptOrderId}`);
+  };
+
+  const handleReorder = (order: PastOrder | ActiveOrder, mode: "same" | "changes") => {
+    const draft = {
+      step: mode === "same" ? 3 : 1,
+      step2Phase: mode === "same" ? "fabric" : "category",
+      step3Phase: mode === "same" ? "colour" : "feel",
+      orderType: "new-order",
+      gender: order.garment.includes("Men") ? "men" : "women",
+      selectedCategory: order.garment.split(" · ")[1] || "",
+      selectedSubCategory: order.garment.split(" · ")[2] || "",
+      measurementType: "saved",
+      isReorder: true,
+      reorderMode: mode,
+    };
+    localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+    navigate("/wizard");
+  };
+
+  const shareOnWhatsApp = (order: ActiveOrder) => {
+    const text = `Check out my custom order on Naapio! Order #${order.id} — ${order.garment}. Track at naapio.lovable.app/order/${order.id}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-2xl font-serif font-bold text-foreground">My Orders</h1>
+        <Button variant="gold" size="sm" onClick={() => navigate("/start")} className="hidden sm:inline-flex">
+          <Plus className="w-4 h-4 mr-1" /> New Order
+        </Button>
+      </div>
+
+      {/* Measurements Banner */}
+      {needsMeasurementsBanner && (
+        <div className="mb-5 p-4 bg-warning-light rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">📏</span>
+            <div>
+              <p className="font-sans font-semibold text-sm text-foreground">Measurements missing on one or more orders</p>
+              <p className="text-xs text-muted-foreground font-sans">Tailors cannot finalise bids without your measurements. Submit them now to avoid delays.</p>
+            </div>
           </div>
+          <Button size="sm" variant="gold" className="shrink-0" onClick={() => navigate("/wizard")}>
+            Submit Measurements →
+          </Button>
         </div>
       )}
 
-      {/* Confirm Tailor Dialog */}
-      <AlertDialog open={!!confirmBid} onOpenChange={(open) => !open && setConfirmBid(null)}>
+      {/* Tabs */}
+      <Tabs defaultValue="active">
+        <TabsList className="w-full grid grid-cols-2 mb-5">
+          <TabsTrigger value="active" className="text-sm font-sans">
+            Active Requests <Badge className="ml-2 bg-accent/20 text-accent text-[10px]">{activeOrders.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="past" className="text-sm font-sans">
+            Past Requests <Badge className="ml-2 bg-muted text-muted-foreground text-[10px]">{pastOrders.length}</Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ═══ ACTIVE TAB ═══ */}
+        <TabsContent value="active">
+          {activeOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <span className="text-5xl mb-4">📋</span>
+              <h2 className="text-xl font-serif font-bold text-foreground mb-2">No active orders</h2>
+              <p className="text-muted-foreground font-sans text-sm mb-6">Start your first custom order and see it here.</p>
+              <Button variant="gold" onClick={() => navigate("/start")}>Start an Order →</Button>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {activeOrders.map((order) => {
+                const statusBorder: Record<string, string> = {
+                  awaiting_bids: "border-l-warning",
+                  bids_received: "border-l-success",
+                  tailor_selected: "border-l-info",
+                  in_progress: "border-l-purple-500",
+                };
+                const statusPill: Record<string, { icon: string; label: string; cls: string }> = {
+                  awaiting_bids: { icon: "⏳", label: "Awaiting Bids", cls: "bg-warning-light text-warning" },
+                  bids_received: { icon: "🎯", label: `${order.bidsReceived} Bids Received`, cls: "bg-success-light text-success" },
+                  tailor_selected: { icon: "✅", label: "Tailor Selected", cls: "bg-info-light text-info" },
+                  in_progress: { icon: "🪡", label: "In Progress", cls: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" },
+                };
+                const sp = statusPill[order.status] || statusPill.awaiting_bids;
+                const badge = ORDER_TYPE_STYLES[order.orderType] || ORDER_TYPE_STYLES["New Order"];
+
+                return (
+                  <div key={order.id} className={`bg-card rounded-xl border border-border border-l-4 ${statusBorder[order.status] || ""} p-4`}>
+                    {/* Top row */}
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-medium ${badge.bg} ${badge.text}`}>{order.orderType}</span>
+                        <span className="text-xs text-muted-foreground font-sans">#{order.id}</span>
+                      </div>
+                      <span className={`text-[11px] px-2.5 py-1 rounded-full font-sans font-medium ${sp.cls}`}>
+                        {sp.icon} {sp.label}
+                      </span>
+                    </div>
+
+                    {/* Garment row */}
+                    <div className="flex gap-3 mt-3">
+                      {order.inspirationThumb ? (
+                        <img src={order.inspirationThumb} alt="Inspiration" className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                      ) : (
+                        <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center text-2xl shrink-0">👗</div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-sans font-semibold text-sm text-foreground truncate">{order.garment}</p>
+                        <p className="text-xs text-muted-foreground font-sans">{order.occasion} · Delivery: {order.deliveryDate}</p>
+                        <p className="text-xs text-muted-foreground font-sans">{formatBudget(order.budgetRange.min)} – {formatBudget(order.budgetRange.max)}</p>
+                        {order.rushOrder && <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning-light text-warning font-sans font-medium mt-1 inline-block">⚡ Rush</span>}
+                      </div>
+                    </div>
+
+                    {/* Countdown */}
+                    {(order.status === "awaiting_bids" || order.status === "bids_received") && (
+                      <CountdownTimer deadline={order.bidDeadline} postedAt={order.postedAt} />
+                    )}
+
+                    {/* Action row */}
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      <Button size="sm" variant="outline" className="text-xs" onClick={() => navigate("/wizard")}>
+                        <Edit className="w-3 h-3 mr-1" /> Edit Brief
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={order.bidsReceived > 0 ? "outline-gold" : "outline"}
+                        className="text-xs"
+                        disabled={order.bidsReceived === 0}
+                        onClick={() => setBiddingRoomOpen(biddingRoomOpen === order.id ? null : order.id)}
+                      >
+                        <Eye className="w-3 h-3 mr-1" /> View Bids ({order.bidsReceived})
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs text-muted-foreground" onClick={() => setCloseBidDialog(order.id)}>
+                        <XIcon className="w-3 h-3 mr-1" /> Close Bid
+                      </Button>
+                    </div>
+
+                    {/* While you wait */}
+                    {order.status === "awaiting_bids" && (
+                      <div className="mt-3">
+                        <button
+                          onClick={() => setWhileYouWaitOpen(whileYouWaitOpen === order.id ? null : order.id)}
+                          className="text-xs font-sans text-muted-foreground hover:text-foreground flex items-center gap-1"
+                        >
+                          {whileYouWaitOpen === order.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          While you wait
+                        </button>
+                        {whileYouWaitOpen === order.id && (
+                          <div className="mt-2 space-y-2 pl-4">
+                            {!order.measurementsSubmitted ? (
+                              <button onClick={() => navigate("/wizard")} className="text-xs font-sans text-accent hover:underline block">📏 Submit measurements</button>
+                            ) : (
+                              <span className="text-xs font-sans text-success block">✓ Measurements submitted</span>
+                            )}
+                            <button onClick={() => shareOnWhatsApp(order)} className="text-xs font-sans text-accent hover:underline block">📲 Share your brief on WhatsApp</button>
+                            <button onClick={() => navigate(`/order/${order.id}`)} className="text-xs font-sans text-accent hover:underline block">📋 Review your brief</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Bidding Room */}
+                    {biddingRoomOpen === order.id && order.bidsReceived > 0 && (
+                      <BiddingRoom
+                        order={order}
+                        onAccept={(bid) => {
+                          setAcceptBid(bid);
+                          setAcceptOrderId(order.id);
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* ═══ PAST TAB ═══ */}
+        <TabsContent value="past">
+          {pastOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <span className="text-5xl mb-4">📋</span>
+              <h2 className="text-xl font-serif font-bold text-foreground mb-2">No past orders</h2>
+              <p className="text-muted-foreground font-sans text-sm">Your completed orders will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {pastOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className={`bg-card rounded-xl border border-border border-l-4 p-4 ${
+                    order.status === "completed" ? "border-l-success" : "border-l-destructive"
+                  }`}
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-medium ${
+                        order.status === "completed" ? "bg-success-light text-success" : "bg-destructive/10 text-destructive"
+                      }`}>
+                        {order.status === "completed" ? "✅ Completed" : "❌ No Bids"}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-sans">#{order.id}</span>
+                    </div>
+                  </div>
+
+                  <p className="font-sans font-semibold text-sm text-foreground mt-2">{order.garment}</p>
+
+                  {order.status === "completed" && (
+                    <>
+                      <p className="text-xs text-muted-foreground font-sans mt-1">
+                        Completed {order.completedAt} · {order.artisanAlias} · ₹{order.finalAmount?.toLocaleString("en-IN")}
+                      </p>
+                      <div className="flex items-center gap-1 mt-2">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <span key={s} className={`text-sm ${s <= Math.round(order.rating || 0) ? "text-accent" : "text-muted-foreground/30"}`}>★</span>
+                        ))}
+                        <span className="text-xs text-muted-foreground font-sans ml-1">{order.rating}/5.0</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button size="sm" variant="gold" className="text-xs" onClick={() => handleReorder(order, "same")}>🔄 Reorder Same Design</Button>
+                        <Button size="sm" variant="outline" className="text-xs" onClick={() => handleReorder(order, "changes")}>✏️ Reorder with Changes</Button>
+                        <Button size="sm" variant="outline" className="text-xs" onClick={() => navigate(`/order/${order.id}`)}>📋 View Details</Button>
+                      </div>
+                    </>
+                  )}
+
+                  {order.status === "expired" && (
+                    <>
+                      <p className="text-xs text-muted-foreground font-sans mt-1">Posted {order.postedAt} · {order.note}</p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button size="sm" variant="gold" className="text-xs" onClick={() => navigate("/start")}>↻ Repost Brief</Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs text-muted-foreground"
+                          onClick={() => setPastOrders((prev) => prev.filter((o) => o.id !== order.id))}
+                        >
+                          🗑 Archive
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Mobile FAB */}
+      <button
+        onClick={() => navigate("/start")}
+        className="md:hidden fixed bottom-20 right-5 z-50 w-14 h-14 rounded-full bg-accent text-accent-foreground shadow-lg flex items-center justify-center hover:bg-accent/90 transition-colors"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
+      {/* Close Bid Dialog */}
+      <AlertDialog open={!!closeBidDialog} onOpenChange={() => setCloseBidDialog(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm {confirmBid?.name} for ₹{confirmBid?.price.toLocaleString("en-IN")}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Once confirmed, the tailor will begin work and other bids will be declined.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Close this brief?</AlertDialogTitle>
+            <AlertDialogDescription>The ₹499 posting fee is non-refundable.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmTailor}>Confirm</AlertDialogAction>
+            <AlertDialogAction onClick={() => closeBidDialog && handleCloseBid(closeBidDialog)}>Confirm Close</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ══════ Existing Active Requests ══════ */}
-      <h2 className="font-sans font-semibold text-foreground text-lg">Active Requests</h2>
-      <div className="space-y-4">
-        {activeRequests.map((req, i) => (
-          <motion.div
-            key={req.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-card rounded-2xl border border-border p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex flex-col sm:flex-row gap-5">
-              <img src={redLehenga} alt={req.category} className="w-24 h-24 rounded-xl object-cover flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-sans font-semibold text-foreground">{req.category}</h3>
-                    <p className="text-sm text-muted-foreground font-sans">₹{req.budgetMin.toLocaleString("en-IN")} – ₹{req.budgetMax.toLocaleString("en-IN")}</p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-sans font-medium ${req.status === "bids_received" ? "bg-success-light text-success" : "bg-info-light text-info"}`}>
-                    {req.statusLabel}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm font-sans text-muted-foreground mb-4">
-                  <Clock className="w-4 h-4 text-accent" />
-                  <span className="animate-countdown font-medium text-foreground">
-                    {timers[i]?.days}d {timers[i]?.hours}h {timers[i]?.minutes}m {timers[i]?.seconds}s remaining
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm"><Edit className="w-3.5 h-3.5" /> Edit Bid</Button>
-                  <Button
-                    variant={req.bidsCount > 0 ? "gold" : "outline"}
-                    size="sm"
-                    disabled={req.bidsCount === 0}
-                    onClick={() => navigate("/dashboard/view-bids")}
-                  >
-                    <Eye className="w-3.5 h-3.5" /> View Bids {req.bidsCount > 0 && `(${req.bidsCount})`}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                    <XIcon className="w-3.5 h-3.5" /> Close Bid
-                  </Button>
-                </div>
+      {/* Accept Bid Confirmation */}
+      <AlertDialog open={!!acceptBid} onOpenChange={() => { setAcceptBid(null); setAcceptOrderId(null); }}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Accept {acceptBid?.alias}'s bid?</AlertDialogTitle>
+          </AlertDialogHeader>
+          {acceptBid && (
+            <div className="space-y-4 text-sm font-sans">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div><span className="text-muted-foreground">Artisan:</span> <span className="font-medium">{acceptBid.alias} ({acceptBid.tier})</span></div>
+                <div><span className="text-muted-foreground">Quality:</span> <span className="font-medium">{acceptBid.rankScore}/100</span></div>
+                <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium font-serif text-accent">{formatBudget(acceptBid.bidAmount)}</span></div>
+                <div><span className="text-muted-foreground">Delivery:</span> <span className="font-medium">{acceptBid.deliveryDays} days</span></div>
+              </div>
+
+              <div className="p-3 bg-muted rounded-lg text-xs space-y-1">
+                <p className="font-medium text-foreground mb-2">Payment released in 5 instalments:</p>
+                {["Measurement confirmation", "Fabric approval", "Stitching preview", "Final fitting", "Delivery"].map((label, i) => (
+                  <p key={i} className="text-muted-foreground">
+                    M{i + 1} (20%) — ₹{Math.round(acceptBid.bidAmount * 0.2).toLocaleString("en-IN")} after {label}
+                  </p>
+                ))}
+                <p className="font-medium text-foreground mt-2">Total: {formatBudget(acceptBid.bidAmount)} (held in escrow by Naapio)</p>
+              </div>
+
+              <div className="flex items-start gap-2 p-3 bg-success-light rounded-lg text-xs">
+                <Shield className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                <p className="text-foreground">Your payment is protected. Funds are only released at each milestone after your explicit approval.</p>
               </div>
             </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ══════ Past Requests ══════ */}
-      <h2 className="font-sans font-semibold text-foreground text-lg">Past Requests</h2>
-      {pastRequests.map((req) => (
-        <div key={req.id} className="bg-card rounded-2xl border border-border p-6">
-          <div className="flex flex-col sm:flex-row gap-5">
-            <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-pink-200 to-pink-100 flex-shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-sans font-semibold text-foreground">{req.category}</h3>
-                  <p className="text-sm text-muted-foreground font-sans">{req.vendorName} • {req.completedDate}</p>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-sans font-medium bg-success-light text-success">{req.statusLabel}</span>
-              </div>
-              <div className="flex items-center gap-1 mb-4">
-                <Star className="w-4 h-4 fill-accent text-accent" />
-                <span className="font-sans text-sm font-medium text-foreground">{req.rating}</span>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm"><Edit className="w-3.5 h-3.5" /> Edit</Button>
-                <Button variant="outline" size="sm"><Clock className="w-3.5 h-3.5" /> History</Button>
-                <Button variant="gold" size="sm"><RotateCcw className="w-3.5 h-3.5" /> Repeat</Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* ══════ 5-Milestone Tracker ══════ */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-xl font-serif font-bold text-foreground">{t('dashboard.milestones')}</h2>
-          <p className="text-sm text-muted-foreground font-sans">{t('dashboard.milestonesSubtext')}</p>
-        </div>
-
-        {(milestones.every((m) => m.status === "pending") || milestones.some((m) => m.status === "changes_requested")) && (
-          <button
-            onClick={() => {
-              // If any milestone has changes_requested, reset it to awaiting_approval
-              const crMilestone = milestones.find((m) => m.status === "changes_requested");
-              if (crMilestone) {
-                setMilestones((prev) =>
-                  prev.map((m) => m.id === crMilestone.id ? { ...m, status: "awaiting_approval" as MilestoneStatus } : m)
-                );
-                setChangeRequestSent((prev) => ({ ...prev, [crMilestone.id]: false }));
-                setChangeNotes((prev) => ({ ...prev, [crMilestone.id]: "" }));
-              } else {
-                setMilestones((prev) =>
-                  prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
-                );
-              }
-            }}
-            className="text-[11px] text-muted-foreground/60 font-sans hover:text-muted-foreground transition-colors"
-          >
-            Simulate tailor activity →
-          </button>
-        )}
-
-        {/* Desktop: horizontal / Mobile: vertical */}
-        {/* Vertical timeline (works for both, responsive) */}
-        <div className="relative space-y-0">
-          {milestones.map((m, i) => {
-            const isLast = i === milestones.length - 1;
-
-            const nodeColor =
-              m.status === "approved" ? "bg-green-500 text-white" :
-              m.status === "awaiting_approval" ? "bg-amber-500 text-white" :
-              m.status === "changes_requested" ? "bg-destructive text-destructive-foreground" :
-              "bg-muted text-muted-foreground";
-
-            const lineColor =
-              m.status === "approved" ? "bg-green-500" :
-              m.status === "awaiting_approval" ? "bg-amber-500" :
-              "bg-border border-dashed";
-
-            const labelColor =
-              m.status === "approved" ? "text-green-600 dark:text-green-400" :
-              m.status === "awaiting_approval" ? "text-amber-600 dark:text-amber-400 font-bold" :
-              m.status === "changes_requested" ? "text-destructive font-bold" :
-              "text-muted-foreground";
-
-            return (
-              <div key={m.id} className="flex gap-4">
-                {/* Node + connector line */}
-                <div className="flex flex-col items-center">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${nodeColor} ${m.status === "awaiting_approval" ? "animate-pulse" : ""}`}>
-                    {m.status === "approved" && <CheckCircle2 className="w-5 h-5" />}
-                    {m.status === "changes_requested" && <XIcon className="w-5 h-5" />}
-                    {m.status === "awaiting_approval" && <AlertCircle className="w-5 h-5" />}
-                    {m.status === "pending" && <Circle className="w-5 h-5" />}
-                  </div>
-                  {!isLast && <div className={`w-0.5 flex-1 min-h-[40px] ${lineColor}`} />}
-                </div>
-
-                {/* Content */}
-                <div className="pb-8 flex-1">
-                  <span className={`font-sans text-sm ${labelColor}`}>
-                    M{m.id} — {m.label}
-                  </span>
-
-                  {m.status === "approved" && (
-                    <p className="text-xs text-green-600 dark:text-green-400 font-sans mt-1">Approved ✓</p>
-                  )}
-
-                  {m.status === "changes_requested" && (
-                    changeRequestSent[m.id] ? (
-                      <div className="mt-2">
-                        <p className="text-xs text-green-600 font-sans">✓ Change request sent</p>
-                        <p className="text-xs text-muted-foreground font-sans mt-0.5">Your tailor will upload an updated version shortly.</p>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-destructive font-sans mt-1">Changes requested — awaiting tailor update</p>
-                    )
-                  )}
-
-                  {m.status === "awaiting_approval" && (
-                    <div className="mt-3 bg-card rounded-xl border border-border p-4 space-y-3">
-                      <div className="bg-muted rounded-lg p-4 text-center text-sm text-muted-foreground font-sans">
-                        Tailor has uploaded proof — tap to view
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => handleApproveMilestone(m.id)}
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-destructive text-destructive hover:bg-destructive/10"
-                          onClick={() => {
-                            if (changeNotes[m.id]?.trim()) {
-                              handleRequestChanges(m.id);
-                            }
-                          }}
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" /> Request Changes
-                        </Button>
-                      </div>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Describe what needs to change"
-                          value={changeNotes[m.id] || ""}
-                          onChange={(e) => setChangeNotes((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                          className="text-sm"
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!changeNotes[m.id]?.trim() || changeSending[m.id]}
-                          onClick={() => handleRequestChanges(m.id)}
-                        >
-                          {changeSending[m.id] ? "Sending..." : <Send className="w-3.5 h-3.5" />}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ══════ New Order Button ══════ */}
-      <div className="pt-4">
-        <Button variant="outline" onClick={() => navigate("/start")} className="gap-2">
-          <Plus className="w-4 h-4" /> Start a New Order
-        </Button>
-      </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptBid} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              Confirm & Proceed to Payment →
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
