@@ -228,6 +228,7 @@ const quickBrackets = [
   { label: "₹35K – ₹75K", min: 35000, max: 75000 },
   { label: "₹75K – ₹1.5L", min: 75000, max: 150000 },
   { label: "₹1.5L – ₹3L", min: 150000, max: 300000 },
+  { label: "₹3L – ₹5L", min: 300000, max: 500000 },
 ];
 
 const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
