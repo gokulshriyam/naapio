@@ -570,8 +570,32 @@ const CustomiseFlow = () => {
                       <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Placement</span>
                       <button onClick={() => { setShowReview(false); setStep(3); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    <p className="text-sm text-foreground font-sans">{placementZones.join(", ")}</p>
-                    {placementCustomNote && <p className="text-xs text-muted-foreground font-sans mt-1">"{placementCustomNote}"</p>}
+                    {(['front-upper', 'back', 'lower'] as PlacementView[]).map(view => {
+                      const zones = selectedZonesByView[view];
+                      return zones.length > 0 ? (
+                        <p key={view} className="text-sm text-foreground font-sans">
+                          <span className="font-medium">{viewLabels[view]}:</span> {zones.map(z => getZoneLabelById(z)).join(", ")}
+                        </p>
+                      ) : null;
+                    })}
+                    {totalSelectedZones === 0 && <p className="text-sm text-muted-foreground font-sans">No zones selected</p>}
+                    {allSelectedZones.some(z => zoneNotes[z]) && (
+                      <div className="mt-2 space-y-1">
+                        {allSelectedZones.filter(z => zoneNotes[z]).map(z => (
+                          <p key={z} className="text-xs text-muted-foreground font-sans">📝 {getZoneLabelById(z)}: "{zoneNotes[z]}"</p>
+                        ))}
+                      </div>
+                    )}
+                    {allSelectedZones.some(z => zonePhotos[z]) && (
+                      <div className="flex gap-2 mt-2">
+                        {allSelectedZones.filter(z => zonePhotos[z]).map(z => (
+                          <div key={z} className="text-center">
+                            <img src={URL.createObjectURL(zonePhotos[z]!)} alt={getZoneLabelById(z)} className="w-12 h-12 rounded-lg object-cover border border-border" />
+                            <p className="text-[10px] text-muted-foreground font-sans mt-0.5">{getZoneLabelById(z)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Reference */}
