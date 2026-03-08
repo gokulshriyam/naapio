@@ -38,6 +38,17 @@ export type Lead = {
   inspirationThumb: string;
   brief: string;
   customerFirstName: string;
+  // Full brief fields
+  fabricFeel?: string;
+  colourMood?: string;
+  selectedSurfaces?: string[];
+  selectedFit?: string;
+  selectedNeckline?: string;
+  selectedSleeve?: string;
+  dupattaOption?: string;
+  liningOption?: string;
+  additionalNotes?: string;
+  inspirationPhoto?: string;
 };
 
 export const mockLeads: Lead[] = [
@@ -61,6 +72,16 @@ export const mockLeads: Lead[] = [
     inspirationThumb: '',
     brief: 'Heavily embroidered Salwar Kameez in deep green. Festive occasion. Prefer georgette or silk fabric. Reference image attached.',
     customerFirstName: 'Priya',
+    fabricFeel: 'Light & Flowy',
+    colourMood: 'Deep Greens',
+    selectedSurfaces: ['Thread Embroidery', 'Sequin Work'],
+    selectedFit: 'Regular / Comfort',
+    selectedNeckline: 'Round Neck',
+    selectedSleeve: '3/4 Sleeve',
+    dupattaOption: '3-piece same fabric',
+    liningOption: 'Partially Lined',
+    additionalNotes: 'Prefer georgette fabric. Please keep embroidery subtle on sleeves.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=300&fit=crop',
   },
   {
     id: 'NP-2026-00198',
@@ -82,6 +103,16 @@ export const mockLeads: Lead[] = [
     inspirationThumb: '',
     brief: 'Bridal lehenga — full 3-piece set. Wants heavy embroidery, mirror work. Deep red preferred.',
     customerFirstName: 'Riya',
+    fabricFeel: 'Rich & Heavy',
+    colourMood: 'Deep Reds',
+    selectedSurfaces: ['Heavy Embroidery', 'Mirror Work'],
+    selectedFit: 'Close-fitted / Slim',
+    selectedNeckline: 'V-Neck',
+    selectedSleeve: 'Full Sleeve',
+    dupattaOption: '3-piece same fabric',
+    liningOption: 'Fully Lined',
+    additionalNotes: 'Please ensure the mirror work is on the dupatta border as shown in reference.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
   },
   {
     id: 'NP-2026-00201',
@@ -103,6 +134,8 @@ export const mockLeads: Lead[] = [
     inspirationThumb: '',
     brief: 'Sherwani needs sleeve shortening and waist taking in. Rush — event in 5 days.',
     customerFirstName: 'Arjun',
+    additionalNotes: 'Sleeve shortening by 2 inches and waist taking in by 1.5 inches. Rush order.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=300&fit=crop',
   },
   {
     id: 'NP-2026-00155',
@@ -124,6 +157,15 @@ export const mockLeads: Lead[] = [
     inspirationThumb: '',
     brief: 'Backless blouse for silk saree. Deep V back, halter neck. Intricate hand embroidery.',
     customerFirstName: 'Meera',
+    fabricFeel: 'Structured & Crisp',
+    colourMood: 'Deep Blues',
+    selectedSurfaces: ['Hand Embroidery', 'Zardosi Work'],
+    selectedFit: 'Close-fitted / Slim',
+    selectedNeckline: 'Halter Neck',
+    selectedSleeve: 'Sleeveless',
+    liningOption: 'Fully Lined',
+    additionalNotes: 'Deep V-back with intricate hand embroidery. Must match the silk saree shade.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&h=300&fit=crop',
   },
   {
     id: 'NP-2026-00167',
@@ -145,6 +187,11 @@ export const mockLeads: Lead[] = [
     inspirationThumb: '',
     brief: 'Double-breasted bandhgala in navy blue. Formal office use. Premium fabric, clean finish.',
     customerFirstName: 'Rohan',
+    fabricFeel: 'Structured & Crisp',
+    colourMood: 'Navy / Dark Blues',
+    selectedFit: 'Tailored / Slim',
+    additionalNotes: 'Double-breasted style. Premium wool-blend fabric preferred. Clean minimalist finish.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
   },
 ];
 
@@ -170,6 +217,19 @@ export type MyBid = {
   message: string;
   inspirationThumb: string;
   outbidAlert: boolean;
+  // Full brief fields
+  occasion?: string;
+  fabricFeel?: string;
+  colourMood?: string;
+  selectedSurfaces?: string[];
+  selectedFit?: string;
+  selectedNeckline?: string;
+  selectedSleeve?: string;
+  dupattaOption?: string;
+  liningOption?: string;
+  additionalNotes?: string;
+  inspirationPhoto?: string;
+  isRushOrder?: boolean;
 };
 
 export const mockMyBids: MyBid[] = [
@@ -195,6 +255,18 @@ export const mockMyBids: MyBid[] = [
     message: 'I specialise in heavily embroidered lehengas. Can match reference exactly.',
     inspirationThumb: '',
     outbidAlert: false,
+    occasion: 'Wedding / Baraat',
+    fabricFeel: 'Rich & Heavy',
+    colourMood: 'Deep Reds',
+    selectedSurfaces: ['Heavy Embroidery', 'Mirror Work'],
+    selectedFit: 'Close-fitted / Slim',
+    selectedNeckline: 'V-Neck',
+    selectedSleeve: 'Full Sleeve',
+    dupattaOption: '3-piece same fabric',
+    liningOption: 'Fully Lined',
+    additionalNotes: 'Please ensure the mirror work is on the dupatta border as shown in reference.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
+    isRushOrder: false,
   },
   {
     id: 'BID-V-002',
@@ -218,6 +290,14 @@ export const mockMyBids: MyBid[] = [
     message: '',
     inspirationThumb: '',
     outbidAlert: false,
+    occasion: 'Festival / Puja',
+    fabricFeel: 'Light & Flowy',
+    colourMood: 'Pastels',
+    selectedSurfaces: ['Thread Embroidery'],
+    selectedFit: 'Flared / A-Line',
+    additionalNotes: 'Prefer soft pastel colour with minimal embroidery. Comfortable for all-day wear.',
+    inspirationPhoto: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=300&fit=crop',
+    isRushOrder: false,
   },
 ];
 
@@ -247,6 +327,17 @@ export const mockVendorActiveOrders = [
     surfaces: ['Heavy Embroidery', 'Mirror Work'],
     occasion: 'Wedding / Baraat',
     deliveryDays: 18,
+    // Full brief fields
+    selectedFit: 'Close-fitted / Slim',
+    selectedNeckline: 'V-Neck',
+    selectedSleeve: 'Full Sleeve',
+    dupattaOption: '3-piece same fabric',
+    liningOption: 'Fully Lined',
+    additionalNotes: 'Please ensure the mirror work is on the dupatta border as shown in reference.',
+    budgetMin: 45000,
+    budgetMax: 60000,
+    isRushOrder: false,
+    inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
   },
 ];
 
