@@ -512,9 +512,9 @@ const VendorActiveOrders = () => {
       <Progress value={progress} className="h-1.5 mb-8" />
 
       {/* Two-column layout */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
+      <div style={{display:'flex', flexDirection:'row', gap:'24px', alignItems:'flex-start', width:'100%'}}>
         {/* LEFT COLUMN */}
-        <aside className="w-full lg:w-72 space-y-4" style={{flexShrink:0, maxWidth:'288px'}}>
+        <aside className="space-y-4" style={{width:'288px', minWidth:'288px', maxWidth:'288px', flexShrink:0}}>
           {/* Full brief card (Fix 7) */}
           <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
@@ -572,7 +572,7 @@ const VendorActiveOrders = () => {
         </aside>
 
         {/* RIGHT COLUMN — Milestone content */}
-        <main className="flex-1 w-full" style={{minWidth:0, overflow:'hidden'}}>
+        <main className="space-y-4" style={{flex:1, minWidth:0, overflow:'hidden'}}>
           <AnimatePresence mode="wait">
             {/* ═══ M1 — Measurements Review (read-only if m1ReadOnly) ═══ */}
             {activeMilestone === 1 && (
