@@ -299,8 +299,9 @@ const ActiveOrdersPage = () => {
 
   // ── Chat state ──
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{ text: string; from: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
+  const chatFileRef = useRef<HTMLInputElement | null>(null);
 
   // M3 auto-advance
   useEffect(() => {
