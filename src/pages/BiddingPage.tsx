@@ -570,10 +570,10 @@ const BiddingPage = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={!changeNotes[m.id]?.trim()}
+                          disabled={!changeNotes[m.id]?.trim() || changeSending[m.id]}
                           onClick={() => handleRequestChanges(m.id)}
                         >
-                          <Send className="w-3.5 h-3.5" />
+                          {changeSending[m.id] ? "Sending..." : <Send className="w-3.5 h-3.5" />}
                         </Button>
                       </div>
                     </div>
