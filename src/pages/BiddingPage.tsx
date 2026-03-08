@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock, Edit, Eye, X as XIcon, Star, RotateCcw, Plus,
   CheckCircle2, ChevronDown, ChevronUp, Send, MapPin,
-  MessageSquare, Shield, Award, Info,
+  MessageSquare, Shield, Award, Info, Paperclip, FileText, Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

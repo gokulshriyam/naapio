@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, Lock, ArrowLeft, Star, Play, Package, Scissors, Video, Ruler, Truck, Shield,
   Copy, ExternalLink, MessageSquare, AlertTriangle, ChevronDown, ChevronUp,
+  Paperclip, FileText, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
