@@ -972,6 +972,11 @@ const AlterationFlow = () => {
                           />
                         </PopoverContent>
                       </Popover>
+                      {alterationDeliveryDate && (() => {
+                        const days = getDeliveryDayCount(alterationDeliveryDate);
+                        const msg = getDeliveryDayMessage(days);
+                        return <p className={`text-xs font-sans mt-2 ${msg.color}`}>{msg.text}</p>;
+                      })()}
                       <p className="text-xs text-muted-foreground font-sans mt-2">
                         {getMinDelivery(alterationFixes) >= 7
                           ? "Major alterations need at least 7 days"

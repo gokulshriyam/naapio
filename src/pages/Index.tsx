@@ -45,27 +45,25 @@ const Index = () => {
             </Button>
           </div>
           {/* Mobile hamburger */}
-          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <button className="md:hidden p-2" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-1"><CitySelector variant="mobile" /></div>
-            </div>
-            <div className="flex-1"><LanguageSelector variant="mobile" /></div>
-            <div className="h-px bg-border" />
-            <a href="#how-it-works" className="block font-sans text-sm text-foreground py-2" onClick={() => setMobileMenuOpen(false)}>{t('nav.howItWorks')}</a>
-            <a href="/#categories" className="block font-sans text-sm text-foreground py-2" onClick={() => setMobileMenuOpen(false)}>{t('nav.categories')}</a>
-            <a href="/for-tailors" className="block font-sans text-sm text-foreground py-2" onClick={() => setMobileMenuOpen(false)}>{t('nav.forTailors')}</a>
-            <div className="flex gap-3 pt-2">
-              <Button variant="ghost" size="sm" onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }} className="flex-1">
+          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto">
+            <div className="w-full mb-2"><CitySelector variant="mobile" /></div>
+            <div className="w-full mb-2"><LanguageSelector variant="mobile" /></div>
+            <div className="h-px bg-border my-2" />
+            <a href="#how-it-works" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.howItWorks')}</a>
+            <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
+            <a href="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</a>
+            <div className="space-y-3 pt-3">
+              <Button variant="ghost" size="sm" onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
                 {t('nav.login')}
               </Button>
-              <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); }} className="flex-1">
+              <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
                 {t('nav.getStarted')}
               </Button>
             </div>
