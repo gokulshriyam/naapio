@@ -1,36 +1,57 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Edit, Download, Star, ShoppingBag, CreditCard, X } from "lucide-react";
+import { Edit, Download, Star, ShoppingBag, CreditCard, X, Check, ChevronDown, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { customer, measurementFields } from "@/data/mockData";
+import { Badge } from "@/components/ui/badge";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
+import { customer } from "@/data/mockData";
 import { toast } from "sonner";
 
+// Garment emoji helper
+const garmentEmoji = (name: string): string => {
+  const n = name.toLowerCase();
+  if (n.includes('blouse')) return '👚';
+  if (n.includes('lehenga') || n.includes('chaniya')) return '👗';
+  if (n.includes('saree') || n.includes('nauvari')) return '🥻';
+  if (n.includes('gown') || n.includes('mermaid')) return '👗';
+  if (n.includes('sherwani') || n.includes('bandhgala')) return '🤵';
+  if (n.includes('kurta') || n.includes('kurti')) return '👔';
+  if (n.includes('salwar') || n.includes('anarkali')) return '👘';
+  if (n.includes('suit') || n.includes('blazer')) return '🧥';
+  if (n.includes('trouser') || n.includes('chinos')) return '👖';
+  if (n.includes('shirt')) return '👔';
+  return '🧵';
+};
+
 const ProfilePage = () => {
-  const [editing, setEditing] = useState(false);
+  const navigate = useNavigate();
+  const [editingGarment, setEditingGarment] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
 
   // Dynamic user data from localStorage
   const [userData, setUserData] = useState<any>(null);
-  const [savedMeasurements, setSavedMeasurements] = useState<Record<string, string> | null>(null);
   const [orderCount, setOrderCount] = useState(0);
+  const [measurementProfile, setMeasurementProfile] = useState<any>({ measurements: {} });
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('naapio_user');
       if (raw) setUserData(JSON.parse(raw));
     } catch {}
-    try {
-      const raw = localStorage.getItem('naapio_measurements');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.measurements) setSavedMeasurements(parsed.measurements);
-      }
-    } catch {}
     // Count orders
     let count = 0;
     if (localStorage.getItem('naapio_last_order')) count++;
     if (localStorage.getItem('naapio_active_order')) count++;
     setOrderCount(Math.max(count, customer.totalOrders));
+    // Load measurement profile
+    try {
+      const raw = localStorage.getItem('naapio_measurement_profile');
+      if (raw) setMeasurementProfile(JSON.parse(raw));
+    } catch {}
   }, []);
 
   const displayName = userData?.name && userData.name !== 'Customer' ? userData.name : customer.name;
@@ -40,9 +61,34 @@ const ProfilePage = () => {
     ? new Date(userData.loggedInAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
     : customer.memberSince;
 
-  const measurementValues = measurementFields.map((f) =>
-    savedMeasurements?.[f] || String(customer.measurements[f as keyof typeof customer.measurements] || '')
-  );
+  const garmentEntries = Object.entries(measurementProfile.measurements || {}) as [string, any][];
+
+  const handleStartEdit = (garmentKey: string, values: Record<string, string>) => {
+    setEditingGarment(garmentKey);
+    setEditValues({ ...values });
+  };
+
+  const handleSaveEdit = (garmentKey: string) => {
+    const profile = JSON.parse(localStorage.getItem('naapio_measurement_profile') || '{"measurements":{}}');
+    if (profile.measurements[garmentKey]) {
+      profile.measurements[garmentKey].values = { ...editValues };
+      profile.measurements[garmentKey].source = 'manual_edit';
+      profile.measurements[garmentKey].updatedAt = new Date().toISOString();
+    }
+    profile.lastUpdated = new Date().toISOString();
+    localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
+    setMeasurementProfile(profile);
+    setEditingGarment(null);
+    setEditValues({});
+    toast.success("Measurements updated!");
+  };
+
+  const sourceBadge = (source: string) => {
+    if (source === 'M1_confirmed') return <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-sans font-medium">M1 Confirmed</span>;
+    if (source === 'wizard') return <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-sans font-medium">From wizard</span>;
+    if (source === 'manual_edit') return <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-sans font-medium">Edited</span>;
+    return null;
+  };
 
   return (
     <div className="max-w-4xl">
@@ -86,52 +132,108 @@ const ProfilePage = () => {
         </motion.div>
 
         <div className="space-y-6">
-          {/* Measurement Card */}
+          {/* ═══ My Measurement Profile ═══ */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-2xl border border-border p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <h2 className="font-serif font-bold text-xl text-foreground">Measurement Card</h2>
-                <p className="text-xs text-muted-foreground font-sans mt-1">Last updated: Feb 14, 2026</p>
+                <h2 className="font-serif font-bold text-xl text-foreground">My Measurement Profile</h2>
+                <p className="text-xs text-muted-foreground font-sans mt-1">Updated after each completed order. Future orders pre-fill from here.</p>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => toast.info("PDF download started")}>
-                  <Download className="w-3.5 h-3.5" /> PDF
-                </Button>
-                <Button variant={editing ? "gold" : "outline"} size="sm" onClick={() => {
-                  if (editing) {
-                    const updatedMeasurements: Record<string, string> = {};
-                    measurementFields.forEach((field, i) => {
-                      const input = document.querySelectorAll('.measurement-input')[i] as HTMLInputElement;
-                      if (input) updatedMeasurements[field] = input.value;
-                    });
-                    if (Object.keys(updatedMeasurements).length > 0) {
-                      localStorage.setItem('naapio_measurements', JSON.stringify({
-                        savedAt: new Date().toISOString(),
-                        measurements: updatedMeasurements,
-                        source: 'profile_edit',
-                      }));
-                    }
-                    toast.success("Measurements saved!");
-                  }
-                  setEditing(!editing);
-                }}>
-                  {editing ? <><X className="w-3.5 h-3.5" /> Save</> : <><Edit className="w-3.5 h-3.5" /> Edit</>}
-                </Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => toast.info("PDF download — coming soon")}>
+                <Download className="w-3.5 h-3.5" /> PDF
+              </Button>
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-              {measurementFields.map((field, i) => (
-                <div key={field} className="text-center">
-                  <label className="text-[10px] font-sans text-muted-foreground uppercase tracking-wider block mb-1">{field}</label>
-                  {editing ? (
-                    <Input type="number" defaultValue={measurementValues[i]} className="measurement-input text-center font-sans text-sm h-9" />
-                  ) : (
-                    <p className="font-sans font-semibold text-foreground text-lg">{measurementValues[i]}"</p>
-                  )}
-                </div>
-              ))}
-            </div>
+            {garmentEntries.length === 0 ? (
+              /* Empty state */
+              <div className="text-center py-12">
+                <Ruler className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                <p className="font-sans font-semibold text-foreground mb-1">No measurements saved yet</p>
+                <p className="text-sm text-muted-foreground font-sans mb-6">
+                  Your measurements will appear here after your first order or after completing Step 2e in the wizard.
+                </p>
+                <Button variant="gold" onClick={() => navigate('/start')}>Start an Order →</Button>
+              </div>
+            ) : (
+              <Accordion type="single" collapsible className="mt-4">
+                {garmentEntries.map(([garmentKey, entry]) => {
+                  const values = entry.values || {};
+                  const fieldKeys = Object.keys(values);
+                  const isEditing = editingGarment === garmentKey;
+
+                  return (
+                    <AccordionItem key={garmentKey} value={garmentKey} className="border-b border-border">
+                      <AccordionTrigger className="hover:no-underline py-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                          <span className="text-lg">{garmentEmoji(garmentKey)}</span>
+                          <span className="font-sans font-semibold text-sm text-foreground truncate">{garmentKey}</span>
+                          <div className="ml-auto flex items-center gap-2 shrink-0">
+                            {sourceBadge(entry.source)}
+                            <span className="text-[10px] text-muted-foreground font-sans hidden sm:inline">
+                              {entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                            </span>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {entry.source === 'M1_confirmed' && entry.orderId && (
+                          <div className="mb-4 p-3 rounded-xl bg-success/5 border border-success/15">
+                            <p className="text-xs font-sans text-success flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5" /> Artisan-verified at Milestone 1 — Order #{entry.orderId}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="flex justify-end mb-3">
+                          {isEditing ? (
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" onClick={() => { setEditingGarment(null); setEditValues({}); }}>
+                                <X className="w-3.5 h-3.5" /> Cancel
+                              </Button>
+                              <Button variant="gold" size="sm" onClick={() => handleSaveEdit(garmentKey)}>
+                                <Check className="w-3.5 h-3.5" /> Save
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button variant="outline" size="sm" onClick={() => handleStartEdit(garmentKey, values)}>
+                              <Edit className="w-3.5 h-3.5" /> Edit
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          {fieldKeys.map(fk => (
+                            <div key={fk} className="text-center">
+                              <label className="text-[10px] font-sans text-muted-foreground uppercase tracking-wider block mb-1">{fk}</label>
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  value={editValues[fk] || ''}
+                                  onChange={e => setEditValues({ ...editValues, [fk]: e.target.value })}
+                                  className="text-center font-sans text-sm h-9"
+                                />
+                              ) : (
+                                <p className="font-sans font-semibold text-foreground text-lg">
+                                  {values[fk]}{values[fk] ? '"' : '—'}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            )}
+
+            {/* TODO: PDF_EXPORT — generate measurement PDF per garment for customer to use offline */}
+
+            <p className="text-[10px] text-muted-foreground font-sans mt-6">
+              Your measurements are stored locally on this device under Naapio's{' '}
+              <a href="/privacy" target="_blank" className="text-accent underline">Privacy Policy</a>{' '}
+              and DPDP Act 2023. Request deletion in Settings.
+            </p>
           </motion.div>
 
           {/* Preferences */}

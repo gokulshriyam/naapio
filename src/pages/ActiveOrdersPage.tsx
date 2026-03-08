@@ -795,7 +795,12 @@ const ActiveOrdersPage = () => {
                     {/* Pre-fill banner */}
                     {hasPrefill ? (
                       <div className="mb-6 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/40">
-                        <p className="text-sm font-sans text-foreground">📏 We've pre-filled measurements from your wizard submission. Please review and confirm everything is correct.</p>
+                        <p className="text-sm font-sans text-foreground">
+                          📏 {prefillSource.startsWith('From Profile') 
+                            ? `We found existing measurements for ${resolvedGarmentName} from your profile. Pre-filled for confirmation.`
+                            : "We've pre-filled measurements from your wizard submission. Please review and confirm everything is correct."}
+                        </p>
+                        {prefillSource && <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-sans">{prefillSource}</span>}
                       </div>
                     ) : (
                       <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
