@@ -2076,28 +2076,32 @@ Return a JSON object with ONLY these fields, no other text:
                         !photoAnalysis?.analysisError && 
                         mapDetectedToCategory(photoAnalysis?.detectedGarment || '') === cat;
                       const isSelected = selectedCategory === cat;
-                      
-                      // Auto pre-select detected category if nothing selected yet
-                      if (isDetected && !selectedCategory && !photoFromBadgeShown.has('category')) {
-                        setTimeout(() => {
-                          setSelectedCategory(cat);
-                          setPhotoFromBadgeShown(prev => new Set(prev).add('category'));
-                        }, 100);
-                      }
+                      const showPhotoIndicator = photoFromBadgeShown.has('category') && isSelected && isDetected;
                       
                       return (
                         <button
                           key={cat}
-                          onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
+                          onClick={() => { 
+                            setSelectedCategory(cat); 
+                            setSelectedSubCategory("");
+                            // Remove pre-fill indicator when user manually selects different option
+                            if (photoFromBadgeShown.has('category') && !isDetected) {
+                              setPhotoFromBadgeShown(prev => {
+                                const next = new Set(prev);
+                                next.delete('category');
+                                return next;
+                              });
+                            }
+                          }}
                           className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                         >
                           {categoryImages[cat] && (
                             <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
                           )}
                           <span className="block p-3">{cat}</span>
-                          {isDetected && isSelected && (
+                          {showPhotoIndicator && (
                             <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                              ✨ From photo
+                              ✨ from photo
                             </span>
                           )}
                         </button>
