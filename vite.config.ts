@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
+    dedupe: ['react', 'react-dom', 'react-i18next', 'i18next'],
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
