@@ -544,9 +544,9 @@ const Wizard = () => {
   const [inspirationExpanded, setInspirationExpanded] = useState<boolean>(false);
   const [inspirationLightboxOpen, setInspirationLightboxOpen] = useState<boolean>(false);
 
-  // Draggable thumbnail state
+  // Draggable thumbnail state — default bottom-left on mobile, bottom-right on desktop
   const [thumbPosition, setThumbPosition] = useState({ 
-    x: typeof window !== 'undefined' ? window.innerWidth - 180 : 0, 
+    x: typeof window !== 'undefined' ? (window.innerWidth < 768 ? 16 : window.innerWidth - 180) : 0, 
     y: typeof window !== 'undefined' ? window.innerHeight - 220 : 0 
   });
   const [isDragging, setIsDragging] = useState(false);
