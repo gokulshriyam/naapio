@@ -26,15 +26,56 @@ const formatBudget = (v: number): string => {
   return `₹${v}`;
 };
 
-const calcTimeLeft = (deadline: Date) => {
-  const diff = Math.max(0, deadline.getTime() - Date.now());
+const calcTimeLeft = (deadline: Date | string | number) => {
+  const deadlineDate = deadline instanceof Date 
+    ? deadline 
+    : new Date(deadline);
+  
+  if (isNaN(deadlineDate.getTime())) {
+    return { days: 7, hours: 0, minutes: 0, seconds: 0, total: 604800000 };
+  }
+  
+  const total = deadlineDate.getTime() - Date.now();
+  if (total <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 };
+  }
+  
   return {
-    days: Math.floor(diff / 86400000),
-    hours: Math.floor((diff % 86400000) / 3600000),
-    minutes: Math.floor((diff % 3600000) / 60000),
-    seconds: Math.floor((diff % 60000) / 1000),
-    total: diff,
+    days: Math.floor(total / 86400000),
+    hours: Math.floor((total % 86400000) / 3600000),
+    minutes: Math.floor((total % 3600000) / 60000),
+    seconds: Math.floor((total % 60000) / 1000),
+    total,
   };
+};
+
+// Contact masking function
+const maskContactInfo = (text: string): string => {
+  // Mask Indian mobile numbers (with or without +91)
+  let masked = text.replace(
+    /(\+91[\s\-]?)?[6-9]\d{9}/g,
+    '📵 [contact hidden]'
+  );
+  
+  // Mask any 7+ consecutive digit string
+  masked = masked.replace(
+    /\b\d{7,}\b/g,
+    '[number hidden]'
+  );
+  
+  // Mask email addresses
+  masked = masked.replace(
+    /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g,
+    '📵 [email hidden]'
+  );
+  
+  // Mask WhatsApp references with numbers
+  masked = masked.replace(
+    /whatsapp\s*(me|at|on|:)?\s*(\+91[\s\-]?)?[6-9]\d{9}/gi,
+    '📵 [WhatsApp hidden]'
+  );
+  
+  return masked;
 };
 
 const daysSince = (d: Date) => Math.floor((Date.now() - d.getTime()) / 86400000);
@@ -169,6 +210,17 @@ const CountdownTimer = ({ deadline, postedAt }: { deadline: Date; postedAt: Date
   const daysLeft = tl.days;
   const barColor = daysLeft > 3 ? "bg-success" : daysLeft >= 1 ? "bg-warning" : "bg-destructive";
 
+  // Render countdown based on remaining time
+  const renderCountdown = () => {
+    if (tl.days > 0) {
+      return `${tl.days}d ${tl.hours}h ${tl.minutes}m remaining`;
+    } else if (tl.hours > 0) {
+      return `${tl.hours}h ${tl.minutes}m remaining`;
+    } else {
+      return `${tl.minutes}m ${tl.seconds}s remaining`;
+    }
+  };
+
   return (
     <div className="mt-3">
       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -176,7 +228,7 @@ const CountdownTimer = ({ deadline, postedAt }: { deadline: Date; postedAt: Date
       </div>
       <div className="flex justify-between mt-1.5 text-xs font-sans text-muted-foreground">
         <span>Posted {elapsed} day{elapsed !== 1 ? "s" : ""} ago</span>
-        <span className="font-medium">{tl.days}d {tl.hours}h {tl.minutes}m remaining</span>
+        <span className="font-medium">{renderCountdown()}</span>
       </div>
     </div>
   );
@@ -245,12 +297,20 @@ const BiddingRoom = ({
 
   const handleSendChat = (bidId: string) => {
     if (!chatInput.trim()) return;
-    const msg = chatInput.trim();
+    const rawMsg = chatInput.trim();
+    const maskedMsg = maskContactInfo(rawMsg);
+    const wasContactMasked = rawMsg !== maskedMsg;
+    
     setChatMessages((prev) => ({
       ...prev,
-      [bidId]: [...(prev[bidId] || []), { text: msg, from: "you" }],
+      [bidId]: [...(prev[bidId] || []), { text: maskedMsg, from: "you", masked: wasContactMasked }],
     }));
     setChatInput("");
+    
+    if (wasContactMasked) {
+      toast.info("ℹ️ Contact info was hidden — share after selection");
+    }
+    
     setTimeout(() => {
       setChatMessages((prev) => ({
         ...prev,
@@ -407,6 +467,12 @@ const BiddingRoom = ({
                       <span className="text-xs font-sans font-medium text-foreground">Message {bid.alias}</span>
                       <span className="text-[10px] text-muted-foreground font-sans">Contacts masked until selection</span>
                     </div>
+                    {/* Contact masking notice */}
+                    <div className="px-3 py-2 bg-warning-light border-b border-warning/20">
+                      <p className="text-[10px] text-foreground font-sans">
+                        🔒 Contact details are automatically masked. Exchange contacts only after selecting your artisan.
+                      </p>
+                    </div>
                     <div className="h-40 overflow-y-auto p-3 space-y-2 bg-card">
                       {(!chatMessages[bid.id] || chatMessages[bid.id].length === 0) && (
                         <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about fabric options, timeline, or previous work.</p>
@@ -416,7 +482,7 @@ const BiddingRoom = ({
                           <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
                             m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
                           }`}>
-                            {m.text}
+                            {maskContactInfo(m.text)}
                           </div>
                         </div>
                       ))}
@@ -479,25 +545,47 @@ const BiddingPage = () => {
       const raw = localStorage.getItem("naapio_last_order");
       if (raw) {
         const lo = JSON.parse(raw);
-        if (!orders.find((o) => o.id === lo.orderId)) {
+        const existingId = lo.id || lo.orderId;
+        const alreadyExists = orders.some(o => o.id === existingId);
+        
+        if (!alreadyExists) {
+          const postedTimestamp = lo.timestamp || lo.createdAt || lo.postedAt || Date.now();
+          const postedDate = new Date(postedTimestamp);
+          const bidDeadline = new Date(postedDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          
+          // Parse budget range properly
+          let budgetRange = { min: 5000, max: 20000 };
+          if (lo.budgetRange) {
+            if (typeof lo.budgetRange === "string") {
+              // Try to parse string format like "₹5K – ₹20K"
+              budgetRange = { min: 5000, max: 20000 };
+            } else if (Array.isArray(lo.budgetRange) && lo.budgetRange.length === 2) {
+              budgetRange = { min: lo.budgetRange[0], max: lo.budgetRange[1] };
+            } else if (typeof lo.budgetRange === "object" && lo.budgetRange.min !== undefined) {
+              budgetRange = lo.budgetRange;
+            }
+          }
+          
           orders.unshift({
-            id: lo.orderId || `NP-${Date.now()}`,
+            id: existingId || `NP-${Date.now()}`,
             orderType: lo.orderType || "New Order",
-            garment: lo.garment || `${lo.gender || "Women's"} · ${lo.selectedCategory || "Custom"} · ${lo.selectedSubCategory || ""}`,
+            garment: lo.garment || [lo.gender === "men" ? "Men's" : "Women's", lo.selectedCategory, lo.selectedSubCategory].filter(Boolean).join(' · ') || 'Custom Order',
             occasion: lo.occasion || lo.selectedOccasion || "",
-            budgetRange: lo.budgetRange ? (typeof lo.budgetRange === "string" ? { min: 5000, max: 20000 } : lo.budgetRange) : { min: 5000, max: 20000 },
+            budgetRange,
             deliveryDate: lo.deliveryDate || "",
-            postedAt: new Date(lo.timestamp || Date.now()),
-            bidDeadline: new Date((lo.timestamp || Date.now()) + 7 * 86400000),
+            postedAt: postedDate,
+            bidDeadline: bidDeadline,
             status: "awaiting_bids",
             bidsReceived: 0,
-            measurementsSubmitted: !!lo.measurementType && lo.measurementType !== "later",
-            rushOrder: !!lo.isRushOrder,
+            measurementsSubmitted: lo.measurementType ? lo.measurementType !== "later" : false,
+            rushOrder: lo.isRushOrder || lo.rushOrder || false,
             inspirationThumb: lo.inspirationPhoto || "",
           });
         }
       }
-    } catch {}
+    } catch (e) {
+      console.error('Failed to parse saved order:', e);
+    }
     return orders;
   });
 
@@ -817,23 +905,32 @@ const BiddingPage = () => {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Artisan:</span> <span className="font-medium">{acceptBid.alias} ({acceptBid.tier})</span></div>
                 <div><span className="text-muted-foreground">Quality:</span> <span className="font-medium">{acceptBid.rankScore}/100</span></div>
-                <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium font-serif text-accent">{formatBudget(acceptBid.bidAmount)}</span></div>
                 <div><span className="text-muted-foreground">Delivery:</span> <span className="font-medium">{acceptBid.deliveryDays} days</span></div>
               </div>
 
-              <div className="p-3 bg-muted rounded-lg text-xs space-y-1">
-                <p className="font-medium text-foreground mb-2">Payment released in 5 instalments:</p>
-                {["Measurement confirmation", "Fabric approval", "Stitching preview", "Final fitting", "Delivery"].map((label, i) => (
-                  <p key={i} className="text-muted-foreground">
-                    M{i + 1} (20%) — ₹{Math.round(acceptBid.bidAmount * 0.2).toLocaleString("en-IN")} after {label}
-                  </p>
-                ))}
-                <p className="font-medium text-foreground mt-2">Total: {formatBudget(acceptBid.bidAmount)} (held in escrow by Naapio)</p>
+              {/* Payment Summary Card */}
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium text-foreground mb-3">Payment Summary</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Artisan bid</span>
+                    <span className="font-medium">{formatBudget(acceptBid.bidAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Brief fee (paid)</span>
+                    <span className="font-medium text-success">- ₹499</span>
+                  </div>
+                  <div className="border-t border-border my-2" />
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-foreground">Amount payable now</span>
+                    <span className="font-bold text-lg font-serif text-accent">{formatBudget(acceptBid.bidAmount - 499)}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-start gap-2 p-3 bg-success-light rounded-lg text-xs">
                 <Shield className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                <p className="text-foreground">Your payment is protected. Funds are only released at each milestone after your explicit approval.</p>
+                <p className="text-foreground">Your payment is protected. Funds are only released after your final approval.</p>
               </div>
             </div>
           )}
@@ -843,6 +940,9 @@ const BiddingPage = () => {
               Confirm & Proceed to Payment →
             </AlertDialogAction>
           </AlertDialogFooter>
+          {/* TODO: PAYMENT_INTEGRATION — before launch, replace navigate() with Razorpay/payment gateway call.
+              On payment success callback: navigate to /order/:id
+              On payment failure: show error, keep modal open with retry */}
         </AlertDialogContent>
       </AlertDialog>
     </div>

@@ -598,6 +598,27 @@ const Wizard = () => {
     }
   }, [groupSize]);
 
+  // Compute step 3 phases dynamically based on advanced preferences and surface selections
+  const getStep3Phases = (): string[] => {
+    const phases: string[] = ['feel', 'fabricType', 'colour', 'surface'];
+    
+    if (showAdvancedFabric) {
+      phases.push('blend');
+      phases.push('brand');
+    }
+    
+    phases.push('fabricBudget');
+    
+    if (showAdvancedFabric && 
+        selectedSurfaces.length > 0 && 
+        !selectedSurfaces.every(s => s === 'Plain / No Embellishment' || s === 'No Preference')) {
+      phases.push('embellishment');
+    }
+    
+    phases.push('budgetDelivery');
+    return phases;
+  };
+
   // Popstate handler for Android back button
   useEffect(() => {
     if (step >= 1) {
@@ -615,12 +636,13 @@ const Wizard = () => {
             setStep(1);
           }
         } else if (step === 3 && step3Phase) {
-          const phases = ['feel', 'fabricType', 'colour', 'surface', 'blend', 'brand', 'fabricBudget', 'embellishment', 'budgetDelivery'];
+          const phases = getStep3Phases();
           const currentIndex = phases.indexOf(step3Phase);
           if (currentIndex > 0) {
             setStep3Phase(phases[currentIndex - 1] as any);
           } else {
             setStep(2);
+            setStep2Phase('measurements');
           }
         } else {
           setStep((prev) => Math.max(0, prev - 1) as any);
@@ -633,7 +655,7 @@ const Wizard = () => {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [step, step2Phase, step3Phase]);
+  }, [step, step2Phase, step3Phase, showAdvancedFabric, selectedSurfaces]);
 
   // Delivery day count helper
   const getDeliveryDayCount = (dateStr: string) => {
@@ -1006,8 +1028,56 @@ const Wizard = () => {
                 variant="outline"
                 onClick={() => {
                   localStorage.removeItem("naapio_wizard_draft");
+                  localStorage.removeItem("naapio_prefill");
                   setDraftRestored(false);
                   setRestoredDraft(null);
+                  // Reset all wizard state to initial values
+                  setStep(0);
+                  setStep2Phase('category');
+                  setStep3Phase('feel');
+                  setGender('women');
+                  setSelectedCategory('');
+                  setSelectedSubCategory('');
+                  setSelectedOccasion('');
+                  setSelectedFit('');
+                  setSelectedNeckline('');
+                  setSelectedSleeve('');
+                  setSelectedDupatta('');
+                  setSelectedLining('');
+                  setSelectedFeel('');
+                  setSelectedFabricTypes([]);
+                  setSelectedColourMood('');
+                  setColourNote('');
+                  setSelectedSurfaces([]);
+                  setSelectedBlend('');
+                  setSelectedBrand([]);
+                  setFabricBudgetBand('');
+                  setEmbellishmentBudget('');
+                  setBudgetRange([5000, 50000]);
+                  setDeliveryDate('');
+                  setFlexibleDate(false);
+                  setIsRushOrder(false);
+                  setDescription('');
+                  setMeasurements({});
+                  setMeasurementType('standard');
+                  setPhone('');
+                  setOtp('');
+                  setOtpVerified(false);
+                  setOtpSent(false);
+                  setOrderSuccess(false);
+                  setGiftOrder(false);
+                  setRecipientName('');
+                  setRecipientPhone('');
+                  setRecipientRelation('');
+                  setIsGroupOrder(false);
+                  setGroupSize(2);
+                  setOrderingFor('');
+                  setUploaded(false);
+                  setShowAdvancedFabric(window.innerWidth >= 768);
+                  setShowOwnFabricInput(false);
+                  setTermsAccepted(false);
+                  setLoading(false);
+                  navigate('/start');
                 }}
               >
                 Start Fresh
@@ -3351,26 +3421,11 @@ const Wizard = () => {
                     }
                   }
                 } else {
-                  if (step3Phase === "budgetDelivery") {
-                    if (hasEmbellishment) {
-                      setStep3Phase("embellishment");
-                    } else {
-                      setStep3Phase("fabricBudget");
-                    }
-                  } else if (step3Phase === "embellishment") {
-                    setStep3Phase("fabricBudget");
-                  } else if (step3Phase === "fabricBudget") {
-                    setStep3Phase("brand");
-                  } else if (step3Phase === "brand") {
-                    setStep3Phase("blend");
-                  } else if (step3Phase === "blend") {
-                    setStep3Phase("surface");
-                  } else if (step3Phase === "surface") {
-                    setStep3Phase("colour");
-                  } else if (step3Phase === "colour") {
-                    setStep3Phase("fabricType");
-                  } else if (step3Phase === "fabricType") {
-                    setStep3Phase("feel");
+                  // Use computed phases for correct back navigation
+                  const phases = getStep3Phases();
+                  const currentIndex = phases.indexOf(step3Phase);
+                  if (currentIndex > 0) {
+                    setStep3Phase(phases[currentIndex - 1] as any);
                   } else {
                     setStep(2);
                     setStep2Phase("measurements");
@@ -3432,20 +3487,27 @@ const Wizard = () => {
                   } else if (step3Phase === "colour") {
                     setStep3Phase("surface");
                   } else if (step3Phase === "surface") {
-                    if (showAdvancedFabric) {
-                      setStep3Phase("blend");
+                    // Use computed phases for correct forward navigation
+                    const phases = getStep3Phases();
+                    const currentIndex = phases.indexOf(step3Phase);
+                    const nextPhase = phases[currentIndex + 1];
+                    if (nextPhase) {
+                      setStep3Phase(nextPhase as any);
                     } else {
-                      setStep3Phase("fabricBudget");
+                      setStep(4);
                     }
                   } else if (step3Phase === "blend") {
                     setStep3Phase("brand");
                   } else if (step3Phase === "brand") {
                     setStep3Phase("fabricBudget");
                   } else if (step3Phase === "fabricBudget") {
-                    if (hasEmbellishment && showAdvancedFabric) {
-                      setStep3Phase("embellishment");
+                    const phases = getStep3Phases();
+                    const currentIndex = phases.indexOf(step3Phase);
+                    const nextPhase = phases[currentIndex + 1];
+                    if (nextPhase) {
+                      setStep3Phase(nextPhase as any);
                     } else {
-                      setStep3Phase("budgetDelivery");
+                      setStep(4);
                     }
                   } else if (step3Phase === "embellishment") {
                     setStep3Phase("budgetDelivery");
