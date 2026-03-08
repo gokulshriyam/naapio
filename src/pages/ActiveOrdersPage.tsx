@@ -380,12 +380,55 @@ const ActiveOrdersPage = () => {
 
   const handleSendChat = () => {
     if (!chatInput.trim()) return;
-    const masked = m5Phase === 'review' ? chatInput : maskContactInfo(chatInput);
-    setChatMessages(prev => [...prev, { text: masked, from: 'you' }]);
+    const rawMsg = chatInput.trim();
+    const masked = m5Phase === 'review' ? rawMsg : maskContactInfo(rawMsg);
+    const wasContactMasked = rawMsg !== masked;
+    const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    
+    const userMsg: ChatMessage = { id: msgId, text: masked, from: 'you', masked: wasContactMasked, status: 'sent', timestamp: Date.now() };
+    setChatMessages(prev => [...prev, userMsg]);
     setChatInput('');
+
+    // Status progression
     setTimeout(() => {
-      setChatMessages(prev => [...prev, { text: 'Thank you for your message. I\'ll review and respond shortly.', from: 'artisan' }]);
+      setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'delivered' as const } : m));
+    }, 600);
+    setTimeout(() => {
+      setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' as const } : m));
+    }, 2000);
+
+    if (wasContactMasked) {
+      toast.info("ℹ️ Contact info was hidden — share after delivery");
+      const sysMsg: ChatMessage = {
+        id: `sys-${Date.now()}`, from: 'system', status: 'read', timestamp: Date.now(),
+        text: '🔒 Naapio blocked a contact detail in this message. For security, phone numbers, emails, and WhatsApp links cannot be shared until your order is confirmed and delivered. This keeps both parties protected.',
+      };
+      setChatMessages(prev => [...prev, sysMsg]);
+    }
+
+    // Auto-reply
+    setTimeout(() => {
+      const replyMsg: ChatMessage = {
+        id: `reply-${Date.now()}`, text: 'Thank you for your message. I\'ll review and respond shortly.',
+        from: 'artisan', status: 'read', timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, replyMsg]);
     }, 1000);
+  };
+
+  const handleChatFileAttach = (file: File) => {
+    const url = URL.createObjectURL(file);
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    const attachType: 'image' | 'video' | 'file' = isImage ? 'image' : isVideo ? 'video' : 'file';
+    const msgId = `att-${Date.now()}`;
+    const msg: ChatMessage = {
+      id: msgId, from: 'you', status: 'sent', timestamp: Date.now(),
+      attachment: { type: attachType, name: file.name, url, size: formatFileSize(file.size) },
+    };
+    setChatMessages(prev => [...prev, msg]);
+    setTimeout(() => { setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'delivered' as const } : m)); }, 600);
+    setTimeout(() => { setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' as const } : m)); }, 2000);
   };
 
   const handleSubmitReview = () => {
