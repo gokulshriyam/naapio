@@ -1111,7 +1111,7 @@ const ActiveOrdersPage = () => {
                   {confirmedKeys.map(key => (
                     <label key={key} className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${verifiedFields[key] ? 'bg-success-light' : 'hover:bg-secondary'}`}>
                       <Checkbox checked={!!verifiedFields[key]} onCheckedChange={v => setVerifiedFields({ ...verifiedFields, [key]: !!v })} />
-                      <span className="text-xs font-sans text-foreground flex-1">{key}: {confirmedMeasurements[key]}"</span>
+                      <span className="text-xs font-sans text-foreground flex-1">{key}: {String(confirmedMeasurements[key]).replace(/"+$/, '')}"</span>
                       {verifiedFields[key] && <span className="text-[10px] font-sans text-success font-medium">Verified ✓</span>}
                     </label>
                   ))}
