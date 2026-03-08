@@ -1789,17 +1789,62 @@ const Wizard = () => {
                       </div>
                     )}
 
-                    <div className="flex gap-2 mb-6">
-                      {(["standard", "custom", "later"] as const).map((t) => (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {(["standard", "custom", "later", "photo"] as const).map((t) => (
                         <button
                           key={t}
-                          onClick={() => setMeasurementType(t)}
-                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all ${measurementType === t ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
+                          onClick={() => { if (t === "photo") { setMeasurementType("custom"); setMeasurementPhoto(null); } else { setMeasurementType(t); } }}
+                          className={`px-4 py-2 rounded-lg font-sans text-sm transition-all min-h-[48px] ${
+                            (t === "photo" ? !!measurementPhoto : measurementType === t && !measurementPhoto)
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-card border border-border text-foreground hover:bg-muted"
+                          }`}
                         >
-                          {t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later") : t.charAt(0).toUpperCase() + t.slice(1)}
+                          {t === "photo" ? "📷 Upload Measurement Card"
+                            : t === "later" ? (giftOrder ? `They'll provide it — 48 hours after brief goes live` : "Provide Later")
+                            : t.charAt(0).toUpperCase() + t.slice(1)}
                         </button>
                       ))}
                     </div>
+
+                    {/* Measurement Photo Upload */}
+                    {measurementPhoto !== undefined && (
+                      <div className="mb-6">
+                        <label
+                          className="block p-4 rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 cursor-pointer transition-all"
+                        >
+                          {measurementPhoto ? (
+                            <div className="flex items-center gap-3">
+                              <img src={URL.createObjectURL(measurementPhoto)} alt="Measurement card" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                              <div>
+                                <p className="font-sans text-sm font-medium text-foreground">Measurement card uploaded</p>
+                                <button onClick={(e) => { e.preventDefault(); setMeasurementPhoto(null); }} className="text-xs text-accent font-sans hover:underline">Remove</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-2">
+                              <p className="font-sans text-sm font-medium text-foreground mb-1">📷 Upload your darzi card / measurement slip</p>
+                              <p className="text-xs text-muted-foreground font-sans">Photo of your tailor's measurement card, notebook, or any written measurements</p>
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] || null;
+                              if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                              setMeasurementPhoto(f);
+                            }}
+                          />
+                        </label>
+                        {measurementPhoto && (
+                          <p className="text-xs text-muted-foreground font-sans mt-2">
+                            Your tailor will read your measurements from this photo. If any values are unclear, they'll ask during Milestone 1.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {measurementType === "standard" && (
                       <div className="space-y-4">
