@@ -13,7 +13,7 @@ import VendorShowcase from "@/components/home/VendorShowcase";
 import FAQSection from "@/components/home/FAQSection";
 import SiteFooter from "@/components/home/SiteFooter";
 import CitySelector from "@/components/CitySelector";
-import LanguageSelector, { TranslationBanner } from "@/components/LanguageSelector";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const Index = () => {
   const navigate = useNavigate();
