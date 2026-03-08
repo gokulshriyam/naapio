@@ -391,7 +391,7 @@ const Wizard = () => {
       const prompt = buildOutfitPrompt();
       const apiKey = "AIzaSyAJJrSzFD4l1We-3mLIfx6P84IJtmVD40A"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
