@@ -21,7 +21,13 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
-import VendorDashboard from "./pages/VendorDashboard";
+import VendorLayout from "./vendor/layout/VendorLayout";
+import VendorLeads from "./vendor/pages/VendorLeads";
+import VendorMyBids from "./vendor/pages/VendorMyBids";
+import VendorActiveOrders from "./vendor/pages/VendorActiveOrders";
+import VendorWallet from "./vendor/pages/VendorWallet";
+import VendorProfile from "./vendor/pages/VendorProfile";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -41,7 +47,13 @@ const App = () => (
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/order/:id" element={<OrderDetailPage />} />
-            <Route path="/vendor" element={<VendorDashboard />} />
+            <Route path="/vendor" element={<VendorLayout />}>
+              <Route index element={<VendorLeads />} />
+              <Route path="bids" element={<VendorMyBids />} />
+              <Route path="orders" element={<VendorActiveOrders />} />
+              <Route path="wallet" element={<VendorWallet />} />
+              <Route path="profile" element={<VendorProfile />} />
+            </Route>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<BiddingPage />} />
               <Route path="view-bids" element={<ViewBidsPage />} />
