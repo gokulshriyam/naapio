@@ -256,6 +256,8 @@ const Wizard = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
@@ -314,12 +316,28 @@ const Wizard = () => {
     return true;
   };
 
+  const generateOrderId = () => {
+    const num = Math.floor(10000 + Math.random() * 90000);
+    return `NP-2026-${num}`;
+  };
+
   const handlePay = () => {
     setLoading(true);
     setTimeout(() => {
-      toast.success("Payment confirmed! Your request is now live.");
-      navigate("/dashboard");
-    }, 1500);
+      const newOrderId = generateOrderId();
+      setOrderId(newOrderId);
+      localStorage.setItem("naapio_last_order", JSON.stringify({
+        orderId: newOrderId,
+        orderType: isOwnFabric ? "Own Fabric" : "New Order",
+        garment: `${gender === "women" ? "Women's" : "Men's"} · ${selectedCategory} · ${selectedSubCategory}`,
+        occasion: selectedOccasion,
+        budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
+        deliveryDate,
+        timestamp: new Date().toISOString()
+      }));
+      setOrderSuccess(true);
+      window.scrollTo(0, 0);
+    }, 2000);
   };
 
   // Outfit Visualiser helpers
@@ -1358,7 +1376,62 @@ const Wizard = () => {
           )}
 
           {/* STEP 4: Review & Payment */}
-          {step === 4 && (
+          {step === 4 && orderSuccess ? (
+            <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="flex flex-col items-center justify-center min-h-[70vh] max-w-[560px] mx-auto text-center">
+                <span className="text-6xl mb-6">✅</span>
+                <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Your brief is live!</h2>
+                <p className="text-muted-foreground font-sans mb-8">
+                  Tailors in your city are reviewing your brief.<br />You'll receive bids within 7 days.
+                </p>
+
+                <div className="w-full p-5 bg-muted rounded-xl mb-8">
+                  <p className="text-xs text-muted-foreground font-sans uppercase tracking-wider mb-1">Order ID</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-lg font-serif font-bold text-foreground">{orderId}</span>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(orderId); toast.success("Copied!"); }}
+                      className="p-1.5 rounded-md hover:bg-card transition-colors"
+                      title="Copy Order ID"
+                    >
+                      📋
+                    </button>
+                  </div>
+                </div>
+
+                <div className="w-full space-y-4 mb-8 text-left">
+                  <p className="font-sans font-semibold text-foreground text-sm">What happens next</p>
+                  {[
+                    { icon: "📋", text: "Tailors review your brief and submit bids" },
+                    { icon: "👗", text: "You choose your tailor and confirm" },
+                    { icon: "🔒", text: "Work begins — escrow protects every milestone" },
+                  ].map((item) => (
+                    <div key={item.text} className="flex items-center gap-3">
+                      <span className="text-xl">{item.icon}</span>
+                      <p className="font-sans text-sm text-foreground">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="inline-flex px-4 py-2 rounded-full bg-accent/10 text-accent font-sans text-sm font-medium mb-8">
+                  Expect your first bids within 7 days
+                </div>
+
+                <div className="w-full space-y-3">
+                  <Button variant="gold" size="hero" className="w-full" onClick={() => navigate("/dashboard")}>
+                    View My Order →
+                  </Button>
+                  <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/start")}>
+                    Start Another Order
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground font-sans mt-6">
+                  A summary has been sent to your WhatsApp number {phone}
+                </p>
+              </div>
+            </motion.div>
+          ) : step === 4 && (
             <motion.div key="s4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
               <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Review Your Order</h2>
               <p className="text-muted-foreground font-sans mb-8">Check everything below — once you pay, your brief goes live to tailors</p>
@@ -1710,9 +1783,12 @@ const Wizard = () => {
                           <Button variant="default" onClick={() => { setOtpSent(true); toast.info("OTP sent!"); }}>Send OTP</Button>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
-                          <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit OTP" maxLength={6} className="font-sans" />
-                          <Button variant="gold" onClick={() => { setOtpVerified(true); toast.success("Mobile verified!"); }}>Verify</Button>
+                      <div>
+                          <div className="flex gap-2">
+                            <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="4-digit OTP" maxLength={4} className="font-sans" />
+                            <Button variant="gold" onClick={() => { if (/^\d{4}$/.test(otp)) { setOtpVerified(true); toast.success("Mobile verified!"); } else { toast.error("Enter any 4 digits"); } }}>Verify OTP</Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground font-sans mt-2">Demo mode — enter any 4 digits to verify</p>
                         </div>
                       )}
                     </div>

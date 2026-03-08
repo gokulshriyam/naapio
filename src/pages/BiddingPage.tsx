@@ -85,8 +85,23 @@ const BiddingPage = () => {
   const navigate = useNavigate();
   const [timers, setTimers] = useState(activeRequests.map((r) => ({ ...r.countdown, minutes: 0, seconds: 0 })));
 
+  // Load last order from localStorage
+  const savedOrder = localStorage.getItem("naapio_last_order");
+  const lastOrder = savedOrder ? JSON.parse(savedOrder) : null;
+
   // Demo state
-  const [demoOrder, setDemoOrder] = useState(initialDemoOrder);
+  const [demoOrder, setDemoOrder] = useState(() => {
+    if (lastOrder) {
+      return {
+        ...initialDemoOrder,
+        id: lastOrder.orderId,
+        orderType: lastOrder.orderType || initialDemoOrder.orderType,
+        garment: lastOrder.garment || initialDemoOrder.garment,
+        occasion: lastOrder.occasion || initialDemoOrder.occasion,
+      };
+    }
+    return initialDemoOrder;
+  });
   const [milestones, setMilestones] = useState<Milestone[]>(initialDemoOrder.milestones);
   const [changeNotes, setChangeNotes] = useState<Record<number, string>>({});
   const [confirmBid, setConfirmBid] = useState<typeof mockBids[0] | null>(null);
@@ -136,6 +151,19 @@ const BiddingPage = () => {
   const currentStageIdx = ORDER_STAGES.indexOf(demoOrder.status as typeof ORDER_STAGES[number]);
 
   const badgeStyle = ORDER_TYPE_STYLES[demoOrder.orderType] || ORDER_TYPE_STYLES["New Order"];
+
+  if (!lastOrder) {
+    return (
+      <div className="max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <span className="text-5xl mb-4">📋</span>
+        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">No active orders yet</h2>
+        <p className="text-muted-foreground font-sans mb-6">Start your first order to see it tracked here.</p>
+        <Button variant="gold" onClick={() => navigate("/start")}>
+          Start an Order →
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -352,17 +380,18 @@ const BiddingPage = () => {
           <p className="text-sm text-muted-foreground font-sans">Your tailor uploads proof at each stage — you approve before work continues</p>
         </div>
 
-        {/* TODO: remove demo button when backend connected */}
-        <button
-          onClick={() =>
-            setMilestones((prev) =>
-              prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
-            )
-          }
-          className="text-xs text-muted-foreground underline font-sans"
-        >
-          Demo: Simulate M1 Upload
-        </button>
+        {milestones.every((m) => m.status === "pending") && (
+          <button
+            onClick={() =>
+              setMilestones((prev) =>
+                prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
+              )
+            }
+            className="text-[11px] text-muted-foreground/60 font-sans hover:text-muted-foreground transition-colors"
+          >
+            Simulate tailor activity →
+          </button>
+        )}
 
         {/* Desktop: horizontal / Mobile: vertical */}
         {/* Vertical timeline (works for both, responsive) */}
