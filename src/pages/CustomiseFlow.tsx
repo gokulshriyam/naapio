@@ -172,10 +172,18 @@ const CustomiseFlow = () => {
   const [customisationOther, setCustomisationOther] = useState("");
 
   // C3
-  const [placementZones, setPlacementZones] = useState<string[]>([]);
+  const [activeView, setActiveView] = useState<PlacementView>('front-upper');
+  const [selectedZonesByView, setSelectedZonesByView] = useState<Record<PlacementView, string[]>>({
+    'front-upper': [], 'back': [], 'lower': [],
+  });
+  const [zoneNotes, setZoneNotes] = useState<Record<string, string>>({});
+  const [zonePhotos, setZonePhotos] = useState<Record<string, File | null>>({});
   const [placementCustomNote, setPlacementCustomNote] = useState("");
   const [referenceArtPhoto, setReferenceArtPhoto] = useState<File | null>(null);
   const [placementError, setPlacementError] = useState(false);
+
+  const totalSelectedZones = Object.values(selectedZonesByView).flat().length;
+  const allSelectedZones = Object.values(selectedZonesByView).flat();
 
   // C4
   const [customiseColourMood, setCustomiseColourMood] = useState("");
