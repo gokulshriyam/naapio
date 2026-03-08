@@ -1071,8 +1071,10 @@ Return a JSON object with ONLY these fields, no other text:
           })
         }
       );
+      console.log('=== FETCH RESPONSE STATUS ===', response.status);
 
       const data = await response.json();
+      console.log('=== RAW DATA ===', JSON.stringify(data).substring(0, 500));
 
       // Try multiple possible response paths
       rawText = 
