@@ -467,6 +467,12 @@ const BiddingRoom = ({
                       <span className="text-xs font-sans font-medium text-foreground">Message {bid.alias}</span>
                       <span className="text-[10px] text-muted-foreground font-sans">Contacts masked until selection</span>
                     </div>
+                    {/* Contact masking notice */}
+                    <div className="px-3 py-2 bg-warning-light border-b border-warning/20">
+                      <p className="text-[10px] text-foreground font-sans">
+                        🔒 Contact details are automatically masked. Exchange contacts only after selecting your artisan.
+                      </p>
+                    </div>
                     <div className="h-40 overflow-y-auto p-3 space-y-2 bg-card">
                       {(!chatMessages[bid.id] || chatMessages[bid.id].length === 0) && (
                         <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about fabric options, timeline, or previous work.</p>
@@ -476,7 +482,7 @@ const BiddingRoom = ({
                           <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
                             m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
                           }`}>
-                            {m.text}
+                            {maskContactInfo(m.text)}
                           </div>
                         </div>
                       ))}
