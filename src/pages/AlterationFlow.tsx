@@ -530,6 +530,24 @@ const AlterationFlow = () => {
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What are you getting altered?</h2>
                   <p className="text-muted-foreground font-sans mb-6">Select your garment type</p>
 
+                  {/* Matching Piece — Most Popular Tile */}
+                  <button
+                    onClick={() => setAlterationGarment("Matching Piece")}
+                    className={`w-full mb-4 p-5 rounded-xl text-left font-sans transition-all border-2 relative ${
+                      alterationGarment === "Matching Piece"
+                        ? "border-accent bg-accent/10 ring-2 ring-accent/30"
+                        : "border-accent/40 bg-card hover:border-accent/60"
+                    }`}
+                  >
+                    <span className="absolute top-3 right-3 inline-flex px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-accent text-accent-foreground">Most Popular</span>
+                    <span className="text-2xl block mb-2">🧵</span>
+                    <p className="font-bold text-sm text-foreground flex items-center gap-2">
+                      {alterationGarment === "Matching Piece" && <Check className="w-4 h-4 text-accent" />}
+                      Make a Matching Piece
+                    </p>
+                    <p className="text-xs text-muted-foreground font-sans mt-1">Stitch a blouse, dupatta, or accessory to match your existing garment</p>
+                  </button>
+
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {garmentOptions.map((g) => (
                       <button
@@ -563,8 +581,124 @@ const AlterationFlow = () => {
                 </motion.div>
               )}
 
-              {/* STEP A2: WHAT NEEDS FIXING */}
-              {step === 2 && (
+              {/* STEP A2: MATCHING PIECE SUB-FLOW or WHAT NEEDS FIXING */}
+              {step === 2 && isMatchingPiece ? (
+                <motion.div key="a2-matching" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What would you like made to match?</h2>
+                  <p className="text-muted-foreground font-sans mb-6">Tell us what you need and what you're matching it to</p>
+
+                  {/* What piece do you need? */}
+                  <div className="mb-8">
+                    <label className="font-sans font-semibold text-foreground text-sm mb-3 block">What piece do you need? <span className="text-destructive">*</span></label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {["Saree Blouse", "Lehenga Choli (top)", "Dupatta", "Potli Bag", "Jacket / Shrug", "Hair Accessory", "Matching Kurta", "Other"].map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setMatchingPieceType(opt)}
+                          className={`px-3 py-2.5 rounded-lg text-xs font-sans font-medium transition-all border ${
+                            matchingPieceType === opt
+                              ? "bg-accent text-accent-foreground border-accent"
+                              : "bg-card border-border text-foreground hover:border-accent/30"
+                          }`}
+                        >
+                          {matchingPieceType === opt && <Check className="w-3 h-3 inline mr-1" />}
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* What are you matching it to? */}
+                  <div className="mb-8">
+                    <label className="font-sans font-semibold text-foreground text-sm mb-3 block">What are you matching it to? <span className="text-destructive">*</span></label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {["Lehenga Skirt", "Saree", "Salwar / Palazzo", "Sherwani", "Suit Jacket", "Other outfit"].map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setMatchingForGarment(opt)}
+                          className={`px-3 py-2.5 rounded-lg text-xs font-sans font-medium transition-all border ${
+                            matchingForGarment === opt
+                              ? "bg-accent text-accent-foreground border-accent"
+                              : "bg-card border-border text-foreground hover:border-accent/30"
+                          }`}
+                        >
+                          {matchingForGarment === opt && <Check className="w-3 h-3 inline mr-1" />}
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Fabric situation */}
+                  <div className="mb-8">
+                    <label className="font-sans font-semibold text-foreground text-sm mb-3 block">Do you have matching fabric? <span className="text-destructive">*</span></label>
+                    <div className="space-y-3">
+                      {[
+                        { value: "Yes — I have fabric from the same set", icon: "✅", sub: "e.g. saree came with blouse piece, lehenga came with extra fabric" },
+                        { value: "No — tailor should source matching fabric", icon: "🔍", sub: "Tailor will try to match colour and texture as closely as possible" },
+                        { value: "I'll bring fabric to tailor directly", icon: "🤝", sub: "You'll hand over fabric after tailor is selected" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setMatchingFabricAvailable(opt.value)}
+                          className={`w-full p-4 rounded-xl text-left font-sans transition-all border flex items-start gap-3 ${
+                            matchingFabricAvailable === opt.value
+                              ? "border-accent bg-accent/10 ring-2 ring-accent/30"
+                              : "border-border bg-card hover:border-accent/30"
+                          }`}
+                        >
+                          <span className="text-xl">{opt.icon}</span>
+                          <div>
+                            <p className="font-semibold text-sm text-foreground">{opt.value}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{opt.sub}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    {matchingFabricAvailable === "Yes — I have fabric from the same set" && (
+                      <p className="mt-3 p-3 bg-accent/10 rounded-lg text-xs text-foreground font-sans">📸 Upload a photo of your fabric piece in the next step so tailors can assess it.</p>
+                    )}
+                  </div>
+
+                  {/* Colour match note */}
+                  <div className="mb-8">
+                    <label className="font-sans font-semibold text-foreground text-sm mb-2 block">Any specific colour matching notes?</label>
+                    <Input
+                      value={matchingColourNote}
+                      onChange={(e) => setMatchingColourNote(e.target.value)}
+                      placeholder="e.g. 'Match the gold border exactly' or 'Slightly lighter shade than the skirt'"
+                      className="font-sans"
+                    />
+                  </div>
+
+                  {/* Reference photo */}
+                  <div>
+                    <label className="font-sans font-semibold text-foreground text-sm mb-1 block">Upload your existing garment</label>
+                    <p className="text-xs text-muted-foreground font-sans mb-3">Show the tailor what they're matching to</p>
+                    <div className="relative rounded-xl border-2 border-dashed border-border bg-card hover:border-accent/40 transition-all overflow-hidden">
+                      {matchingReferencePhoto ? (
+                        <div className="relative">
+                          <img src={URL.createObjectURL(matchingReferencePhoto)} alt="Reference" className="w-full h-40 object-cover" />
+                          <button onClick={() => setMatchingReferencePhoto(null)} className="absolute top-2 right-2 p-1.5 bg-card/90 backdrop-blur-sm rounded-full shadow-md hover:bg-muted">
+                            <X className="w-3 h-3 text-foreground" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center h-40 cursor-pointer p-4">
+                          <Camera className="w-8 h-8 text-muted-foreground mb-2" />
+                          <p className="font-sans text-sm font-medium text-foreground mb-1">Upload Photo</p>
+                          <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-blue-100 text-blue-700">Recommended</span>
+                          <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => {
+                            const f = e.target.files?.[0] || null;
+                            if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                            setMatchingReferencePhoto(f);
+                          }} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ) : step === 2 && (
                 <motion.div key="a2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What needs to be done?</h2>
                   <p className="text-muted-foreground font-sans mb-6">Select everything that applies — your tailor will confirm what's possible</p>
