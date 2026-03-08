@@ -417,11 +417,24 @@ const ActiveOrdersPage = () => {
   const garmentFields = garmentConfig.fields;
 
   // ── M1 state ──
-  const savedMeasurements = (() => {
+  // Check measurement profile FIRST, then fall back to wizard session
+  const resolvedGarmentName = lastOrder?.selectedSubCategory || lastOrder?.selectedCategory || '';
+  const { savedMeasurements, prefillSource } = (() => {
+    try {
+      const profile = JSON.parse(localStorage.getItem('naapio_measurement_profile') || '{"measurements":{}}');
+      const profileEntry = profile.measurements?.[resolvedGarmentName];
+      if (profileEntry && profileEntry.values && Object.keys(profileEntry.values).length > 0) {
+        return { savedMeasurements: profileEntry.values, prefillSource: `From Profile: ${profileEntry.source}` };
+      }
+    } catch {}
     try {
       const s = localStorage.getItem('naapio_measurements');
-      return s ? JSON.parse(s).measurements || {} : {};
-    } catch { return {}; }
+      const parsed = s ? JSON.parse(s) : {};
+      if (parsed.measurements && Object.keys(parsed.measurements).length > 0) {
+        return { savedMeasurements: parsed.measurements, prefillSource: 'From wizard' };
+      }
+    } catch {}
+    return { savedMeasurements: {} as Record<string, string>, prefillSource: '' };
   })();
   const hasPrefill = Object.keys(savedMeasurements).length > 0;
 
