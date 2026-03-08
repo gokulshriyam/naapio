@@ -140,6 +140,8 @@ const CustomiseFlow = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
   // ── helpers ──
   const handlePhotoUpload = (slot: keyof typeof customisePhotos, file: File | null) => {
