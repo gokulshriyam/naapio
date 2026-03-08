@@ -544,6 +544,17 @@ const ActiveOrdersPage = () => {
     localStorage.setItem('naapio_confirmed_measurements', JSON.stringify({
       orderId, garment: garmentLabel, confirmedAt, measurements, dpdpConsentAt: confirmedAt, consentGiven: true,
     }));
+    // Also update measurement profile
+    const garmentKey = resolvedGarmentName || garmentLabel;
+    const profile = JSON.parse(localStorage.getItem('naapio_measurement_profile') || '{"measurements":{}}');
+    profile.measurements[garmentKey] = {
+      updatedAt: confirmedAt,
+      source: 'M1_confirmed',
+      orderId: orderId,
+      values: { ...measurements },
+    };
+    profile.lastUpdated = confirmedAt;
+    localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
     setM1Locked(true);
     advance(2);
     toast.success(`Measurements confirmed ✓ — ${artisanRealName} has been notified.`);
