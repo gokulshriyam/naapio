@@ -182,6 +182,62 @@ const BiddingPage = () => {
     );
   }
 
+  if (orderComplete) {
+    return (
+      <div className="max-w-lg mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <span className="text-6xl mb-6 animate-pulse">🎉</span>
+        <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Your order is complete!</h2>
+        <p className="text-muted-foreground font-sans mb-6">Your garment has been delivered. We hope you love it.</p>
+        <p className="text-sm text-muted-foreground font-sans mb-8">Order {demoOrder.id}</p>
+
+        {!reviewSubmitted ? (
+          <div className="w-full space-y-4 mb-8">
+            <p className="font-sans font-semibold text-foreground text-sm">How was your experience?</p>
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={`text-3xl transition-transform hover:scale-110 ${star <= rating ? "text-accent" : "text-muted-foreground/30"}`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            {rating > 0 && (
+              <div className="space-y-3">
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Tell us what you loved (or what we can improve)..."
+                  className="w-full min-h-[100px] rounded-xl border border-border bg-card p-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <Button variant="gold" className="w-full" onClick={() => setReviewSubmitted(true)}>
+                  Submit Review
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-green-600 font-sans mb-8">Thank you! Your review helps other customers.</p>
+        )}
+
+        <div className="w-full space-y-3">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => toast.info("Tag us @naapio.in on Instagram!")}
+          >
+            Share your look 📸
+          </Button>
+          <Button variant="gold" size="hero" className="w-full" onClick={() => navigate("/start")}>
+            Start a New Order →
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl space-y-6">
       {/* ══════ Measurements Reminder Banner ══════ */}
