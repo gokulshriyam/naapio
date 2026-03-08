@@ -1019,8 +1019,9 @@ const Wizard = () => {
   };
 
   const generateOrderId = () => {
+    const year = new Date().getFullYear();
     const num = Math.floor(10000 + Math.random() * 90000);
-    return `NP-2026-${num}`;
+    return `NP-${year}-${num}`;
   };
 
   const buildShareText = () => {
