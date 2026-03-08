@@ -1437,7 +1437,7 @@ const Wizard = () => {
         occasion: selectedOccasion,
         gender, selectedCategory, selectedSubCategory, selectedOccasion, selectedFit,
         selectedNeckline, selectedSleeve, measurementType,
-        budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
+        budgetRange: [budgetRange[0], budgetRange[1]],
         deliveryDate,
         rushOrder: isRushOrder,
         giftOrder, recipientName, recipientRelation, recipientPhone,
