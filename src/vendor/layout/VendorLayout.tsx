@@ -65,7 +65,7 @@ const VendorLayout = () => {
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-sans font-semibold text-sm text-foreground truncate">{vendor.name || 'Artisan'}</p>
+              <p className="font-sans font-semibold text-sm text-foreground truncate">{vendorDisplayName}</p>
               <span className="text-[10px] font-sans font-semibold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">
                 {mockVendor.tier} Tier
               </span>
