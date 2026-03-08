@@ -111,6 +111,8 @@ const AlterationFlow = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
   const handlePhotoUpload = (slot: keyof typeof garmentPhotos, file: File | null) => {
     if (file && file.size > 10 * 1024 * 1024) {
