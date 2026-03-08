@@ -471,6 +471,59 @@ const Wizard = () => {
     }
   }, [groupSize]);
 
+  // Popstate handler for Android back button
+  useEffect(() => {
+    if (step >= 1) {
+      window.history.pushState({ wizardStep: step }, '');
+    }
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (step > 1) {
+        if (step === 2 && step2Phase) {
+          const phases = ['category', 'occasion', 'fit', 'design', 'measurements'];
+          const currentIndex = phases.indexOf(step2Phase);
+          if (currentIndex > 0) {
+            setStep2Phase(phases[currentIndex - 1] as any);
+          } else {
+            setStep(1);
+          }
+        } else if (step === 3 && step3Phase) {
+          const phases = ['feel', 'fabricType', 'colour', 'surface', 'blend', 'brand', 'fabricBudget', 'embellishment', 'budgetDelivery'];
+          const currentIndex = phases.indexOf(step3Phase);
+          if (currentIndex > 0) {
+            setStep3Phase(phases[currentIndex - 1] as any);
+          } else {
+            setStep(2);
+          }
+        } else {
+          setStep((prev) => Math.max(0, prev - 1) as any);
+        }
+        window.history.pushState({ wizardStep: step - 1 }, '');
+      } else {
+        setShowExitWarning(true);
+        window.history.pushState({ wizardStep: step }, '');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [step, step2Phase, step3Phase]);
+
+  // Delivery day count helper
+  const getDeliveryDayCount = (dateStr: string) => {
+    if (!dateStr) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const getDeliveryDayMessage = (days: number) => {
+    if (days < 7) return { text: `That's ${days} days — very tight. Consider enabling Rush Order.`, color: 'text-destructive' };
+    if (days <= 14) return { text: `That's ${days} days — tight but possible for simple garments.`, color: 'text-amber-600' };
+    if (days <= 30) return { text: `That's ${days} days — good timeline.`, color: 'text-green-600' };
+    return { text: `That's ${days} days — comfortable timeline.`, color: 'text-muted-foreground' };
+  };
+
   const canProceed = () => {
     if (step === 0) {
       if (orderingFor === 'self') return true;
