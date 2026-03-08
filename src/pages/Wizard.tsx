@@ -1952,20 +1952,51 @@ Return a JSON object with ONLY these fields, no other text:
                     </motion.div>
                   )}
 
+                  {/* Photo pre-fill notice */}
+                  {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && photoAnalysis.detectedGarment && 
+                   mapDetectedToCategory(photoAnalysis.detectedGarment) && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                      <span className="text-sm">✨</span>
+                      <span className="text-xs font-sans text-amber-800">
+                        We detected <span className="font-semibold">{photoAnalysis.detectedGarment}</span> in your photo — it's pre-selected below.
+                      </span>
+                    </motion.div>
+                  )}
+
                   {/* Category Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
-                        className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
-                      >
-                        {categoryImages[cat] && (
-                          <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
-                        )}
-                        <span className="block p-3">{cat}</span>
-                      </button>
-                    ))}
+                    {categories.map((cat) => {
+                      const isDetected = photoAnalysis?.analysisComplete && 
+                        !photoAnalysis?.analysisError && 
+                        mapDetectedToCategory(photoAnalysis?.detectedGarment || '') === cat;
+                      const isSelected = selectedCategory === cat;
+                      
+                      // Auto pre-select detected category if nothing selected yet
+                      if (isDetected && !selectedCategory && !photoFromBadgeShown.has('category')) {
+                        setTimeout(() => {
+                          setSelectedCategory(cat);
+                          setPhotoFromBadgeShown(prev => new Set(prev).add('category'));
+                        }, 100);
+                      }
+                      
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
+                          className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                        >
+                          {categoryImages[cat] && (
+                            <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
+                          )}
+                          <span className="block p-3">{cat}</span>
+                          {isDetected && isSelected && (
+                            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                              ✨ From photo
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Subcategory Accordion */}
