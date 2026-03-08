@@ -1284,7 +1284,10 @@ const Wizard = () => {
       phases.push('brand');
     }
     
-    phases.push('fabricBudget');
+    // Skip fabric budget for own-fabric orders
+    if (orderType !== 'own-fabric') {
+      phases.push('fabricBudget');
+    }
     
     if (showAdvancedFabric && 
         selectedSurfaces.length > 0 && 
