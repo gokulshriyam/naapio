@@ -403,7 +403,7 @@ const VendorActiveOrders = () => {
                   {MILESTONES.map(m => <span key={m.id} className="flex-1 text-center">{m.label}</span>)}
                 </div>
                 <Progress value={progress} className="h-1 mb-4" />
-                <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => setSelectedOrderId(order.orderId)}>
+                <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => { setSelectedOrderId(order.orderId); setActiveMilestone(order.currentMilestone === 1 ? 1 : 2); }}>
                   {order.currentMilestone === 1 ? 'Review Measurements →' : `Continue — M${order.currentMilestone} →`}
                 </Button>
               </div>
