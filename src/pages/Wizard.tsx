@@ -1438,24 +1438,16 @@ const Wizard = () => {
         ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
         timestamp: new Date().toISOString()
       }));
-      // Save measurements for reorder
-      if (measurementType === 'custom' && Object.keys(measurements).some(k => measurements[k])) {
-        localStorage.setItem('naapio_measurements', JSON.stringify({
-          savedAt: new Date().toISOString(),
-          garment: selectedCategory,
-          measurements,
-          standardSize,
-          sizeRegion,
-        }));
-      } else if (measurementType === 'standard') {
-        localStorage.setItem('naapio_measurements', JSON.stringify({
-          savedAt: new Date().toISOString(),
-          garment: selectedCategory,
-          measurements: {},
-          standardSize,
-          sizeRegion,
-        }));
-      }
+      // Save measurements
+      localStorage.setItem('naapio_measurements', JSON.stringify({
+        savedAt: new Date().toISOString(),
+        garment: selectedSubCategory || selectedCategory,
+        measurementType: measurementTab,
+        selectedStandardSize: selectedStandardSize || null,
+        measurements: { ...measurements },
+        heightCm: heightUnit === 'cm' ? Number(heightCm) || null : ((Number(heightFeet) || 0) * 30.48 + (Number(heightInches) || 0) * 2.54) || null,
+        source: 'wizard_step_2e',
+      }));
       localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);
