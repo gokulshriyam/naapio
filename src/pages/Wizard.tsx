@@ -516,6 +516,69 @@ const Wizard = () => {
 
   return (
     <div className="min-h-screen bg-secondary">
+      {/* Draft Resume Banner */}
+      {draftRestored && restoredDraft && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p className="font-sans text-sm text-amber-800">
+              You have an unfinished order — want to continue where you left off?
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="gold"
+                onClick={() => {
+                  const d = restoredDraft;
+                  if (d.step) setStep(d.step);
+                  if (d.step2Phase) setStep2Phase(d.step2Phase);
+                  if (d.step3Phase) setStep3Phase(d.step3Phase);
+                  if (d.gender) setGender(d.gender);
+                  if (d.selectedCategory) setSelectedCategory(d.selectedCategory);
+                  if (d.selectedSubCategory) setSelectedSubCategory(d.selectedSubCategory);
+                  if (d.selectedOccasion) setSelectedOccasion(d.selectedOccasion);
+                  if (d.selectedFit) setSelectedFit(d.selectedFit);
+                  if (d.selectedNeckline) setSelectedNeckline(d.selectedNeckline);
+                  if (d.selectedSleeve) setSelectedSleeve(d.selectedSleeve);
+                  if (d.selectedDupatta) setSelectedDupatta(d.selectedDupatta);
+                  if (d.selectedLining) setSelectedLining(d.selectedLining);
+                  if (d.measurementType) setMeasurementType(d.measurementType);
+                  if (d.standardSize) setStandardSize(d.standardSize);
+                  if (d.sizeRegion) setSizeRegion(d.sizeRegion);
+                  if (d.selectedFeel) setSelectedFeel(d.selectedFeel);
+                  if (d.selectedFabricTypes) setSelectedFabricTypes(d.selectedFabricTypes);
+                  if (d.selectedColourMood) setSelectedColourMood(d.selectedColourMood);
+                  if (d.colourNote) setColourNote(d.colourNote);
+                  if (d.selectedSurfaces) setSelectedSurfaces(d.selectedSurfaces);
+                  if (d.selectedBlend) setSelectedBlend(d.selectedBlend);
+                  if (d.selectedBrand) setSelectedBrand(d.selectedBrand);
+                  if (d.fabricBudgetBand) setFabricBudgetBand(d.fabricBudgetBand);
+                  if (d.embellishmentBudget) setEmbellishmentBudget(d.embellishmentBudget);
+                  if (d.budgetRange) setBudgetRange(d.budgetRange);
+                  if (d.deliveryDate) setDeliveryDate(d.deliveryDate);
+                  if (d.flexibleDate !== undefined) setFlexibleDate(d.flexibleDate);
+                  if (d.description) setDescription(d.description);
+                  setDraftRestored(false);
+                  setRestoredDraft(null);
+                }}
+              >
+                Resume →
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  localStorage.removeItem("naapio_wizard_draft");
+                  setDraftRestored(false);
+                  setRestoredDraft(null);
+                }}
+              >
+                Start Fresh
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div className="sticky top-0 z-50 bg-card border-b border-border">
         <div className="container mx-auto px-6 py-4">
