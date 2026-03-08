@@ -402,8 +402,8 @@ const BiddingRoom = ({
                 <p className="text-xs text-muted-foreground font-sans flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{bid.location}</p>
               </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap gap-3 mt-3 text-xs font-sans text-muted-foreground">
+              {/* Stats — allow wrapping */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-xs font-sans text-muted-foreground">
                 <span>⭐ {bid.rating} ({bid.reviewCount} reviews)</span>
                 <span>✅ {bid.completionRate}% completed</span>
                 <span>🛡️ {bid.disputeRate}% disputes</span>
@@ -689,11 +689,11 @@ const BiddingPage = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="active">
-        <TabsList className="w-full grid grid-cols-2 mb-5">
-          <TabsTrigger value="active" className="text-sm font-sans">
+        <TabsList className="w-full grid grid-cols-2 mb-5 h-12">
+          <TabsTrigger value="active" className="text-sm font-sans h-12 min-h-[48px]">
             Active Requests <Badge className="ml-2 bg-accent/20 text-accent text-[10px]">{activeOrders.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="past" className="text-sm font-sans">
+          <TabsTrigger value="past" className="text-sm font-sans h-12 min-h-[48px]">
             Past Requests <Badge className="ml-2 bg-muted text-muted-foreground text-[10px]">{pastOrders.length}</Badge>
           </TabsTrigger>
         </TabsList>
@@ -763,21 +763,21 @@ const BiddingPage = () => {
                       <CountdownTimer deadline={order.bidDeadline} postedAt={order.postedAt} />
                     )}
 
-                    {/* Action row */}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      <Button size="sm" variant="outline" className="text-xs" onClick={() => navigate("/wizard")}>
+                    {/* Action row — stack on mobile */}
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                      <Button size="sm" variant="outline" className="text-xs w-full sm:w-auto" onClick={() => navigate("/wizard")}>
                         <Edit className="w-3 h-3 mr-1" /> Edit Brief
                       </Button>
                       <Button
                         size="sm"
                         variant={order.bidsReceived > 0 ? "outline-gold" : "outline"}
-                        className="text-xs"
+                        className="text-xs w-full sm:w-auto"
                         disabled={order.bidsReceived === 0}
                         onClick={() => setBiddingRoomOpen(biddingRoomOpen === order.id ? null : order.id)}
                       >
                         <Eye className="w-3 h-3 mr-1" /> View Bids ({order.bidsReceived})
                       </Button>
-                      <Button size="sm" variant="outline" className="text-xs text-muted-foreground" onClick={() => setCloseBidDialog(order.id)}>
+                      <Button size="sm" variant="outline" className="text-xs text-muted-foreground w-full sm:w-auto" onClick={() => setCloseBidDialog(order.id)}>
                         <XIcon className="w-3 h-3 mr-1" /> Close Bid
                       </Button>
                     </div>
@@ -919,7 +919,7 @@ const BiddingPage = () => {
 
       {/* Accept Bid Confirmation */}
       <AlertDialog open={!!acceptBid} onOpenChange={() => { setAcceptBid(null); setAcceptOrderId(null); }}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md sm:max-w-md max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>Accept {acceptBid?.alias}'s bid?</AlertDialogTitle>
           </AlertDialogHeader>
@@ -957,9 +957,9 @@ const BiddingPage = () => {
               </div>
             </div>
           )}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleAcceptBid} className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptBid} className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
               Confirm & Proceed to Payment →
             </AlertDialogAction>
           </AlertDialogFooter>

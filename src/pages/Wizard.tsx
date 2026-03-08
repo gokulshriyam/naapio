@@ -544,9 +544,9 @@ const Wizard = () => {
   const [inspirationExpanded, setInspirationExpanded] = useState<boolean>(false);
   const [inspirationLightboxOpen, setInspirationLightboxOpen] = useState<boolean>(false);
 
-  // Draggable thumbnail state
+  // Draggable thumbnail state — default bottom-left on mobile, bottom-right on desktop
   const [thumbPosition, setThumbPosition] = useState({ 
-    x: typeof window !== 'undefined' ? window.innerWidth - 180 : 0, 
+    x: typeof window !== 'undefined' ? (window.innerWidth < 768 ? 16 : window.innerWidth - 180) : 0, 
     y: typeof window !== 'undefined' ? window.innerHeight - 220 : 0 
   });
   const [isDragging, setIsDragging] = useState(false);
@@ -1570,6 +1570,11 @@ Important rules:
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
             <span className="font-sans text-sm text-muted-foreground">
+               {/* Mobile: compact "Step X of 4", Desktop: full label */}
+               <span className="sm:hidden">
+                 {step === 0 ? "Step 0 of 4" : `Step ${step} of 4`}
+               </span>
+               <span className="hidden sm:inline">
                {step === 0
                 ? "Who's ordering?"
                 : step === 2
@@ -1605,6 +1610,7 @@ Important rules:
                   ? "Step 3i — Budget & Delivery"
                   : `Step 3 of 4`
                 : `Step ${step} of 4`}
+               </span>
             </span>
           </div>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -4300,8 +4306,11 @@ Important rules:
           )}
         </AnimatePresence>
 
-        {/* Navigation */}
-        <div className="flex justify-between mt-10 pt-6 border-t border-border">
+        {/* Spacer for mobile sticky button */}
+        <div className="h-24 sm:h-0" />
+
+        {/* Navigation — sticky on mobile */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border p-4 sm:static sm:bg-transparent sm:backdrop-blur-none sm:border-t-0 sm:p-0 sm:mt-10 sm:pt-6 sm:border-t sm:border-border flex justify-between">
           <Button
             variant="outline"
             onClick={() => {

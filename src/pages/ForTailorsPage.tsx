@@ -253,7 +253,7 @@ const ForTailorsPage = () => {
           >
             Why Join Naapio?
           </motion.h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {benefits.map((b, i) => (
               <motion.div
                 key={b.title}
@@ -414,7 +414,7 @@ const ForTailorsPage = () => {
               viewport={{ once: true }}
               className="bg-card rounded-2xl border border-border p-8 md:p-10 shadow-sm space-y-6"
             >
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name *</Label>
                   <Input
@@ -444,7 +444,7 @@ const ForTailorsPage = () => {
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="city">City / Location *</Label>
                   <Input
@@ -658,7 +658,7 @@ const ArtisanSection = () => {
           {craftShowcase.map((c) => (
             <span
               key={c.label}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border text-sm font-sans text-foreground"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-card border border-border text-sm font-sans text-foreground min-h-[44px]"
             >
               <span>{c.emoji}</span> {c.label}
             </span>
@@ -666,7 +666,7 @@ const ArtisanSection = () => {
         </div>
 
         {/* Value Proposition */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           {artisanBenefits.map((b, i) => (
             <motion.div
               key={b.title}
@@ -744,7 +744,7 @@ const ArtisanSection = () => {
                       key={craft}
                       type="button"
                       onClick={() => toggleCraft(craft)}
-                      className={`px-4 py-2 rounded-full text-sm font-sans border transition-all ${
+                      className={`px-4 py-2.5 rounded-full text-sm font-sans border transition-all min-h-[44px] ${
                         artisanCrafts.includes(craft)
                           ? "bg-purple-100 border-purple-400 text-purple-800 dark:bg-purple-900/30 dark:border-purple-500 dark:text-purple-300"
                           : "bg-card border-border text-foreground hover:border-purple-300"

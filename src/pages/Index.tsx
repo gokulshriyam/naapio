@@ -174,21 +174,32 @@ const Index = () => {
               </>
             )}
           </div>
-          {/* Mobile hamburger */}
-          <button className="md:hidden p-2" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Mobile: avatar + hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            {isLoggedIn && (
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-sans font-bold text-xs"
+              >
+                {getInitials()}
+              </button>
+            )}
+            <button className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto">
+          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto flex flex-col">
             <div className="w-full mb-2"><CitySelector variant="mobile" /></div>
             <div className="w-full mb-2"><LanguageSelector variant="mobile" /></div>
             <div className="h-px bg-border my-2" />
             <a href="#how-it-works" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.howItWorks')}</a>
             <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
             <a href="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</a>
+            <div className="flex-1" />
             <div className="space-y-3 pt-3">
               {isLoggedIn ? (
                 <>

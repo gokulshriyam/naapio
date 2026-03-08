@@ -197,8 +197,8 @@ const ActiveOrdersPage = () => {
         <Progress value={progressPercent} className="h-2" />
       </div>
 
-      {/* Milestone indicators */}
-      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2">
+      {/* Milestone indicators — scroll on small screens */}
+      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2 -mx-2 px-2">
         {MILESTONES.map((ms, i) => {
           const completed = ms.id < activeMilestone;
           const active = ms.id === activeMilestone;
@@ -211,7 +211,7 @@ const ActiveOrdersPage = () => {
                 {completed ? <Check className="w-4 h-4" /> : locked ? <Lock className="w-3.5 h-3.5" /> : ms.id}
               </div>
               {i < MILESTONES.length - 1 && (
-                <div className={`w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
+                <div className={`w-4 sm:w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
               )}
             </div>
           );
@@ -238,8 +238,8 @@ const ActiveOrdersPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8">
-        {/* Sidebar order card */}
-        <div className="bg-card rounded-2xl border border-border p-5 h-fit sticky top-24">
+        {/* Sidebar order card — not sticky on mobile */}
+        <div className="bg-card rounded-2xl border border-border p-5 h-fit md:sticky md:top-24">
           <img src={redLehenga} alt="Order" className="w-full h-40 object-cover rounded-xl mb-4" />
           <div className="space-y-2 text-sm font-sans">
             <div className="flex justify-between"><span className="text-muted-foreground">Order</span><span className="font-medium text-foreground">#{orderId}</span></div>
@@ -276,7 +276,7 @@ const ActiveOrdersPage = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-2 gap-3 mb-6">
                   {MEASUREMENT_FIELDS.map((f) => (
                     <div key={f}>
                       <Label className="text-xs font-sans text-muted-foreground">{f}</Label>
@@ -378,7 +378,7 @@ const ActiveOrdersPage = () => {
                   <span className="absolute top-3 right-3 text-xs font-sans text-white/80 bg-black/50 px-2 py-1 rounded">Recorded: Today, 10:00 AM</span>
                 </div>
                 <p className="text-sm font-sans font-semibold text-foreground mb-3">Measurement Checkpoints</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+                <div className="grid grid-cols-2 gap-2 mb-6">
                   {MEASUREMENT_FIELDS.map((f, i) => (
                     <label key={f} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-secondary transition-colors">
                       <Checkbox checked={!!trialChecks[f]} onCheckedChange={(v) => setTrialChecks({ ...trialChecks, [f]: !!v })} />
@@ -439,7 +439,7 @@ const ActiveOrdersPage = () => {
                 ) : (
                   <div className="mt-4">
                     <p className="text-sm text-muted-foreground font-sans mb-4">Confirm your shipping address for dispatch.</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <div className="grid grid-cols-1 gap-3 mb-6">
                       {([
                         ["name","Full Name"],["addr1","Address Line 1"],["addr2","Address Line 2 (optional)"],
                         ["city","City"],["state","State"],["pincode","Pincode"],["phone","Phone"],
