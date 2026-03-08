@@ -139,9 +139,7 @@ const VendorProfile = () => {
 
         {/* Edit profile + vacation */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-5 pt-5 border-t border-border">
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate('/for-tailors')}>
-            <Pencil className="w-3 h-3 mr-1" /> Edit Profile
-          </Button>
+          <div />
           <div className="flex items-center gap-3">
             <div>
               <p className="text-xs font-sans font-semibold text-foreground">Vacation Mode</p>

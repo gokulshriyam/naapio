@@ -30,7 +30,8 @@ const VendorWallet = () => {
   const [bankOtp, setBankOtp] = useState('');
 
   const handleWithdraw = () => {
-    toast.success('Withdrawal request submitted. Funds will arrive in 1-2 business days.');
+    toast.success('Withdrawal request submitted. Funds will arrive in 5–7 business days.');
+    // TODO: PAYMENT_INTEGRATION — POST /v1/vendor/withdrawals with amount + bank account id
   };
 
   const handleBankSave = () => {
