@@ -824,13 +824,53 @@ const Wizard = () => {
                     {(["men", "women"] as const).map((g) => (
                       <button
                         key={g}
-                        onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); }}
+                        onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); setKidsExpanded(false); }}
                         className={`px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all ${gender === g ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
                       >
                         {g === "men" ? "👔 Men's" : "👗 Women's"}
                       </button>
                     ))}
+                    {/* Kids tile */}
+                    <button
+                      onClick={() => setKidsExpanded(!kidsExpanded)}
+                      className="px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all bg-card border border-border text-foreground hover:bg-muted opacity-70 relative"
+                    >
+                      👶 Kids / Unisex
+                      <span className="ml-1 inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700">Coming Soon</span>
+                    </button>
                   </div>
+
+                  {/* Kids Lead Capture */}
+                  {kidsExpanded && !kidsNotified && (
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 bg-purple-50 border border-purple-200 rounded-xl">
+                      <h3 className="font-sans font-bold text-foreground mb-1">Kids wear is coming soon! 🎈</h3>
+                      <p className="text-sm text-muted-foreground font-sans mb-4">We're building a dedicated kids ethnic wear flow. Be the first to know when it launches.</p>
+                      <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                        <Input value={kidsEmail} onChange={(e) => setKidsEmail(e.target.value)} placeholder="Your email" type="email" className="font-sans flex-1" />
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {["0–2 yrs", "3–5 yrs", "6–9 yrs", "10–14 yrs"].map((range) => (
+                          <button
+                            key={range}
+                            onClick={() => setKidsAgeRange(range)}
+                            className={`px-3 py-1.5 rounded-full font-sans text-xs border transition-all ${
+                              kidsAgeRange === range ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                            }`}
+                          >
+                            {range}
+                          </button>
+                        ))}
+                      </div>
+                      <Button size="sm" onClick={() => { if (kidsEmail.trim()) { setKidsNotified(true); } }}>
+                        Notify Me →
+                      </Button>
+                    </motion.div>
+                  )}
+                  {kidsExpanded && kidsNotified && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                      <p className="text-sm text-purple-800 font-sans">Thanks! We'll notify you when kids wear launches. 🎈</p>
+                    </motion.div>
+                  )}
 
                   {/* Category Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
