@@ -3101,7 +3101,7 @@ Important rules:
                 const garmentConfig = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
                 const garmentLabel = selectedSubCategory || selectedCategory;
                 const garmentFields = garmentConfig.fields;
-                const defaultTab = garmentConfig.supportsStandard ? 'standard' : 'custom';
+                // defaultTab removed — handled by useEffect on measurementTab
                 
                 // Pre-fill from localStorage
                 const savedMeasData = (() => {
