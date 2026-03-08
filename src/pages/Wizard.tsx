@@ -247,6 +247,25 @@ const ownFabricTypeOptions = ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet"
 const ownFabricWidthOptions = ["36 inches (narrow)", "44 inches (standard)", "54 inches (wide)", "I don't know"];
 const ownFabricConditionOptions = ["New / Unwashed", "Washed / Pre-treated", "Vintage / Heirloom", "Recycled (from another garment)"];
 
+// Helper functions for robust JSON extraction from Gemini responses
+const extractField = (text: string, field: string): string => {
+  const match = text.match(
+    new RegExp(`"${field}"\\s*:\\s*"([^"]+)"`)
+  );
+  return match ? match[1] : '';
+};
+
+const extractArrayField = (text: string, field: string): string[] => {
+  const match = text.match(
+    new RegExp(`"${field}"\\s*:\\s*\\[([^\\]]*)\\]`)
+  );
+  if (!match) return [];
+  return match[1]
+    .split(',')
+    .map(s => s.replace(/"/g, '').trim())
+    .filter(Boolean);
+};
+
 const Wizard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
