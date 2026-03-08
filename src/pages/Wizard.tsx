@@ -419,6 +419,34 @@ const Wizard = () => {
     setDeliveryDate(min.toISOString().split("T")[0]);
   }, [selectedCategory, isRushOrder]);
 
+  // beforeunload warning on payment step
+  useEffect(() => {
+    if (step === 4) {
+      const handler = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = '';
+      };
+      window.addEventListener('beforeunload', handler);
+      return () => window.removeEventListener('beforeunload', handler);
+    }
+  }, [step]);
+
+  // Prefill from category tile click
+  useEffect(() => {
+    const prefillData = localStorage.getItem('naapio_prefill');
+    if (prefillData) {
+      try {
+        const prefill = JSON.parse(prefillData);
+        if (prefill.gender) setGender(prefill.gender === 'Men' ? 'men' : 'women');
+        if (prefill.category) setSelectedCategory(prefill.category);
+        if (prefill.orderType) { /* already on wizard */ }
+        setStep(2);
+        setStep2Phase('occasion');
+        localStorage.removeItem('naapio_prefill');
+      } catch { localStorage.removeItem('naapio_prefill'); }
+    }
+  }, []);
+
   // Restore draft on mount
   useEffect(() => {
     const saved = localStorage.getItem("naapio_wizard_draft");
