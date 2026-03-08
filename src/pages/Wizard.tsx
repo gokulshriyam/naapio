@@ -39,6 +39,24 @@ const categoryBudgetRanges: Record<string, { min: number; max: number; label: st
 
 const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
 
+const budgetGuidance: Record<string, string> = {
+  'Saree Blouse': 'Typical range: ₹800 – ₹5,000',
+  'Kurti': 'Typical range: ₹600 – ₹3,000',
+  'Salwar Kameez': 'Typical range: ₹1,500 – ₹6,000',
+  'Lehenga': 'Typical range: ₹5,000 – ₹80,000',
+  'Anarkali': 'Typical range: ₹2,500 – ₹15,000',
+  'Sherwani': 'Typical range: ₹8,000 – ₹60,000',
+  'Kurta': 'Typical range: ₹800 – ₹4,000',
+  'Gown': 'Typical range: ₹4,000 – ₹30,000',
+  'Suit': 'Typical range: ₹6,000 – ₹40,000',
+  'Blazer': 'Typical range: ₹6,000 – ₹40,000',
+  'Bandhgala': 'Typical range: ₹5,000 – ₹35,000',
+  'Co-ord Set': 'Typical range: ₹3,000 – ₹12,000',
+  'Jacket': 'Typical range: ₹5,000 – ₹20,000',
+  'Trousers': 'Typical range: ₹2,000 – ₹8,000',
+  'Indo-Western': 'Typical range: ₹8,000 – ₹35,000',
+};
+
 const subCategories: Record<string, string[]> = {
   "Sherwani": ["Achkan", "Indo-Western Sherwani", "Jodhpuri Sherwani", "Double-Breasted Sherwani", "Nehru Collar Sherwani"],
   "Kurta": ["Straight Kurta", "Pathani Kurta", "Kaftan Kurta", "Embroidered / Festive Kurta", "Plain / Daily Wear Kurta", "Nehru Collar Kurta"],
