@@ -887,14 +887,17 @@ const ActiveOrdersPage = () => {
                               </div>
                               <p className="text-xs text-muted-foreground font-sans">{f.description}</p>
                             </div>
-                            <Input
-                              type="number"
-                              placeholder="e.g. 36"
-                              value={measurements[f.field] || ''}
-                              onChange={e => setMeasurements({ ...measurements, [f.field]: e.target.value })}
-                              className="w-20 h-9 text-sm shrink-0"
-                              readOnly={m1Locked}
-                            />
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Input
+                                type="number"
+                                placeholder="e.g. 36"
+                                value={measurements[f.field] || ''}
+                                onChange={e => setMeasurements({ ...measurements, [f.field]: e.target.value })}
+                                className="w-20 h-9 text-sm"
+                                readOnly={m1Locked}
+                              />
+                              <span className="text-xs text-muted-foreground font-sans">inches</span>
+                            </div>
                             <button onClick={() => setTipField(f)} className="text-xs font-sans text-accent hover:underline shrink-0 mt-2">▶ How to measure</button>
                           </div>
                         );
