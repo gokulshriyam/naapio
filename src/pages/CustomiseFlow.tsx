@@ -218,16 +218,37 @@ const CustomiseFlow = () => {
 
   const toggleZone = (zone: string) => {
     setPlacementError(false);
-    if (zone === "Full Garment") {
-      setPlacementZones((prev) =>
-        prev.includes("Full Garment") ? prev.filter((z) => z !== "Full Garment") : ["Full Garment"]
-      );
-    } else {
-      setPlacementZones((prev) => {
-        const without = prev.filter((z) => z !== "Full Garment");
-        return without.includes(zone) ? without.filter((z) => z !== zone) : [...without, zone];
-      });
+    // Handle "select all" shortcuts
+    if (zone === "back-full") {
+      const backIds = backZones.filter(z => z.id !== "back-full").map(z => z.id);
+      setSelectedZonesByView(prev => ({
+        ...prev,
+        back: prev.back.length === backIds.length ? [] : backIds,
+      }));
+      return;
     }
+    if (zone === "full-lower") {
+      const lowerIds = lowerZones.filter(z => z.id !== "full-lower").map(z => z.id);
+      setSelectedZonesByView(prev => ({
+        ...prev,
+        lower: prev.lower.length === lowerIds.length ? [] : lowerIds,
+      }));
+      return;
+    }
+    setSelectedZonesByView(prev => ({
+      ...prev,
+      [activeView]: prev[activeView].includes(zone)
+        ? prev[activeView].filter(z => z !== zone)
+        : [...prev[activeView], zone],
+    }));
+  };
+
+  const removeZone = (zone: string) => {
+    const view = getViewForZone(zone);
+    setSelectedZonesByView(prev => ({
+      ...prev,
+      [view]: prev[view].filter(z => z !== zone),
+    }));
   };
 
   const canProceed = () => {
