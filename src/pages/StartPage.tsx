@@ -1,13 +1,27 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useCity } from "@/context/CityContext";
 
 const StartPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { selectedCity } = useCity();
+  const [prefilledCategory, setPrefilledCategory] = useState<string>('');
+
+  useEffect(() => {
+    const state = location.state as { prefilledGender?: string; prefilledCategory?: string } | null;
+    if (state?.prefilledCategory) {
+      localStorage.setItem('naapio_prefill', JSON.stringify({
+        gender: state.prefilledGender || 'Women',
+        category: state.prefilledCategory,
+        orderType: 'New Order'
+      }));
+      setPrefilledCategory(state.prefilledCategory);
+    }
+  }, [location.state]);
 
   const orderTypes = [
     {
@@ -92,6 +106,10 @@ const StartPage = () => {
           </button>
         ))}
       </div>
+
+      {prefilledCategory && (
+        <p className="text-sm text-accent font-sans mt-4">Starting with {prefilledCategory} pre-selected ✓</p>
+      )}
 
       {!isCitySelected && (
         <p className="text-sm text-muted-foreground font-sans mt-6">

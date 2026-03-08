@@ -39,6 +39,26 @@ const categoryBudgetRanges: Record<string, { min: number; max: number; label: st
 
 const defaultRange = { min: 5000, max: 50000, label: "🧵 Custom" };
 
+const formatBudget = (value: number): string => {
+  if (value >= 100000) return `₹${(value/100000).toFixed(1).replace('.0','')}L`;
+  if (value >= 1000) return `₹${(value/1000).toFixed(1).replace('.0','')}K`;
+  return `₹${value}`;
+};
+
+const budgetIntelligence: Record<string, {avg: number, low: number, high: number, tip: string}> = {
+  'Saree Blouse': { avg: 1500, low: 800, high: 8000, tip: 'Blouse prices vary widely by embroidery work. Plain blouse: ₹800–₹2K. Heavy work: ₹3K–₹8K.' },
+  'Kurti': { avg: 1200, low: 600, high: 4000, tip: 'Simple cotton kurti starts at ₹600. Designer with embroidery up to ₹4K.' },
+  'Salwar Kameez': { avg: 3500, low: 1500, high: 10000, tip: 'Including dupatta. Basic: ₹1.5K–₹3K. Embroidered/formal: ₹4K–₹10K.' },
+  'Anarkali': { avg: 5000, low: 2000, high: 18000, tip: 'Floor-length anarkali with lining. Simple: ₹2K–₹5K. Embellished: ₹6K–₹18K.' },
+  'Lehenga': { avg: 12000, low: 5000, high: 200000, tip: 'Party lehenga: ₹5K–₹20K. Semi-bridal: ₹15K–₹50K. Full bridal: ₹50K–₹2L.' },
+  'Gown': { avg: 8000, low: 3000, high: 40000, tip: 'Indo-western gown. Simple: ₹3K–₹6K. Embellished/trail: ₹8K–₹40K.' },
+  'Kurta': { avg: 1800, low: 800, high: 6000, tip: 'Men\'s kurta. Plain cotton: ₹800–₹2K. Designer/embroidered: ₹3K–₹6K.' },
+  'Sherwani': { avg: 15000, low: 6000, high: 80000, tip: 'Occasion sherwani: ₹6K–₹20K. Wedding grade with zari: ₹25K–₹80K.' },
+  'Bandhgala': { avg: 8000, low: 4000, high: 35000, tip: 'Formal bandhgala/jodhpuri. Basic: ₹4K–₹8K. Embroidered: ₹10K–₹35K.' },
+  'Suit/Blazer': { avg: 12000, low: 5000, high: 50000, tip: 'Tailored suit. Basic single piece: ₹5K–₹12K. Full suit with lining: ₹15K–₹50K.' },
+  'Chaniya Choli': { avg: 8000, low: 3000, high: 40000, tip: 'Garba/festival wear: ₹3K–₹8K. Heavy embellished: ₹10K–₹40K.' },
+};
+
 const budgetGuidance: Record<string, string> = {
   'Saree Blouse': 'Typical range: ₹800 – ₹5,000',
   'Kurti': 'Typical range: ₹600 – ₹3,000',
@@ -367,6 +387,10 @@ const Wizard = () => {
   const [ownFabricWidth, setOwnFabricWidth] = useState('');
   const [ownFabricCondition, setOwnFabricCondition] = useState('');
 
+  // Multi-piece from same fabric
+  const [multiplePieces, setMultiplePieces] = useState<boolean>(false);
+  const [additionalPieces, setAdditionalPieces] = useState<string[]>([]);
+
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
   const [generatedOutfitImage, setGeneratedOutfitImage] = useState<string>("");
@@ -398,6 +422,34 @@ const Wizard = () => {
     const min = getMinDeliveryDate();
     setDeliveryDate(min.toISOString().split("T")[0]);
   }, [selectedCategory, isRushOrder]);
+
+  // beforeunload warning on payment step
+  useEffect(() => {
+    if (step === 4) {
+      const handler = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = '';
+      };
+      window.addEventListener('beforeunload', handler);
+      return () => window.removeEventListener('beforeunload', handler);
+    }
+  }, [step]);
+
+  // Prefill from category tile click
+  useEffect(() => {
+    const prefillData = localStorage.getItem('naapio_prefill');
+    if (prefillData) {
+      try {
+        const prefill = JSON.parse(prefillData);
+        if (prefill.gender) setGender(prefill.gender === 'Men' ? 'men' : 'women');
+        if (prefill.category) setSelectedCategory(prefill.category);
+        if (prefill.orderType) { /* already on wizard */ }
+        setStep(2);
+        setStep2Phase('occasion');
+        localStorage.removeItem('naapio_prefill');
+      } catch { localStorage.removeItem('naapio_prefill'); }
+    }
+  }, []);
 
   // Restore draft on mount
   useEffect(() => {
@@ -1303,7 +1355,9 @@ const Wizard = () => {
               {/* SUB-PHASE: CATEGORY + SUBCATEGORY */}
               {step2Phase === "category" && (
                 <div>
-                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What are you getting made?</h2>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">
+                    {giftOrder ? `What is ${recipientName || 'they'} looking for?` : "What are you getting made?"}
+                  </h2>
                   <p className="text-muted-foreground font-sans mb-6">Select your garment category, then choose a specific style</p>
 
                   {/* Gender Toggle */}
@@ -1314,7 +1368,10 @@ const Wizard = () => {
                         onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); setKidsExpanded(false); }}
                         className={`px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all ${gender === g ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
                       >
-                        {g === "men" ? "👔 Men's" : "👗 Women's"}
+                        {g === "men"
+                          ? (giftOrder ? `👔 Men's Clothing (for ${recipientName || 'them'})` : "👔 Men's")
+                          : (giftOrder ? `👗 Women's Clothing (for ${recipientName || 'them'})` : "👗 Women's")
+                        }
                       </button>
                     ))}
                     {/* Kids tile */}
@@ -2025,6 +2082,37 @@ const Wizard = () => {
                     <p className="text-xs text-muted-foreground font-sans mt-2 text-right">{ownFabricDescription.length}/300</p>
                   </div>
                   {/* TODO: API_INTEGRATION_POINT — ownFabricYards used by tailor to confirm fabric sufficiency during bid */}
+
+                  {/* Multi-piece from same fabric */}
+                  <div className="mt-6 p-4 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-sans text-sm font-medium text-foreground">Making more than one piece from this fabric?</p>
+                      </div>
+                      <Switch checked={multiplePieces} onCheckedChange={setMultiplePieces} />
+                    </div>
+                    {multiplePieces && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 space-y-3">
+                        <p className="font-sans text-xs font-medium text-muted-foreground">Which pieces? (select all that apply)</p>
+                        <div className="space-y-2">
+                          {["Blouse / Choli top", "Skirt / Lehenga skirt", "Dupatta", "Lining piece", "Jacket / Shrug", "Other"].map((piece) => (
+                            <label key={piece} className="flex items-center gap-2 cursor-pointer">
+                              <Checkbox
+                                checked={additionalPieces.includes(piece)}
+                                onCheckedChange={(checked) => {
+                                  setAdditionalPieces(prev =>
+                                    checked ? [...prev, piece] : prev.filter(p => p !== piece)
+                                  );
+                                }}
+                              />
+                              <span className="font-sans text-sm text-foreground">{piece}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans">📌 Your tailor will confirm fabric sufficiency for all pieces at Milestone 1 before cutting.</p>
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -2394,9 +2482,79 @@ const Wizard = () => {
                       <p className="text-muted-foreground font-sans mb-8">Final details before we match you with tailors</p>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        {/* Total Budget */}
+                        {/* Budget Intelligence Badge */}
+                        <div className="col-span-full">
+                          {(() => {
+                            const intelligence = budgetIntelligence[selectedCategory] || budgetIntelligence[selectedSubCategory];
+                            if (!intelligence) return null;
+                            return (
+                              <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span>💡</span>
+                                  <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                                </div>
+                                <p className="text-xs text-amber-800 font-sans mb-3">
+                                  Naapio customers ordering {selectedCategory} typically spend:
+                                </p>
+                                <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                                  <div
+                                    className="absolute h-full bg-accent rounded-full"
+                                    style={{
+                                      left: `${Math.max(0, ((intelligence.low - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
+                                      right: `${Math.max(0, 100 - ((intelligence.high - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
+                                    }}
+                                  />
+                                  <div
+                                    className="absolute w-2 h-4 bg-accent rounded-full -top-1"
+                                    style={{ left: `${((intelligence.avg - intelligence.low) / (intelligence.high - intelligence.low)) * 100}%` }}
+                                  />
+                                </div>
+                                <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                                  <span>{formatBudget(intelligence.low)}</span>
+                                  <span className="font-semibold">Avg {formatBudget(intelligence.avg)}</span>
+                                  <span>{formatBudget(intelligence.high)}</span>
+                                </div>
+                                <p className="text-xs text-amber-800 font-sans mb-3">{intelligence.tip}</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => setBudgetRange([intelligence.low, Math.round(intelligence.avg * 1.5)])}
+                                >
+                                  Set recommended range
+                                </Button>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Total Budget - Dual Handle Slider */}
                         <div>
                           <h3 className="font-sans font-semibold text-foreground mb-4">Total budget for the garment (including stitching)</h3>
+
+                          {/* Slider */}
+                          <div className="mb-4">
+                            <div className="flex justify-between mb-2">
+                              <span className="text-sm font-sans font-semibold text-accent">{formatBudget(budgetRange[0])}</span>
+                              <span className="text-sm font-sans font-semibold text-accent">{formatBudget(budgetRange[1])}</span>
+                            </div>
+                            <Slider
+                              value={budgetRange}
+                              onValueChange={(val) => {
+                                if (val[1] - val[0] >= 2000) setBudgetRange(val);
+                              }}
+                              min={1000}
+                              max={200000}
+                              step={budgetRange[0] < 10000 ? 500 : budgetRange[0] < 50000 ? 1000 : 5000}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
+                              <span>₹1K</span>
+                              <span>₹2L</span>
+                            </div>
+                          </div>
+
+                          {/* Manual override inputs */}
                           <div className="flex gap-3 mb-3">
                             <div className="flex-1">
                               <label className="text-xs font-sans text-muted-foreground mb-1 block">Min ₹</label>
@@ -2404,7 +2562,10 @@ const Wizard = () => {
                                 type="number"
                                 placeholder="5,000"
                                 value={budgetRange[0] || ""}
-                                onChange={(e) => setBudgetRange([Number(e.target.value) || 0, budgetRange[1]])}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value) || 0;
+                                  setBudgetRange([val, Math.max(val + 2000, budgetRange[1])]);
+                                }}
                                 className="font-sans"
                               />
                             </div>
@@ -2414,7 +2575,10 @@ const Wizard = () => {
                                 type="number"
                                 placeholder="15,000"
                                 value={budgetRange[1] || ""}
-                                onChange={(e) => setBudgetRange([budgetRange[0], Number(e.target.value) || 0])}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value) || 0;
+                                  setBudgetRange([Math.min(budgetRange[0], val - 2000), val]);
+                                }}
                                 className="font-sans"
                               />
                             </div>
