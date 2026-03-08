@@ -636,6 +636,7 @@ const Wizard = () => {
     }
   }, [showDragHint]);
 
+  const isBlouseCategory = selectedCategory === "Saree Blouse" || (selectedSubCategory || "").toLowerCase().includes("blouse");
 
 
   const hasEmbellishment = selectedSurfaces.length > 0 &&
