@@ -480,24 +480,26 @@ const VendorActiveOrders = () => {
           return (
             <div key={m.id} className="flex items-center gap-1 flex-1">
               <button
+                disabled={m.id > order.currentMilestone}
                 onClick={() => {
-                  if (m.id === 1 && activeMilestone > 1) {
+                  if (m.id > order.currentMilestone) return;
+                  if (m.id < order.currentMilestone) {
                     setM1ReadOnly(true);
-                    setActiveMilestone(1);
-                  } else if (done || current) {
+                  } else {
                     setM1ReadOnly(false);
-                    setActiveMilestone(m.id);
                   }
+                  setActiveMilestone(m.id);
                 }}
                 className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
-                  done ? 'bg-accent text-accent-foreground cursor-pointer' :
+                  m.id < order.currentMilestone ? 'bg-green-500 text-white cursor-pointer' :
                   current ? 'bg-accent/20 text-accent ring-2 ring-accent cursor-pointer' :
-                  'bg-muted text-muted-foreground cursor-default'
+                  m.id > order.currentMilestone ? 'bg-muted text-muted-foreground/40 cursor-not-allowed' :
+                  'bg-muted text-muted-foreground'
                 )}
               >
-                {done ? <Check className="w-4 h-4" /> : m.id > activeMilestone ? <Lock className="w-3.5 h-3.5" /> : <m.icon className="w-4 h-4" />}
+                {m.id < order.currentMilestone ? '✓' : m.id > order.currentMilestone ? <Lock className="w-3.5 h-3.5" /> : <m.icon className="w-4 h-4" />}
               </button>
-              {i < MILESTONES.length - 1 && <div className={cn("flex-1 h-0.5", done ? 'bg-accent' : 'bg-border')} />}
+              {i < MILESTONES.length - 1 && <div className={cn("flex-1 h-0.5", m.id < order.currentMilestone ? 'bg-green-500' : 'bg-border')} />}
             </div>
           );
         })}
