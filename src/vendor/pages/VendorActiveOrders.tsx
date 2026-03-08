@@ -230,7 +230,7 @@ type FabricEntry = {
 // ═══════════════════════════════════════
 // Full Brief Card (left column)
 // ═══════════════════════════════════════
-const OrderBriefCard = ({ order }: { order: typeof mockVendorActiveOrders[0] }) => {
+const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActiveOrders[0]; onZoomImage?: (src: string) => void }) => {
   const SectionHeader = ({ title }: { title: string }) => (
     <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground border-b border-border pb-1 mt-4 mb-2">{title}</p>
   );
