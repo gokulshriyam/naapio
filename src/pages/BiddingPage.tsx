@@ -258,8 +258,8 @@ const BiddingRoom = ({
   const [showRankInfo, setShowRankInfo] = useState(false);
   const [expandedPortfolio, setExpandedPortfolio] = useState<string | null>(null);
   const [expandedChat, setExpandedChat] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Record<string, { text: string; from: string }[]>>({});
-  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<Record<string, { text: string; from: string; masked?: boolean }[]>>({});
+  const [chatInputs, setChatInputs] = useState<Record<string, string>>({});
   const [ignoredBids, setIgnoredBids] = useState<Set<string>>(new Set());
   const [undoTimers, setUndoTimers] = useState<Record<string, NodeJS.Timeout>>({});
 
