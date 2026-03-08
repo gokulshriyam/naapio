@@ -1633,11 +1633,30 @@ const Wizard = () => {
                           </p>
                         </div>
 
+                        {/* Rush Order Toggle */}
+                        <div className={`p-5 rounded-xl border transition-all mb-6 col-span-full ${isRushOrder ? "bg-amber-50 border-amber-300" : "bg-card border-border"}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-start gap-3">
+                              <span className="text-2xl">⚡</span>
+                              <div>
+                                <p className="font-sans font-bold text-foreground text-sm">Rush Order</p>
+                                <p className="text-xs text-muted-foreground font-sans mt-0.5">Need it faster? Rush orders are prioritised and attract tailors who specialise in quick turnaround.</p>
+                              </div>
+                            </div>
+                            <Switch checked={isRushOrder} onCheckedChange={setIsRushOrder} />
+                          </div>
+                          {isRushOrder && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 p-3 bg-amber-100/60 rounded-lg">
+                              <p className="text-xs text-amber-800 font-sans">⚡ Rush surcharge: Tailors may add 20–40% to their bid for rush orders. This is standard and reflects the priority work.</p>
+                            </motion.div>
+                          )}
+                        </div>
+
                         {/* Delivery Date */}
                         <div>
                           <h3 className="font-sans font-semibold text-foreground mb-4">When do you need this ready?</h3>
                           <p className="text-xs text-muted-foreground font-sans mb-3">
-                            Minimum {getMinDeliveryDays()} days from today for {selectedCategory || "this garment"}
+                            Minimum {getMinDeliveryDays()} days from today{isRushOrder ? " (rush)" : ` for ${selectedCategory || "this garment"}`}
                           </p>
                           <Popover>
                             <PopoverTrigger asChild>
