@@ -527,6 +527,8 @@ const Wizard = () => {
   const [inspirationPhoto, setInspirationPhoto] = useState<File | null>(null);
   const [photoAnalysis, setPhotoAnalysis] = useState<{
     detectedGarment: string;
+    detectedSubCategory: string;
+    detectedGender: string;
     detectedColour: string;
     detectedFeel: string;
     detectedSurfaces: string[];
