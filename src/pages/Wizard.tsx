@@ -1325,6 +1325,147 @@ Return a JSON object with ONLY these fields, no other text:
         </div>
       )}
 
+      {/* ═══ Inspiration Lightbox ═══ */}
+      {inspirationLightboxOpen && inspirationPhoto && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setInspirationLightboxOpen(false)}
+        >
+          <button 
+            className="absolute top-4 right-4 p-2 text-white hover:text-accent transition-colors"
+            onClick={() => setInspirationLightboxOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={URL.createObjectURL(inspirationPhoto)} 
+              alt="Inspiration fullscreen" 
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+            />
+            {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+              <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
+                  <span className="px-3 py-1.5 bg-card/90 rounded-full text-sm font-sans font-medium text-foreground">
+                    👗 {photoAnalysis.detectedGarment}
+                  </span>
+                )}
+                {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                  <span className="px-3 py-1.5 bg-card/90 rounded-full text-sm font-sans font-medium text-foreground">
+                    🎨 {photoAnalysis.detectedColour}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ PART 2: Persistent Inspiration Thumbnail (Steps 2 & 3) ═══ */}
+      {/* Mobile: Collapsible bar at top */}
+      {(step === 2 || step === 3) && inspirationPhoto && (
+        <div className="md:hidden">
+          {!inspirationExpanded ? (
+            <button
+              onClick={() => setInspirationExpanded(true)}
+              className="w-full bg-card border-b border-border px-4 py-2 flex items-center gap-3"
+            >
+              <img 
+                src={URL.createObjectURL(inspirationPhoto)} 
+                alt="Inspiration" 
+                className="w-10 h-10 rounded-lg object-cover border border-border"
+              />
+              <span className="flex-1 text-left font-sans text-sm font-medium text-foreground">Your Inspiration 📸</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </button>
+          ) : (
+            <motion.div 
+              initial={{ height: 0 }} 
+              animate={{ height: 'auto' }}
+              className="bg-card border-b border-border overflow-hidden"
+            >
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-sans text-sm font-semibold text-foreground">Your Inspiration</span>
+                  <button 
+                    onClick={() => setInspirationExpanded(false)}
+                    className="text-xs text-muted-foreground font-sans flex items-center gap-1"
+                  >
+                    Collapse <ChevronDown className="w-3 h-3 rotate-180" />
+                  </button>
+                </div>
+                <img 
+                  src={URL.createObjectURL(inspirationPhoto)} 
+                  alt="Inspiration" 
+                  className="w-full h-44 rounded-xl object-cover border border-border"
+                  onClick={() => setInspirationLightboxOpen(true)}
+                />
+                {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
+                      <span className="px-2 py-0.5 bg-accent/10 rounded-full text-xs font-sans text-foreground">
+                        {photoAnalysis.detectedGarment}
+                      </span>
+                    )}
+                    {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                      <span className="px-2 py-0.5 bg-accent/10 rounded-full text-xs font-sans text-foreground">
+                        {photoAnalysis.detectedColour}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Desktop: Fixed card in bottom-right */}
+      {(step === 2 || step === 3) && inspirationPhoto && (
+        <div className="hidden md:block fixed bottom-24 right-6 z-40 w-40">
+          <div className="bg-card rounded-xl border border-border shadow-lg overflow-hidden">
+            <div className="p-2">
+              <p className="text-xs font-sans font-semibold text-muted-foreground mb-2">Your Inspiration</p>
+              <div className="relative">
+                <img 
+                  src={URL.createObjectURL(inspirationPhoto)} 
+                  alt="Inspiration" 
+                  className="w-full h-28 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => setInspirationLightboxOpen(true)}
+                />
+                <button 
+                  onClick={() => setInspirationLightboxOpen(true)}
+                  className="absolute top-1.5 right-1.5 p-1 bg-card/90 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg>
+                </button>
+                {analysisLoading && (
+                  <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center">
+                    <motion.span 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                      className="text-sm"
+                    >
+                      ✨
+                    </motion.span>
+                  </div>
+                )}
+                {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && !analysisLoading && (
+                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-green-500 text-white rounded text-[9px] font-sans font-semibold">
+                    ✨ Analysed
+                  </span>
+                )}
+              </div>
+              {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+                <p className="text-[10px] text-muted-foreground font-sans mt-2 truncate">
+                  {[photoAnalysis.detectedGarment, photoAnalysis.detectedColour].filter(d => d && d !== 'Other').join(' · ')}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
           {/* STEP 0: Who are you ordering for? */}
