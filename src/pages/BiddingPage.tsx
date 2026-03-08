@@ -78,6 +78,27 @@ const maskContactInfo = (text: string): string => {
   return masked;
 };
 
+type ChatMessage = {
+  id: string;
+  text?: string;
+  from: 'you' | 'artisan' | 'tailor' | 'system';
+  masked?: boolean;
+  status: 'sent' | 'delivered' | 'read';
+  timestamp: number;
+  attachment?: {
+    type: 'image' | 'video' | 'file';
+    name: string;
+    url: string; // object URL from FileReader (TODO: FILE_STORAGE — replace with CDN URL)
+    size?: string;
+  };
+};
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+};
+
 const daysSince = (d: Date) => Math.floor((Date.now() - d.getTime()) / 86400000);
 
 // ═══════════════════════════════════════
