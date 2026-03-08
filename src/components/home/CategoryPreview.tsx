@@ -72,7 +72,12 @@ const CategoryPreview = () => {
             {orderTypes.map((type) => (
               <button
                 key={type.title}
-                onClick={() => navigate(`/start`)}
+                onClick={() => {
+                  localStorage.setItem('naapio_prefill', JSON.stringify({
+                    orderType: type.title,
+                  }));
+                  navigate('/start');
+                }}
                 className={`border-2 rounded-xl p-5 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${type.color}`}
               >
                 <div className="text-3xl mb-2">{type.emoji}</div>
