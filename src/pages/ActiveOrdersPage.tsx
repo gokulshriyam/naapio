@@ -238,8 +238,8 @@ const ActiveOrdersPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8">
-        {/* Sidebar order card */}
-        <div className="bg-card rounded-2xl border border-border p-5 h-fit sticky top-24">
+        {/* Sidebar order card — not sticky on mobile */}
+        <div className="bg-card rounded-2xl border border-border p-5 h-fit md:sticky md:top-24">
           <img src={redLehenga} alt="Order" className="w-full h-40 object-cover rounded-xl mb-4" />
           <div className="space-y-2 text-sm font-sans">
             <div className="flex justify-between"><span className="text-muted-foreground">Order</span><span className="font-medium text-foreground">#{orderId}</span></div>
