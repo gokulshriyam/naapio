@@ -2329,6 +2329,8 @@ const Wizard = () => {
                   } else {
                     setStep(4);
                   }
+                } else if (step === 0) {
+                  setStep(1);
                 } else {
                   setStep(step + 1);
                 }
