@@ -85,8 +85,23 @@ const BiddingPage = () => {
   const navigate = useNavigate();
   const [timers, setTimers] = useState(activeRequests.map((r) => ({ ...r.countdown, minutes: 0, seconds: 0 })));
 
+  // Load last order from localStorage
+  const savedOrder = localStorage.getItem("naapio_last_order");
+  const lastOrder = savedOrder ? JSON.parse(savedOrder) : null;
+
   // Demo state
-  const [demoOrder, setDemoOrder] = useState(initialDemoOrder);
+  const [demoOrder, setDemoOrder] = useState(() => {
+    if (lastOrder) {
+      return {
+        ...initialDemoOrder,
+        id: lastOrder.orderId,
+        orderType: lastOrder.orderType || initialDemoOrder.orderType,
+        garment: lastOrder.garment || initialDemoOrder.garment,
+        occasion: lastOrder.occasion || initialDemoOrder.occasion,
+      };
+    }
+    return initialDemoOrder;
+  });
   const [milestones, setMilestones] = useState<Milestone[]>(initialDemoOrder.milestones);
   const [changeNotes, setChangeNotes] = useState<Record<number, string>>({});
   const [confirmBid, setConfirmBid] = useState<typeof mockBids[0] | null>(null);
