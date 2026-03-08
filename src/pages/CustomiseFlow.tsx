@@ -705,6 +705,7 @@ const CustomiseFlow = () => {
                   {/* SVG Diagram */}
                   <div className="bg-card rounded-2xl border border-border p-6 mb-6">
                     <GarmentDiagram />
+                    <p className="text-xs text-muted-foreground font-sans mt-3 text-center">📌 This diagram is for placement reference only — your artisan will work directly from your uploaded garment photos in Step C1.</p>
                   </div>
 
                   {/* Zone pills below SVG */}

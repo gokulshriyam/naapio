@@ -1355,7 +1355,9 @@ const Wizard = () => {
               {/* SUB-PHASE: CATEGORY + SUBCATEGORY */}
               {step2Phase === "category" && (
                 <div>
-                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What are you getting made?</h2>
+                  <h2 className="text-3xl font-serif font-bold text-foreground mb-2">
+                    {giftOrder ? `What is ${recipientName || 'they'} looking for?` : "What are you getting made?"}
+                  </h2>
                   <p className="text-muted-foreground font-sans mb-6">Select your garment category, then choose a specific style</p>
 
                   {/* Gender Toggle */}
@@ -1366,7 +1368,10 @@ const Wizard = () => {
                         onClick={() => { setGender(g); setSelectedCategory(""); setSelectedSubCategory(""); setKidsExpanded(false); }}
                         className={`px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all ${gender === g ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
                       >
-                        {g === "men" ? "👔 Men's" : "👗 Women's"}
+                        {g === "men"
+                          ? (giftOrder ? `👔 Men's Clothing (for ${recipientName || 'them'})` : "👔 Men's")
+                          : (giftOrder ? `👗 Women's Clothing (for ${recipientName || 'them'})` : "👗 Women's")
+                        }
                       </button>
                     ))}
                     {/* Kids tile */}
