@@ -439,7 +439,7 @@ const ActiveOrdersPage = () => {
                 ) : (
                   <div className="mt-4">
                     <p className="text-sm text-muted-foreground font-sans mb-4">Confirm your shipping address for dispatch.</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <div className="grid grid-cols-1 gap-3 mb-6">
                       {([
                         ["name","Full Name"],["addr1","Address Line 1"],["addr2","Address Line 2 (optional)"],
                         ["city","City"],["state","State"],["pincode","Pincode"],["phone","Phone"],
