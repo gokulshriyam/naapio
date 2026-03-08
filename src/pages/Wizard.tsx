@@ -1092,9 +1092,12 @@ const Wizard = () => {
     }
 
     const avg = Math.round(base * multiplier / 500) * 500;
-    const min = Math.max(1000, Math.round(avg * 0.65 / 500) * 500);
-    const max = Math.round(avg * 1.65 / 500) * 500;
-    return { min, max, avg, explanation: factors.filter(Boolean) };
+    const computedMin = Math.max(1000, Math.round(avg * 0.65 / 500) * 500);
+    const computedMax = Math.round(avg * 1.65 / 500) * 500;
+    // Safety guard — min < max, both >= 1000, never inverted
+    const safeMin = Math.max(1000, Math.min(computedMin, computedMax - 500));
+    const safeMax = Math.max(safeMin + 500, computedMax);
+    return { min: safeMin, max: safeMax, avg, explanation: factors.filter(Boolean) };
   };
 
   const budgetIntelligenceData = useMemo(
