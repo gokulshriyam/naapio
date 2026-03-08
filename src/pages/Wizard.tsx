@@ -635,7 +635,9 @@ const Wizard = () => {
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => navigate("/")} className="font-serif font-bold text-lg text-foreground">Naapio</button>
             <span className="font-sans text-sm text-muted-foreground">
-               {step === 2
+               {step === 0
+                ? "Who is this for?"
+                : step === 2
                 ? step2Phase === "category"
                   ? "Step 2a — Category"
                   : step2Phase === "occasion"
