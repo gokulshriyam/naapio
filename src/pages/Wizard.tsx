@@ -457,6 +457,9 @@ const Wizard = () => {
   // Exit Warning
   const [showExitWarning, setShowExitWarning] = useState(false);
 
+  // Step transition
+  const [stepTransitioning, setStepTransitioning] = useState(false);
+
   // Measurement Photo
   const [measurementPhoto, setMeasurementPhoto] = useState<File | null>(null);
 
