@@ -955,7 +955,7 @@ Return a JSON object with ONLY these fields, no other text:
   "confidence": "high if 3+ attributes clearly visible, medium if 2 attributes visible, low if image is unclear"
 }`;
 
-      const apiKey = "AIzaSyDGPSrBpkvz1iLAtXg7kBNJj9QMbw3E8sw"; // TODO: move server-side before launch
+      const apiKey = "AIzaSyBTMDZOq0B2x7xEgVX6Sis-U80jgXohICg"; // TODO: move server-side before launch
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
         {
