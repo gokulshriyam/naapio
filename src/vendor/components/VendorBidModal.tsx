@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -17,13 +16,15 @@ type Props = {
   open: boolean;
   onClose: () => void;
   lead: Lead;
-  onBidSubmitted: (leadId: string, bid: { amount: number; date: string; message: string }) => void;
+  onBidSubmitted: (leadId: string, bid: { amount: number; date: string; message: string; referenceImage?: string; referenceCaption?: string }) => void;
 };
 
 const VendorBidModal = ({ open, onClose, lead, onBidSubmitted }: Props) => {
   const [price, setPrice] = useState<string>('');
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>();
   const [message, setMessage] = useState('');
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [referenceCaption, setReferenceCaption] = useState('');
 
   const numPrice = Number(price) || 0;
   const netEarning = Math.round(numPrice * 0.8);
@@ -32,15 +33,26 @@ const VendorBidModal = ({ open, onClose, lead, onBidSubmitted }: Props) => {
   const pastDeadline = deliveryDate && new Date(lead.deliveryDate) < deliveryDate;
   const canSubmit = numPrice >= 1000 && price.length > 0;
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setReferenceImage(url);
+    }
+  };
+
   const handleSubmit = () => {
     if (!canSubmit) return;
     onBidSubmitted(lead.id, {
       amount: numPrice,
       date: deliveryDate ? format(deliveryDate, 'yyyy-MM-dd') : lead.deliveryDate,
       message,
+      referenceImage: referenceImage || undefined,
+      referenceCaption: referenceCaption || undefined,
     });
     toast.success(`Bid submitted for ₹${numPrice.toLocaleString('en-IN')}!`);
     setPrice(''); setDeliveryDate(undefined); setMessage('');
+    setReferenceImage(null); setReferenceCaption('');
     onClose();
   };
 
@@ -130,6 +142,35 @@ const VendorBidModal = ({ open, onClose, lead, onBidSubmitted }: Props) => {
               maxLength={500}
             />
             <p className="text-xs text-muted-foreground font-sans mt-1 text-right">{message.length}/500</p>
+          </div>
+
+          {/* Similar work image upload */}
+          <div>
+            <Label className="font-sans text-sm">Show similar work (optional)</Label>
+            <p className="text-[11px] font-sans text-muted-foreground mt-0.5">Upload a photo from your portfolio that shows work similar to this brief.</p>
+            <input
+              type="file"
+              accept="image/*"
+              className="mt-1.5 text-xs font-sans"
+              onChange={handleImageUpload}
+            />
+            {referenceImage && (
+              <div className="relative inline-block mt-2">
+                <img src={referenceImage} alt="Reference" className="w-32 h-32 rounded-xl object-cover" />
+                <button onClick={() => setReferenceImage(null)} className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs">
+                  <XIcon className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {referenceImage && (
+              <Input
+                value={referenceCaption}
+                onChange={e => setReferenceCaption(e.target.value.slice(0, 100))}
+                placeholder="Brief caption (e.g. 'Bridal lehenga I made for a December wedding')"
+                className="mt-2 text-xs font-sans"
+                maxLength={100}
+              />
+            )}
           </div>
         </div>
 
