@@ -386,6 +386,23 @@ const Wizard = () => {
   const [visualiserError, setVisualiserError] = useState<string>("");
   const [visualiserDismissed, setVisualiserDismissed] = useState<boolean>(false);
 
+  // Inspiration Photo Analysis State (PART 1)
+  const [inspirationPhoto, setInspirationPhoto] = useState<File | null>(null);
+  const [photoAnalysis, setPhotoAnalysis] = useState<{
+    detectedGarment: string;
+    detectedColour: string;
+    detectedFeel: string;
+    detectedSurfaces: string[];
+    detectedOccasion: string;
+    confidence: 'high' | 'medium' | 'low';
+    analysisComplete: boolean;
+    analysisError: boolean;
+  } | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
+  const [inspirationExpanded, setInspirationExpanded] = useState<boolean>(false);
+  const [inspirationLightboxOpen, setInspirationLightboxOpen] = useState<boolean>(false);
+  const [photoFromBadgeShown, setPhotoFromBadgeShown] = useState<Set<string>>(new Set());
+
   const isBlouseCategory = selectedCategory === "Saree Blouse" || (selectedSubCategory || "").toLowerCase().includes("blouse");
 
   const hasEmbellishment = selectedSurfaces.length > 0 &&
