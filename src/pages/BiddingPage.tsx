@@ -264,6 +264,10 @@ const BiddingRoom = ({
   const [undoTimers, setUndoTimers] = useState<Record<string, NodeJS.Timeout>>({});
 
   const tl = useCountdown(order.bidDeadline);
+  // TODO: API_INTEGRATION_POINT — replace mockBids with bids filtered by order.id
+  // In production: const bids = await fetch(`/v1/orders/${order.id}/bids`)
+  // For demo continuity, mockBids are currently scoped to NP-2026-00098 only.
+  // Filter for demo: show bids only if order.bidsReceived > 0 (existing guard handles this).
   const sorted = [...mockBids].sort(sortFns[sortBy] || sortFns.Recommended);
   const visible = sorted.filter((b) => !ignoredBids.has(b.id));
   const displayed = showAll ? visible : visible.slice(0, 4);

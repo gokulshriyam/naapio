@@ -245,7 +245,7 @@ const AlterationFlow = () => {
         orderType: "Alteration",
         garment: isMatchingPiece ? `Matching Piece: ${matchingPieceType}` : garmentDisplay,
         occasion: "",
-        budgetRange: `${formatBudget(alterationBudgetRange[0])} – ${formatBudget(alterationBudgetRange[1])}`,
+        budgetRange: [alterationBudgetRange[0], alterationBudgetRange[1]],
         deliveryDate: alterationDeliveryDate,
         matchingPieceType, matchingForGarment, matchingFabricAvailable, matchingColourNote,
         timestamp: new Date().toISOString()

@@ -4021,7 +4021,7 @@ Important rules:
                   )}
 
                   {/* STEP 3g: FABRIC BUDGET BAND */}
-                  {step3Phase === "fabricBudget" && (
+                  {step3Phase === "fabricBudget" && orderType !== 'own-fabric' && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your fabric budget per metre?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Helps your tailor source within your range</p>
@@ -4044,6 +4044,17 @@ Important rules:
                             <p className="text-xs text-muted-foreground">{fb.desc}</p>
                           </button>
                         ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* OWN FABRIC: skip fabric budget, show info */}
+                  {step3Phase === "fabricBudget" && orderType === 'own-fabric' && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Fabric Budget</h2>
+                      <div className="p-4 rounded-xl bg-info-light border border-info/20">
+                        <p className="text-sm font-sans text-foreground">
+                          💡 Since you're supplying your own fabric, the artisan will only quote for stitching and labour. You'll receive bids based on garment complexity and your requirements.
+                        </p>
                       </div>
                     </div>
                   )}

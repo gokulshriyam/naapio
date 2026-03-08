@@ -1116,7 +1116,12 @@ const ActiveOrdersPage = () => {
                     </label>
                   ))}
                   {confirmedKeys.length === 0 && (
-                    <p className="text-xs text-muted-foreground font-sans">No confirmed measurements found. Proceed if video looks correct.</p>
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-light border border-warning/20">
+                      <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                      <p className="text-xs font-sans text-foreground">
+                        No confirmed measurements found for this order. Visually verify all fit points in the video before approving.
+                      </p>
+                    </div>
                   )}
                 </div>
 
