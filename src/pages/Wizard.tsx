@@ -1,6 +1,6 @@
 // TODO: I18N_NEEDED — extract all hardcoded strings to en.json
 // and replace with t() calls. Wizard strings not yet translated.
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info, CalendarIcon, Lock, ChevronDown } from "lucide-react";
@@ -45,19 +45,7 @@ const formatBudget = (value: number): string => {
   return `₹${value}`;
 };
 
-const budgetIntelligence: Record<string, {avg: number, low: number, high: number, tip: string}> = {
-  'Saree Blouse': { avg: 1500, low: 800, high: 8000, tip: 'Blouse prices vary widely by embroidery work. Plain blouse: ₹800–₹2K. Heavy work: ₹3K–₹8K.' },
-  'Kurti': { avg: 1200, low: 600, high: 4000, tip: 'Simple cotton kurti starts at ₹600. Designer with embroidery up to ₹4K.' },
-  'Salwar Kameez': { avg: 3500, low: 1500, high: 10000, tip: 'Including dupatta. Basic: ₹1.5K–₹3K. Embroidered/formal: ₹4K–₹10K.' },
-  'Anarkali': { avg: 5000, low: 2000, high: 18000, tip: 'Floor-length anarkali with lining. Simple: ₹2K–₹5K. Embellished: ₹6K–₹18K.' },
-  'Lehenga': { avg: 12000, low: 5000, high: 200000, tip: 'Party lehenga: ₹5K–₹20K. Semi-bridal: ₹15K–₹50K. Full bridal: ₹50K–₹2L.' },
-  'Gown': { avg: 8000, low: 3000, high: 40000, tip: 'Indo-western gown. Simple: ₹3K–₹6K. Embellished/trail: ₹8K–₹40K.' },
-  'Kurta': { avg: 1800, low: 800, high: 6000, tip: 'Men\'s kurta. Plain cotton: ₹800–₹2K. Designer/embroidered: ₹3K–₹6K.' },
-  'Sherwani': { avg: 15000, low: 6000, high: 80000, tip: 'Occasion sherwani: ₹6K–₹20K. Wedding grade with zari: ₹25K–₹80K.' },
-  'Bandhgala': { avg: 8000, low: 4000, high: 35000, tip: 'Formal bandhgala/jodhpuri. Basic: ₹4K–₹8K. Embroidered: ₹10K–₹35K.' },
-  'Suit/Blazer': { avg: 12000, low: 5000, high: 50000, tip: 'Tailored suit. Basic single piece: ₹5K–₹12K. Full suit with lining: ₹15K–₹50K.' },
-  'Chaniya Choli': { avg: 8000, low: 3000, high: 40000, tip: 'Garba/festival wear: ₹3K–₹8K. Heavy embellished: ₹10K–₹40K.' },
-};
+// Contextual budget intelligence is computed via computeIntelligentBudget() inside the component
 
 const budgetGuidance: Record<string, string> = {
   'Saree Blouse': 'Typical range: ₹800 – ₹5,000',
@@ -411,6 +399,93 @@ const Wizard = () => {
     if (formal.includes(selectedCategory)) return 14;
     return 10;
   };
+
+  // ── Contextual Budget Intelligence ──
+  const computeIntelligentBudget = (): { min: number; max: number; avg: number; explanation: string[] } => {
+    const bases: Record<string, number> = {
+      'Saree Blouse': 1500, 'High-neck Blouse': 2000, 'Backless Blouse': 2500, 'Embroidered Blouse': 3500,
+      'Kurti': 1200, 'Short Kurti': 1000,
+      'Salwar Kameez': 4000, 'Patiala Suit': 3500, 'Churidar Set': 3500,
+      'Anarkali': 5500, 'Straight Cut': 3000, 'A-Line Kurta': 3500,
+      'Co-ord Set': 5000, 'Sharara Set': 6000,
+      'Party Lehenga': 10000, 'Chaniya Choli': 8000, 'Festive Lehenga': 12000,
+      'Gown': 9000, 'Indo-Western Gown': 10000, 'Trail Gown': 15000,
+      'Bridal Lehenga': 40000, 'Bridal Lehenga (Full Set)': 55000, 'Bridal Saree Draping': 3000,
+      'Kurta': 2000, 'Casual Kurta': 1500, 'Pathani Suit': 3500,
+      'Sherwani': 18000, 'Wedding Sherwani': 35000,
+      'Bandhgala': 10000, 'Jodhpuri': 10000,
+      'Suit': 15000, 'Blazer': 8000, 'Nehru Jacket': 5000,
+      'Lehenga': 12000, 'default_women': 5000, 'default_men': 6000,
+    };
+    const base = bases[selectedSubCategory] || bases[selectedCategory] || (gender === 'men' ? bases['default_men'] : bases['default_women']);
+    const factors: string[] = [];
+    let multiplier = 1.0;
+
+    // Occasion
+    const occasionMultipliers: Record<string, number> = {
+      'Wedding / Baraat / Nikah': 2.8, 'Reception / Cocktail': 2.0, 'Engagement / Roka': 1.8,
+      'Mehendi / Haldi': 1.5, 'Pre-Wedding / Photoshoot': 1.6,
+      'Festival (Diwali / Eid / Navratri)': 1.3, 'Garba / Dandiya Night': 1.2,
+      'Religious Ceremony / Puja': 1.2, 'Formal Office / Corporate': 1.0,
+      'Casual / Daily Wear': 0.7, 'Party / Night Out': 1.3, 'Graduation / Convocation': 0.9,
+    };
+    const occMult = occasionMultipliers[selectedOccasion] || 1.0;
+    if (occMult !== 1.0) {
+      multiplier *= occMult;
+      factors.push(occMult > 1.5 ? `${selectedOccasion} (+${Math.round((occMult-1)*100)}%)` : occMult > 1.0 ? `${selectedOccasion} (moderate premium)` : 'Casual occasion (budget-friendly)');
+    }
+
+    // Fabric feel
+    const feelMultipliers: Record<string, number> = {
+      'Rich & Heavy': 2.0, 'Structured': 1.4, 'Light & Airy': 0.85,
+      'Crisp & Sharp': 1.6, 'Soft & Draped': 1.0,
+    };
+    const feelMult = feelMultipliers[selectedFeel] || 1.0;
+    if (feelMult !== 1.0) {
+      multiplier *= feelMult;
+      factors.push(feelMult > 1.3 ? `${selectedFeel} fabric adds significant cost` : `${selectedFeel} fabric (moderate impact)`);
+    }
+
+    // Surface work
+    const surfaceMultipliers: Record<string, number> = {
+      'Heavy Embroidery': 2.0, 'Zardozi / Zari Work': 2.5, 'Mirror Work': 1.8,
+      'Sequence & Beadwork': 1.6, 'Resham Thread Work': 1.5, 'Kalamkari / Block Print': 1.2,
+      'Bandhani / Tie-Dye': 1.2, 'Cutwork / Lace': 1.4, 'Smocking / Pintucks': 1.3,
+      'Digital Print': 1.1, 'Appliqué': 1.3, 'Plain / No Embellishment': 1.0,
+    };
+    const surfaceMult = selectedSurfaces.length > 0 ? Math.max(...selectedSurfaces.map(s => surfaceMultipliers[s] || 1.0)) : 1.0;
+    const multiSurfaceBonus = selectedSurfaces.length > 2 ? 1.2 : selectedSurfaces.length > 1 ? 1.1 : 1.0;
+    if (surfaceMult > 1.0) {
+      multiplier *= surfaceMult * multiSurfaceBonus;
+      const heaviest = selectedSurfaces.find(s => surfaceMultipliers[s] === surfaceMult);
+      factors.push(surfaceMult > 1.8 ? `${heaviest} is labour-intensive (+${Math.round((surfaceMult-1)*100)}%)` : 'Surface work adds to cost');
+      if (selectedSurfaces.length > 2) factors.push(`${selectedSurfaces.length} embellishment types (combination premium)`);
+    }
+
+    // Fabric budget band
+    const fabricBandMultipliers: Record<string, number> = { 'Economy': 0.75, 'Mid-Range': 1.0, 'Premium': 1.5 };
+    const fabMult = fabricBandMultipliers[fabricBudgetBand] || 1.0;
+    if (fabMult !== 1.0) {
+      multiplier *= fabMult;
+      factors.push(fabMult > 1.3 ? `${fabricBudgetBand} fabric tier — significant material cost` : fabMult < 1.0 ? 'Economy fabric — lower material cost' : '');
+    }
+
+    // Own fabric discount
+    if (isOwnFabric) {
+      multiplier *= 0.65;
+      factors.push('Own fabric: material cost deducted');
+    }
+
+    const avg = Math.round(base * multiplier / 500) * 500;
+    const min = Math.max(1000, Math.round(avg * 0.65 / 500) * 500);
+    const max = Math.round(avg * 1.65 / 500) * 500;
+    return { min, max, avg, explanation: factors.filter(Boolean) };
+  };
+
+  const budgetIntelligenceData = useMemo(
+    () => computeIntelligentBudget(),
+    [selectedSubCategory, selectedCategory, selectedOccasion, selectedFeel, selectedSurfaces, fabricBudgetBand, isOwnFabric, gender]
+  );
 
   const getMinDeliveryDate = () => {
     const d = new Date();
@@ -2484,48 +2559,42 @@ const Wizard = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         {/* Budget Intelligence Badge */}
                         <div className="col-span-full">
-                          {(() => {
-                            const intelligence = budgetIntelligence[selectedCategory] || budgetIntelligence[selectedSubCategory];
-                            if (!intelligence) return null;
-                            return (
-                              <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span>💡</span>
-                                  <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
-                                </div>
-                                <p className="text-xs text-amber-800 font-sans mb-3">
-                                  Naapio customers ordering {selectedCategory} typically spend:
-                                </p>
-                                <div className="relative h-2 bg-amber-200 rounded-full mb-2">
-                                  <div
-                                    className="absolute h-full bg-accent rounded-full"
-                                    style={{
-                                      left: `${Math.max(0, ((intelligence.low - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
-                                      right: `${Math.max(0, 100 - ((intelligence.high - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
-                                    }}
-                                  />
-                                  <div
-                                    className="absolute w-2 h-4 bg-accent rounded-full -top-1"
-                                    style={{ left: `${((intelligence.avg - intelligence.low) / (intelligence.high - intelligence.low)) * 100}%` }}
-                                  />
-                                </div>
-                                <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
-                                  <span>{formatBudget(intelligence.low)}</span>
-                                  <span className="font-semibold">Avg {formatBudget(intelligence.avg)}</span>
-                                  <span>{formatBudget(intelligence.high)}</span>
-                                </div>
-                                <p className="text-xs text-amber-800 font-sans mb-3">{intelligence.tip}</p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-xs"
-                                  onClick={() => setBudgetRange([intelligence.low, Math.round(intelligence.avg * 1.5)])}
-                                >
-                                  Set recommended range
-                                </Button>
+                          <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span>💡</span>
+                              <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                              <span className="font-sans text-[10px] text-amber-600">Based on your selections</span>
+                            </div>
+                            <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                              <div className="absolute h-full bg-accent rounded-full" style={{ left: '0%', right: `${Math.max(0, 100 - ((budgetIntelligenceData.max - budgetIntelligenceData.min) / budgetIntelligenceData.max) * 100)}%` }} />
+                              <div className="absolute w-2 h-4 bg-accent rounded-full -top-1" style={{ left: `${((budgetIntelligenceData.avg - budgetIntelligenceData.min) / (budgetIntelligenceData.max - budgetIntelligenceData.min)) * 100}%` }} />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                              <span>{formatBudget(budgetIntelligenceData.min)}</span>
+                              <span className="font-semibold">Avg {formatBudget(budgetIntelligenceData.avg)}</span>
+                              <span>{formatBudget(budgetIntelligenceData.max)}</span>
+                            </div>
+                            {budgetIntelligenceData.explanation.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-[10px] text-amber-800 font-sans font-semibold mb-1">What's included in this estimate:</p>
+                                {budgetIntelligenceData.explanation.slice(0, 4).map((f, i) => (
+                                  <p key={i} className="text-[10px] text-amber-700 font-sans">• {f}</p>
+                                ))}
+                                {budgetIntelligenceData.explanation.length > 4 && (
+                                  <p className="text-[10px] text-amber-600 font-sans">+ {budgetIntelligenceData.explanation.length - 4} more factors</p>
+                                )}
                               </div>
-                            );
-                          })()}
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs"
+                              onClick={() => setBudgetRange([budgetIntelligenceData.min, budgetIntelligenceData.max])}
+                            >
+                              Use Suggested Range
+                            </Button>
+                            <p className="text-[10px] text-amber-600 font-sans mt-2">This is an estimate — final amount is what you agree with your chosen artisan.</p>
+                          </div>
                         </div>
 
                         {/* Total Budget - Dual Handle Slider */}

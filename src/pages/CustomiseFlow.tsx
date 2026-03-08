@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
+import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -103,6 +104,12 @@ const getMinDeliveryDays = (types: string[]): number => {
   return 3;
 };
 
+const formatBudget = (value: number): string => {
+  if (value >= 100000) return `₹${(value/100000).toFixed(1).replace('.0','')}L`;
+  if (value >= 1000) return `₹${(value/1000).toFixed(1).replace('.0','')}K`;
+  return `₹${value}`;
+};
+
 const getMinDeliveryDate = (types: string[]) => {
   const d = new Date();
   d.setDate(d.getDate() + getMinDeliveryDays(types));
@@ -150,19 +157,41 @@ const CustomiseFlow = () => {
   const [zoneNotes, setZoneNotes] = useState<Record<string, string>>({});
   const [zonePhotos, setZonePhotos] = useState<Record<string, File | null>>({});
   const [placementCustomNote, setPlacementCustomNote] = useState("");
+
   const [referenceArtPhoto, setReferenceArtPhoto] = useState<File | null>(null);
   const [placementError, setPlacementError] = useState(false);
 
   const totalSelectedZones = Object.values(selectedZonesByView).flat().length;
   const allSelectedZones = Object.values(selectedZonesByView).flat();
 
+  // Customise Intelligence
+  const custIntelligence = useMemo(() => {
+    const basesPerZone: Record<string, number> = {
+      'Embroidery / Thread Work': 1500, 'Zari / Zardozi Work': 2000,
+      'Mirror Work / Shisha': 1500, 'Sequins & Beadwork': 1200,
+      'Hand Painting / Fabric Art': 2000, 'Block / Screen Printing': 800,
+      'Patch / Appliqué Work': 1000, 'Monogram / Name Embroidery': 800,
+      'Digital / Heat Transfer Print': 600,
+    };
+    const zones = totalSelectedZones || 1;
+    const highestBase = customisationTypes.length > 0
+      ? Math.max(...customisationTypes.map(t => basesPerZone[t] || 1000))
+      : 1000;
+    const avg = Math.round(highestBase * zones / 500) * 500;
+    const min = Math.max(1000, Math.round(avg * 0.6 / 500) * 500);
+    const max = Math.round(avg * 1.8 / 500) * 500;
+    const factors: string[] = [];
+    if (customisationTypes.length > 0) factors.push(`${customisationTypes[0]}${customisationTypes.length > 1 ? ` + ${customisationTypes.length - 1} more` : ''}`);
+    if (zones > 1) factors.push(`${zones} zones selected`);
+    return { min, max, avg, explanation: factors };
+  }, [customisationTypes, totalSelectedZones]);
+
   // C4
   const [customiseColourMood, setCustomiseColourMood] = useState("");
   const [customiseStyleNotes, setCustomiseStyleNotes] = useState("");
 
   // C5
-  const [customiseBudgetMin, setCustomiseBudgetMin] = useState("");
-  const [customiseBudgetMax, setCustomiseBudgetMax] = useState("");
+  const [customiseBudgetRange, setCustomiseBudgetRange] = useState([1000, 8000]);
   const [customiseDeliveryDate, setCustomiseDeliveryDate] = useState("");
   const [customiseFlexibleDate, setCustomiseFlexibleDate] = useState(false);
 
@@ -231,7 +260,7 @@ const CustomiseFlow = () => {
     }
     if (step === 3) return totalSelectedZones > 0;
     if (step === 4) return true;
-    if (step === 5) return !!customiseBudgetMin.trim() && !!customiseDeliveryDate;
+    if (step === 5) return customiseBudgetRange[0] >= 1000 && !!customiseDeliveryDate;
     return true;
   };
 
@@ -250,7 +279,7 @@ const CustomiseFlow = () => {
         orderType: "Customise",
         garment: customisationTypes.join(", "),
         occasion: "",
-        budgetRange: `₹${customiseBudgetMin} – ₹${customiseBudgetMax || "—"}`,
+        budgetRange: `${formatBudget(customiseBudgetRange[0])} – ${formatBudget(customiseBudgetRange[1])}`,
         deliveryDate: customiseDeliveryDate,
         timestamp: new Date().toISOString()
       }));
@@ -599,7 +628,7 @@ const CustomiseFlow = () => {
                       <button onClick={() => { setShowReview(false); setStep(5); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
                     <p className="text-sm text-foreground font-sans">
-                      Budget: ₹{customiseBudgetMin} – ₹{customiseBudgetMax || "—"}
+                      Budget: {formatBudget(customiseBudgetRange[0])} – {formatBudget(customiseBudgetRange[1])}
                     </p>
                     <p className="text-sm text-foreground font-sans mt-1">
                       Delivery by: {customiseDeliveryDate ? format(new Date(customiseDeliveryDate + "T00:00:00"), "PPP") : "Not set"}
@@ -1006,18 +1035,88 @@ const CustomiseFlow = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>
                       <h3 className="font-sans font-semibold text-foreground mb-4">Budget for the customisation work</h3>
+
+                      {/* Intelligence Card */}
+                      {customisationTypes.length > 0 && (
+                        <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>💡</span>
+                            <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                            <span className="font-sans text-[10px] text-amber-600">Based on your selections</span>
+                          </div>
+                          <p className="text-xs text-amber-800 font-sans mb-3">
+                            Estimated artisan cost: {formatBudget(custIntelligence.min)}–{formatBudget(custIntelligence.max)}
+                          </p>
+                          <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                            <div className="absolute h-full bg-accent rounded-full" style={{ left: '0%', right: `${Math.max(0, 100 - ((custIntelligence.max - custIntelligence.min) / custIntelligence.max) * 100)}%` }} />
+                            <div className="absolute w-2 h-4 bg-accent rounded-full -top-1" style={{ left: `${((custIntelligence.avg - custIntelligence.min) / (custIntelligence.max - custIntelligence.min)) * 100}%` }} />
+                          </div>
+                          <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                            <span>{formatBudget(custIntelligence.min)}</span>
+                            <span className="font-semibold">Avg {formatBudget(custIntelligence.avg)}</span>
+                            <span>{formatBudget(custIntelligence.max)}</span>
+                          </div>
+                          {custIntelligence.explanation.map((f, i) => (
+                            <p key={i} className="text-[10px] text-amber-700 font-sans">• {f}</p>
+                          ))}
+                          <Button variant="outline" size="sm" className="text-xs mt-3" onClick={() => setCustomiseBudgetRange([custIntelligence.min, custIntelligence.max])}>
+                            Use Suggested Range
+                          </Button>
+                          <p className="text-[10px] text-amber-600 font-sans mt-2">This is an estimate — final amount is what you agree with your chosen artisan.</p>
+                        </div>
+                      )}
+
+                      {/* Dual Handle Slider */}
+                      <div className="mb-4">
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm font-sans font-semibold text-accent">{formatBudget(customiseBudgetRange[0])}</span>
+                          <span className="text-sm font-sans font-semibold text-accent">{formatBudget(customiseBudgetRange[1])}</span>
+                        </div>
+                        <Slider
+                          value={customiseBudgetRange}
+                          onValueChange={(val) => { if (val[1] - val[0] >= 2000) setCustomiseBudgetRange(val); }}
+                          min={1000}
+                          max={200000}
+                          step={customiseBudgetRange[0] < 10000 ? 500 : customiseBudgetRange[0] < 50000 ? 1000 : 5000}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
+                          <span>₹1K</span>
+                          <span>₹2L</span>
+                        </div>
+                      </div>
+
+                      {/* Manual override inputs */}
                       <div className="flex gap-3 mb-3">
                         <div className="flex-1">
                           <label className="text-xs font-sans text-muted-foreground mb-1 block">Min ₹</label>
-                          <Input type="number" placeholder="500" value={customiseBudgetMin} onChange={(e) => setCustomiseBudgetMin(e.target.value)} className="font-sans" />
+                          <Input
+                            type="number"
+                            placeholder="1,000"
+                            value={customiseBudgetRange[0] || ""}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setCustomiseBudgetRange([val, Math.max(val + 2000, customiseBudgetRange[1])]);
+                            }}
+                            className="font-sans"
+                          />
                         </div>
                         <div className="flex-1">
                           <label className="text-xs font-sans text-muted-foreground mb-1 block">Max ₹</label>
-                          <Input type="number" placeholder="3,000" value={customiseBudgetMax} onChange={(e) => setCustomiseBudgetMax(e.target.value)} className="font-sans" />
+                          <Input
+                            type="number"
+                            placeholder="8,000"
+                            value={customiseBudgetRange[1] || ""}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setCustomiseBudgetRange([Math.min(customiseBudgetRange[0], val - 2000), val]);
+                            }}
+                            className="font-sans"
+                          />
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground font-sans">
-                        Artisans bid on this range. Complex hand work like Zardozi may need a higher range to attract skilled bids.
+                        💡 Set a realistic range — artisans bid within it.
                       </p>
                     </div>
 
