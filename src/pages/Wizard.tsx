@@ -540,6 +540,18 @@ const Wizard = () => {
   const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
   const [inspirationExpanded, setInspirationExpanded] = useState<boolean>(false);
   const [inspirationLightboxOpen, setInspirationLightboxOpen] = useState<boolean>(false);
+
+  // Draggable thumbnail state
+  const [thumbPosition, setThumbPosition] = useState({ 
+    x: typeof window !== 'undefined' ? window.innerWidth - 180 : 0, 
+    y: typeof window !== 'undefined' ? window.innerHeight - 220 : 0 
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const [showDragHint, setShowDragHint] = useState(
+    typeof window !== 'undefined' ? !localStorage.getItem('naapio_thumb_dragged') : false
+  );
   const [photoFromBadgeShown, setPhotoFromBadgeShown] = useState<Set<string>>(new Set());
 
   const isBlouseCategory = selectedCategory === "Saree Blouse" || (selectedSubCategory || "").toLowerCase().includes("blouse");
