@@ -506,7 +506,7 @@ const VendorActiveOrders = () => {
         {/* LEFT COLUMN */}
         <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
           {/* Full brief card (Fix 7) */}
-          <OrderBriefCard order={order} />
+          <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
           {/* Measurements */}
           <div className="bg-muted rounded-xl p-4">
