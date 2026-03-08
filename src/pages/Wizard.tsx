@@ -2956,18 +2956,22 @@ Return a JSON object with ONLY these fields, no other text:
                             photoAnalysis.detectedColour === cm.label;
                           const isSelected = selectedColourMood === cm.label;
                           
-                          // Auto pre-select detected colour if nothing selected yet
-                          if (isDetected && !selectedColourMood && !photoFromBadgeShown.has('colour')) {
-                            setTimeout(() => {
-                              setSelectedColourMood(cm.label);
-                              setPhotoFromBadgeShown(prev => new Set(prev).add('colour'));
-                            }, 100);
-                          }
+                          const showPhotoIndicator = photoFromBadgeShown.has('colour') && isSelected && isDetected;
                           
                           return (
                             <button
                               key={cm.label}
-                              onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
+                              onClick={() => {
+                                setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label);
+                                // Remove pre-fill indicator when user manually selects different option
+                                if (photoFromBadgeShown.has('colour') && !isDetected) {
+                                  setPhotoFromBadgeShown(prev => {
+                                    const next = new Set(prev);
+                                    next.delete('colour');
+                                    return next;
+                                  });
+                                }
+                              }}
                               className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${
                                 isSelected
                                   ? "border-accent bg-gold-light ring-2 ring-accent/30"
@@ -2983,9 +2987,9 @@ Return a JSON object with ONLY these fields, no other text:
                                 <Upload className="w-10 h-10 text-muted-foreground mb-3" />
                               )}
                               <span className="leading-tight block font-medium">{cm.label}</span>
-                              {isDetected && isSelected && (
+                              {showPhotoIndicator && (
                                 <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
-                                  ✨ From photo
+                                  ✨ from photo
                                 </span>
                               )}
                             </button>
