@@ -85,6 +85,13 @@ const AlterationFlow = () => {
   const [alterationGarment, setAlterationGarment] = useState("");
   const [alterationGarmentOther, setAlterationGarmentOther] = useState("");
 
+  // Matching Piece sub-flow
+  const [matchingPieceType, setMatchingPieceType] = useState('');
+  const [matchingForGarment, setMatchingForGarment] = useState('');
+  const [matchingColourNote, setMatchingColourNote] = useState('');
+  const [matchingReferencePhoto, setMatchingReferencePhoto] = useState<File | null>(null);
+  const [matchingFabricAvailable, setMatchingFabricAvailable] = useState('');
+
   // Step A2
   const [alterationFixes, setAlterationFixes] = useState<string[]>([]);
   const [alterationFixNotes, setAlterationFixNotes] = useState<Record<string, string>>({});
