@@ -841,6 +841,16 @@ const Wizard = () => {
               transition={{ duration: 0.4 }}
             />
           </div>
+          {isReorder && reorderMode === 'same' && step >= 3 && (
+            <div className="flex gap-1 mt-2">
+              {["Who", "Garment", "Details"].map((label, i) => (
+                <div key={label} className="flex items-center gap-1 text-[10px] font-sans text-green-600">
+                  <span className="w-3.5 h-3.5 rounded-full bg-green-500 text-white flex items-center justify-center text-[8px]">✓</span>
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
