@@ -812,6 +812,15 @@ const ActiveOrdersPage = () => {
           <div className="mt-4 flex items-center justify-center gap-2 py-2 px-4 bg-success-light rounded-full text-success text-xs font-sans font-medium">
             <Check className="w-3 h-3" /> ₹{bidAmount.toLocaleString('en-IN')} in Escrow
           </div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <button
+              onClick={() => setDisputeOpen(true)}
+              className="flex items-center gap-2 text-xs font-sans text-destructive hover:text-destructive/80 transition-colors"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Raise a Dispute
+            </button>
+          </div>
         </div>
 
         {/* Milestone content */}
