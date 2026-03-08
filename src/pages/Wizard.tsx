@@ -213,7 +213,7 @@ const Wizard = () => {
   const [searchParams] = useSearchParams();
   const orderType = searchParams.get("type") || "new-order";
   const isOwnFabric = orderType === "own-fabric";
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [uploaded, setUploaded] = useState(false);
   const [description, setDescription] = useState("");
   const [gender, setGender] = useState<"men" | "women">("women");
@@ -263,6 +263,25 @@ const Wizard = () => {
   const [draftRestored, setDraftRestored] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState<any>(null);
   const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
+
+  // Rush Order
+  const [isRushOrder, setIsRushOrder] = useState(false);
+
+  // Share Brief
+  const [briefShared, setBriefShared] = useState(false);
+
+  // Gift / Ordering for someone else
+  const [orderingFor, setOrderingFor] = useState<'self' | 'someone' | ''>('');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientRelation, setRecipientRelation] = useState('');
+  const [giftOrder, setGiftOrder] = useState(false);
+
+  // Kids lead capture
+  const [kidsExpanded, setKidsExpanded] = useState(false);
+  const [kidsEmail, setKidsEmail] = useState('');
+  const [kidsAgeRange, setKidsAgeRange] = useState('');
+  const [kidsNotified, setKidsNotified] = useState(false);
 
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
