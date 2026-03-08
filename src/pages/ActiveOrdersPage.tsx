@@ -155,6 +155,12 @@ type ChatMessage = {
     url: string; // TODO: FILE_STORAGE — replace with CDN URL
     size?: string;
   };
+  changeRequest?: {
+    id: string;
+    description: string;
+    amount: number;
+    status: 'pending' | 'accepted' | 'declined';
+  };
 };
 
 const formatFileSize = (bytes: number): string => {
