@@ -1108,8 +1108,23 @@ const Wizard = () => {
                   } else if (step2Phase === "design") {
                     setStep2Phase("measurements");
                   } else {
-                    setStep(step + 1);
-                    setStep2Phase("category");
+                    setStep(3);
+                    setStep3Phase("feel");
+                  }
+                } else if (step === 3) {
+                  if (isOwnFabric) {
+                    setStep(4);
+                  } else if (step3Phase === "feel") {
+                    setStep3Phase("fabricType");
+                  } else if (step3Phase === "fabricType") {
+                    setStep3Phase("colour");
+                  } else if (step3Phase === "colour") {
+                    setStep3Phase("surface");
+                  } else if (step3Phase === "surface") {
+                    setStep(4);
+                    setStep3Phase("feel");
+                  } else {
+                    setStep(4);
                   }
                 } else {
                   setStep(step + 1);
