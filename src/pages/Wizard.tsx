@@ -372,6 +372,7 @@ const Wizard = () => {
         deliveryDate,
         timestamp: new Date().toISOString()
       }));
+      localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);
     }, 2000);
