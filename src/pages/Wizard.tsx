@@ -928,6 +928,126 @@ const Wizard = () => {
     generateOutfitVisualisation(file);
   };
 
+  // ── Gemini Vision Analysis for Inspiration Photo ──
+  const analyseInspirationPhoto = async (photoFile: File) => {
+    setAnalysisLoading(true);
+    
+    try {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.readAsDataURL(photoFile);
+      });
+      
+      const prompt = `Analyse this Indian ethnic fashion garment image.
+    
+Return a JSON object with ONLY these fields, no other text:
+{
+  "detectedGarment": "one of: Saree Blouse, Kurti, Salwar Kameez, Anarkali, Lehenga, Gown, Kurta, Sherwani, Bandhgala, Suit, Chaniya Choli, Dupatta, or Other",
+  "detectedColour": "one of: Deep Reds, Jewel Tones, Pastels, Golds & Champagne, Ivory & Cream, Greens & Teals, Pinks & Mauves, Blues & Indigos, Blacks & Charcoals, Whites & Silvers, or Other",
+  "detectedFeel": "one of: Light & Airy, Structured, Rich & Heavy, Crisp & Sharp, Soft & Draped, or Unable to determine",
+  "detectedSurfaces": ["array of visible work from: Heavy Embroidery, Zardozi / Zari Work, Mirror Work, Sequence & Beadwork, Resham Thread Work, Kalamkari / Block Print, Bandhani / Tie-Dye, Cutwork / Lace, Smocking / Pintucks, Digital Print, Appliqué, Plain / No Embellishment"],
+  "detectedOccasion": "one of: Wedding / Baraat / Nikah, Reception / Cocktail, Engagement / Roka, Festival (Diwali / Eid / Navratri), Party / Night Out, Casual / Daily Wear, Formal Office / Corporate, or Unable to determine",
+  "confidence": "high if 3+ attributes clearly visible, medium if 2 attributes visible, low if image is unclear"
+}`;
+
+      const apiKey = "AIzaSyBDz4pIb90FuUS9AeLgzn6bnSqjMszizg0"; // TODO: move server-side before launch
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: photoFile.type || 'image/jpeg',
+                    data: base64
+                  }
+                },
+                { text: prompt }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 500,
+            }
+          })
+        }
+      );
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts
+        ?.filter((p: any) => p.text)
+        ?.map((p: any) => p.text)
+        ?.join('') || '';
+
+      // Strip markdown fences if present
+      const cleanText = rawText
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+
+      const analysis = JSON.parse(cleanText);
+      
+      setPhotoAnalysis({
+        ...analysis,
+        analysisComplete: true,
+        analysisError: false,
+      });
+    } catch (err) {
+      console.error('Photo analysis failed:', err);
+      setPhotoAnalysis({
+        detectedGarment: '',
+        detectedColour: '',
+        detectedFeel: '',
+        detectedSurfaces: [],
+        detectedOccasion: '',
+        confidence: 'low',
+        analysisComplete: true,
+        analysisError: true,
+      });
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  // Map detected garment to category
+  const mapDetectedToCategory = (detected: string): string | null => {
+    const map: Record<string, string> = {
+      'Saree Blouse': 'Saree Blouse',
+      'Kurti': 'Kurti',
+      'Salwar Kameez': 'Salwar Kameez',
+      'Anarkali': 'Anarkali',
+      'Lehenga': 'Lehenga',
+      'Gown': 'Gown',
+      'Kurta': 'Kurta',
+      'Sherwani': 'Sherwani',
+      'Bandhgala': 'Bandhgala',
+      'Chaniya Choli': 'Lehenga',
+      'Suit': 'Suit',
+    };
+    return map[detected] || null;
+  };
+
+  // Handle inspiration photo upload
+  const handleInspirationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Photo must be under 8 MB");
+      return;
+    }
+    setInspirationPhoto(file);
+    setUploaded(true);
+    analyseInspirationPhoto(file);
+  };
+
   const toggleFabric = (name: string) => {
     setSelectedFabrics((prev) =>
       prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name]
