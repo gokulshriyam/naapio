@@ -138,14 +138,25 @@ const BiddingPage = () => {
         if (m.id === id + 1) return { ...m, status: "awaiting_approval" as MilestoneStatus };
         return m;
       });
+      // Check if milestone 5 (Delivery) was just approved
+      const m5 = updated.find((m) => m.id === 5);
+      if (m5?.status === "approved") {
+        setTimeout(() => setOrderComplete(true), 1000);
+      }
       return updated;
     });
   };
 
   const handleRequestChanges = (id: number) => {
-    setMilestones((prev) =>
-      prev.map((m) => m.id === id ? { ...m, status: "changes_requested" as MilestoneStatus } : m)
-    );
+    if (!changeNotes[id]?.trim()) return;
+    setChangeSending((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setMilestones((prev) =>
+        prev.map((m) => m.id === id ? { ...m, status: "changes_requested" as MilestoneStatus } : m)
+      );
+      setChangeSending((prev) => ({ ...prev, [id]: false }));
+      setChangeRequestSent((prev) => ({ ...prev, [id]: true }));
+    }, 1000);
   };
 
   const handleConfirmTailor = () => {
