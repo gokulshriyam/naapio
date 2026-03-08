@@ -29,16 +29,67 @@ const customisationOptions = [
   { label: "Other", emoji: "➕" },
 ];
 
-const placementZoneOptions = [
-  "Collar / Neckline",
-  "Chest / Front Panel",
-  "Back Panel",
-  "Sleeves",
-  "Hem / Border",
-  "Waistband",
-  "Full Garment",
-  "Custom Area",
+type PlacementView = 'front-upper' | 'back' | 'lower';
+
+const frontUpperZones: { id: string; label: string; d: string }[] = [
+  { id: "neckline", label: "Neckline", d: "M 95,38 Q 120,28 150,30 Q 180,28 205,38 Q 195,50 150,52 Q 105,50 95,38 Z" },
+  { id: "left-shoulder", label: "L Shoulder", d: "M 68,48 L 95,38 L 95,65 L 72,62 Z" },
+  { id: "right-shoulder", label: "R Shoulder", d: "M 205,38 L 232,48 L 228,62 L 205,65 Z" },
+  { id: "chest-left", label: "Chest L", d: "M 90,55 L 148,55 L 148,115 L 90,115 Z" },
+  { id: "chest-right", label: "Chest R", d: "M 152,55 L 210,55 L 210,115 L 152,115 Z" },
+  { id: "left-sleeve", label: "L Sleeve", d: "M 30,55 L 88,55 L 88,125 L 30,105 Z" },
+  { id: "right-sleeve", label: "R Sleeve", d: "M 212,55 L 270,55 L 270,105 L 212,125 Z" },
+  { id: "waist-front", label: "Waist", d: "M 90,117 L 210,117 L 210,145 L 90,145 Z" },
+  { id: "abdomen", label: "Abdomen", d: "M 90,147 L 210,147 L 210,210 L 90,210 Z" },
+  { id: "hem-front", label: "Front Hem", d: "M 85,212 L 215,212 L 218,245 L 82,245 Z" },
 ];
+
+const backZones: { id: string; label: string; d: string }[] = [
+  { id: "back-neckline", label: "Back Neck", d: "M 95,38 Q 120,28 150,30 Q 180,28 205,38 Q 195,50 150,52 Q 105,50 95,38 Z" },
+  { id: "upper-back", label: "Upper Back", d: "M 90,55 L 210,55 L 210,115 L 90,115 Z" },
+  { id: "mid-back", label: "Mid Back", d: "M 90,117 L 210,117 L 210,175 L 90,175 Z" },
+  { id: "lower-back", label: "Lower Back", d: "M 90,177 L 210,177 L 210,220 L 90,220 Z" },
+  { id: "back-left-sleeve", label: "L Sleeve", d: "M 30,55 L 88,55 L 88,125 L 30,105 Z" },
+  { id: "back-right-sleeve", label: "R Sleeve", d: "M 212,55 L 270,55 L 270,105 L 212,125 Z" },
+  { id: "hem-back", label: "Back Hem", d: "M 85,222 L 215,222 L 218,250 L 82,250 Z" },
+  { id: "back-full", label: "Select All", d: "" },
+];
+
+const lowerZones: { id: string; label: string; d: string }[] = [
+  { id: "waistband", label: "Waistband", d: "M 70,20 L 230,20 L 230,50 L 70,50 Z" },
+  { id: "front-left-panel", label: "Front L", d: "M 75,52 L 148,52 L 140,200 L 65,200 Z" },
+  { id: "front-right-panel", label: "Front R", d: "M 152,52 L 225,52 L 235,200 L 160,200 Z" },
+  { id: "back-left-panel", label: "Back L", d: "" },
+  { id: "back-right-panel", label: "Back R", d: "" },
+  { id: "left-side-seam", label: "L Seam", d: "M 63,52 L 73,52 L 63,200 L 53,200 Z" },
+  { id: "right-side-seam", label: "R Seam", d: "M 227,52 L 237,52 L 247,200 L 237,200 Z" },
+  { id: "left-hem-lower", label: "L Hem", d: "M 53,202 L 142,202 L 142,230 L 53,230 Z" },
+  { id: "right-hem-lower", label: "R Hem", d: "M 158,202 L 247,202 L 247,230 L 158,230 Z" },
+  { id: "full-lower", label: "Select All", d: "" },
+];
+
+const viewLabels: Record<PlacementView, string> = {
+  'front-upper': 'Front & Upper Body',
+  'back': 'Back Body',
+  'lower': 'Lower Body',
+};
+
+const getZonesForView = (view: PlacementView) => {
+  if (view === 'front-upper') return frontUpperZones;
+  if (view === 'back') return backZones;
+  return lowerZones;
+};
+
+const getZoneLabelById = (id: string): string => {
+  const all = [...frontUpperZones, ...backZones, ...lowerZones];
+  return all.find(z => z.id === id)?.label || id;
+};
+
+const getViewForZone = (zoneId: string): PlacementView => {
+  if (frontUpperZones.some(z => z.id === zoneId)) return 'front-upper';
+  if (backZones.some(z => z.id === zoneId)) return 'back';
+  return 'lower';
+};
 
 const getMinDeliveryDays = (types: string[]): number => {
   if (types.includes("Hand Painting / Fabric Art")) return 7;
@@ -72,35 +123,6 @@ const colourMoodOptions = [
   { label: "Match my garment", swatch: null },
 ];
 
-// SVG zone definitions for a kurta front-view
-const svgZones: { id: string; label: string; d: string }[] = [
-  {
-    id: "Collar / Neckline",
-    label: "Neckline",
-    d: "M 95,38 Q 120,28 150,30 Q 180,28 205,38 Q 195,50 150,52 Q 105,50 95,38 Z",
-  },
-  {
-    id: "Chest / Front Panel",
-    label: "Chest",
-    d: "M 90,55 L 210,55 L 210,130 L 90,130 Z",
-  },
-  {
-    id: "Sleeves",
-    label: "Sleeves",
-    d: "M 40,55 L 88,55 L 88,120 L 40,100 Z M 212,55 L 260,55 L 260,100 L 212,120 Z",
-  },
-  {
-    id: "Waistband",
-    label: "Waist",
-    d: "M 90,132 L 210,132 L 210,155 L 90,155 Z",
-  },
-  {
-    id: "Hem / Border",
-    label: "Hem",
-    d: "M 85,230 L 215,230 L 218,260 L 82,260 Z",
-  },
-];
-
 // ── Component ───────────────────────────────────────────────────
 
 const CustomiseFlow = () => {
@@ -121,10 +143,18 @@ const CustomiseFlow = () => {
   const [customisationOther, setCustomisationOther] = useState("");
 
   // C3
-  const [placementZones, setPlacementZones] = useState<string[]>([]);
+  const [activeView, setActiveView] = useState<PlacementView>('front-upper');
+  const [selectedZonesByView, setSelectedZonesByView] = useState<Record<PlacementView, string[]>>({
+    'front-upper': [], 'back': [], 'lower': [],
+  });
+  const [zoneNotes, setZoneNotes] = useState<Record<string, string>>({});
+  const [zonePhotos, setZonePhotos] = useState<Record<string, File | null>>({});
   const [placementCustomNote, setPlacementCustomNote] = useState("");
   const [referenceArtPhoto, setReferenceArtPhoto] = useState<File | null>(null);
   const [placementError, setPlacementError] = useState(false);
+
+  const totalSelectedZones = Object.values(selectedZonesByView).flat().length;
+  const allSelectedZones = Object.values(selectedZonesByView).flat();
 
   // C4
   const [customiseColourMood, setCustomiseColourMood] = useState("");
@@ -159,16 +189,37 @@ const CustomiseFlow = () => {
 
   const toggleZone = (zone: string) => {
     setPlacementError(false);
-    if (zone === "Full Garment") {
-      setPlacementZones((prev) =>
-        prev.includes("Full Garment") ? prev.filter((z) => z !== "Full Garment") : ["Full Garment"]
-      );
-    } else {
-      setPlacementZones((prev) => {
-        const without = prev.filter((z) => z !== "Full Garment");
-        return without.includes(zone) ? without.filter((z) => z !== zone) : [...without, zone];
-      });
+    // Handle "select all" shortcuts
+    if (zone === "back-full") {
+      const backIds = backZones.filter(z => z.id !== "back-full").map(z => z.id);
+      setSelectedZonesByView(prev => ({
+        ...prev,
+        back: prev.back.length === backIds.length ? [] : backIds,
+      }));
+      return;
     }
+    if (zone === "full-lower") {
+      const lowerIds = lowerZones.filter(z => z.id !== "full-lower").map(z => z.id);
+      setSelectedZonesByView(prev => ({
+        ...prev,
+        lower: prev.lower.length === lowerIds.length ? [] : lowerIds,
+      }));
+      return;
+    }
+    setSelectedZonesByView(prev => ({
+      ...prev,
+      [activeView]: prev[activeView].includes(zone)
+        ? prev[activeView].filter(z => z !== zone)
+        : [...prev[activeView], zone],
+    }));
+  };
+
+  const removeZone = (zone: string) => {
+    const view = getViewForZone(zone);
+    setSelectedZonesByView(prev => ({
+      ...prev,
+      [view]: prev[view].filter(z => z !== zone),
+    }));
   };
 
   const canProceed = () => {
@@ -178,7 +229,7 @@ const CustomiseFlow = () => {
       const otherValid = !customisationTypes.includes("Other") || !!customisationOther.trim();
       return hasOne && otherValid;
     }
-    if (step === 3) return placementZones.length > 0;
+    if (step === 3) return totalSelectedZones > 0;
     if (step === 4) return true;
     if (step === 5) return !!customiseBudgetMin.trim() && !!customiseDeliveryDate;
     return true;
@@ -223,7 +274,7 @@ const CustomiseFlow = () => {
   const progressPercent = showReview ? 100 : (step / 5) * 100;
 
   const handleNext = () => {
-    if (step === 3 && placementZones.length === 0) {
+    if (step === 3 && totalSelectedZones === 0) {
       setPlacementError(true);
       return;
     }
@@ -300,25 +351,31 @@ const CustomiseFlow = () => {
     );
   };
 
-  // ── SVG Garment Diagram ──
+  // ── SVG Garment Diagram (multi-view) ──
   const GarmentDiagram = () => {
-    const isFullGarment = placementZones.includes("Full Garment");
+    const zones = getZonesForView(activeView);
+    const currentSelected = selectedZonesByView[activeView];
+    const drawableZones = zones.filter(z => z.d); // only zones with SVG paths
+
+    const silhouette = activeView === 'lower'
+      ? "M 70,20 L 230,20 L 248,230 L 52,230 Z"
+      : "M 150,30 Q 120,28 95,38 L 30,55 L 30,105 L 88,125 L 85,245 L 82,260 L 218,260 L 215,245 L 212,125 L 270,105 L 270,55 L 205,38 Q 180,28 150,30 Z";
+
     return (
-      <svg viewBox="0 0 300 280" className="w-full max-w-sm mx-auto" aria-label="Garment placement diagram">
-        {/* Garment silhouette outline */}
-        <path
-          d="M 150,30 Q 120,28 95,38 L 40,55 L 40,100 L 88,120 L 88,230 L 82,260 L 218,260 L 212,230 L 212,120 L 260,100 L 260,55 L 205,38 Q 180,28 150,30 Z"
-          fill={isFullGarment ? "hsl(var(--accent) / 0.15)" : "hsl(var(--card))"}
-          stroke="hsl(var(--border))"
-          strokeWidth="1.5"
-          className="transition-colors duration-200"
-        />
-        {/* Centre line */}
-        <line x1="150" y1="52" x2="150" y2="260" stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="4 4" />
+      <svg viewBox={activeView === 'lower' ? "0 0 300 250" : "0 0 300 270"} className="w-full max-w-sm mx-auto" aria-label={`Garment ${activeView} placement diagram`}>
+        {/* Silhouette */}
+        <path d={silhouette} fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="1.5" />
+        {activeView !== 'lower' && (
+          <line x1="150" y1="52" x2="150" y2="260" stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="4 4" />
+        )}
 
         {/* Tappable zones */}
-        {svgZones.map((zone) => {
-          const selected = placementZones.includes(zone.id) || isFullGarment;
+        {drawableZones.map((zone) => {
+          const selected = currentSelected.includes(zone.id);
+          // Calculate centroid for label
+          const cx = zone.id.includes("left") || zone.id.includes("Left") ? 60 : zone.id.includes("right") || zone.id.includes("Right") ? 240 : 150;
+          const cy = zone.id.includes("neck") || zone.id.includes("Neck") ? 44 : zone.id.includes("shoulder") || zone.id.includes("Shoulder") ? 55 : zone.id.includes("chest") || zone.id.includes("Chest") ? 88 : zone.id.includes("sleeve") || zone.id.includes("Sleeve") ? 85 : zone.id.includes("waist") || zone.id.includes("Waist") ? 35 : zone.id.includes("hem") || zone.id.includes("Hem") ? 220 : zone.id.includes("upper") ? 88 : zone.id.includes("mid") ? 148 : zone.id.includes("lower") || zone.id.includes("Lower") ? 200 : zone.id.includes("abdomen") ? 180 : zone.id.includes("front-left") ? 110 : zone.id.includes("front-right") ? 190 : 150;
+
           return (
             <g key={zone.id} className="cursor-pointer" onClick={() => toggleZone(zone.id)}>
               <path
@@ -329,37 +386,31 @@ const CustomiseFlow = () => {
                 strokeDasharray={selected ? "none" : "4 3"}
                 className="transition-all duration-200 hover:fill-[hsl(var(--accent)/0.1)]"
               />
-              {selected && (
-                <text
-                  x={zone.id === "Sleeves" ? 64 : 150}
-                  y={
-                    zone.id === "Collar / Neckline"
-                      ? 44
-                      : zone.id === "Chest / Front Panel"
-                      ? 98
-                      : zone.id === "Sleeves"
-                      ? 82
-                      : zone.id === "Waistband"
-                      ? 147
-                      : 250
-                  }
-                  textAnchor="middle"
-                  className="fill-accent text-[9px] font-sans font-semibold pointer-events-none select-none"
-                >
-                  ✓ {zone.label}
-                </text>
-              )}
+              <text
+                x={cx}
+                y={cy}
+                textAnchor="middle"
+                className={`text-[8px] font-sans pointer-events-none select-none ${selected ? "fill-accent font-semibold" : "fill-muted-foreground"}`}
+              >
+                {selected ? `✓ ${zone.label}` : zone.label}
+              </text>
             </g>
           );
         })}
 
-        {/* Body area fill (between chest and hem) */}
-        <path
-          d="M 90,157 L 210,157 L 212,228 L 88,228 Z"
-          fill={isFullGarment ? "hsl(var(--accent) / 0.15)" : "transparent"}
-          stroke="none"
-          className="pointer-events-none"
-        />
+        {/* "Select All" buttons rendered outside SVG paths */}
+        {activeView === 'back' && (
+          <g className="cursor-pointer" onClick={() => toggleZone('back-full')}>
+            <rect x="100" y="252" width="100" height="24" rx="12" fill={currentSelected.length === backZones.filter(z => z.id !== 'back-full').length ? "hsl(var(--accent))" : "hsl(var(--muted))"} />
+            <text x="150" y="268" textAnchor="middle" className={`text-[9px] font-sans font-medium pointer-events-none select-none ${currentSelected.length === backZones.filter(z => z.id !== 'back-full').length ? "fill-accent-foreground" : "fill-foreground"}`}>Select All Back</text>
+          </g>
+        )}
+        {activeView === 'lower' && (
+          <g className="cursor-pointer" onClick={() => toggleZone('full-lower')}>
+            <rect x="100" y="235" width="100" height="24" rx="12" fill={currentSelected.length === lowerZones.filter(z => z.id !== 'full-lower').length ? "hsl(var(--accent))" : "hsl(var(--muted))"} />
+            <text x="150" y="251" textAnchor="middle" className={`text-[9px] font-sans font-medium pointer-events-none select-none ${currentSelected.length === lowerZones.filter(z => z.id !== 'full-lower').length ? "fill-accent-foreground" : "fill-foreground"}`}>Select All Lower</text>
+          </g>
+        )}
       </svg>
     );
   };
@@ -490,8 +541,32 @@ const CustomiseFlow = () => {
                       <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Placement</span>
                       <button onClick={() => { setShowReview(false); setStep(3); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    <p className="text-sm text-foreground font-sans">{placementZones.join(", ")}</p>
-                    {placementCustomNote && <p className="text-xs text-muted-foreground font-sans mt-1">"{placementCustomNote}"</p>}
+                    {(['front-upper', 'back', 'lower'] as PlacementView[]).map(view => {
+                      const zones = selectedZonesByView[view];
+                      return zones.length > 0 ? (
+                        <p key={view} className="text-sm text-foreground font-sans">
+                          <span className="font-medium">{viewLabels[view]}:</span> {zones.map(z => getZoneLabelById(z)).join(", ")}
+                        </p>
+                      ) : null;
+                    })}
+                    {totalSelectedZones === 0 && <p className="text-sm text-muted-foreground font-sans">No zones selected</p>}
+                    {allSelectedZones.some(z => zoneNotes[z]) && (
+                      <div className="mt-2 space-y-1">
+                        {allSelectedZones.filter(z => zoneNotes[z]).map(z => (
+                          <p key={z} className="text-xs text-muted-foreground font-sans">📝 {getZoneLabelById(z)}: "{zoneNotes[z]}"</p>
+                        ))}
+                      </div>
+                    )}
+                    {allSelectedZones.some(z => zonePhotos[z]) && (
+                      <div className="flex gap-2 mt-2">
+                        {allSelectedZones.filter(z => zonePhotos[z]).map(z => (
+                          <div key={z} className="text-center">
+                            <img src={URL.createObjectURL(zonePhotos[z]!)} alt={getZoneLabelById(z)} className="w-12 h-12 rounded-lg object-cover border border-border" />
+                            <p className="text-[10px] text-muted-foreground font-sans mt-0.5">{getZoneLabelById(z)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Reference */}
@@ -700,61 +775,87 @@ const CustomiseFlow = () => {
               {step === 3 && (
                 <motion.div key="c3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Where on the garment, and what should it look like?</h2>
-                  <p className="text-muted-foreground font-sans mb-6">Tap the zones you want customised</p>
+                  <p className="text-muted-foreground font-sans mb-6">Tap the zones you want customised on each view</p>
 
-                  {/* SVG Diagram */}
-                  <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-                    <GarmentDiagram />
-                    <p className="text-xs text-muted-foreground font-sans mt-3 text-center">📌 This diagram is for placement reference only — your artisan will work directly from your uploaded garment photos in Step C1.</p>
-                  </div>
-
-                  {/* Zone pills below SVG */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {["Back Panel", "Full Garment", "Custom Area"].map((zone) => {
-                      const selected = placementZones.includes(zone);
+                  {/* View selector tabs */}
+                  <div className="flex gap-2 mb-4 flex-wrap">
+                    {(['front-upper', 'back', 'lower'] as PlacementView[]).map(view => {
+                      const count = selectedZonesByView[view].length;
+                      const isActive = activeView === view;
                       return (
                         <button
-                          key={zone}
-                          onClick={() => {
-                            if (zone === "Custom Area") {
-                              toggleZone(zone);
-                            } else {
-                              toggleZone(zone);
-                            }
-                          }}
+                          key={view}
+                          onClick={() => setActiveView(view)}
                           className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
-                            selected
-                              ? "border-accent bg-accent text-accent-foreground font-medium"
-                              : "border-border bg-card text-foreground hover:border-accent/40"
+                            isActive
+                              ? "bg-accent text-accent-foreground border-accent font-medium"
+                              : "bg-card text-foreground border-border hover:border-accent/40"
                           }`}
                         >
-                          {selected && <Check className="w-3 h-3 inline mr-1" />}
-                          {zone}
+                          {viewLabels[view]} {count > 0 && <span className="ml-1 text-[10px] font-bold">({count})</span>}
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Custom Area note */}
-                  {placementZones.includes("Custom Area") && (
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-                      <Input
-                        value={placementCustomNote}
-                        onChange={(e) => setPlacementCustomNote(e.target.value)}
-                        placeholder="Describe the area — e.g. 'left cuff only' or 'pallu edge'"
-                        className="font-sans"
-                      />
-                    </motion.div>
+                  {/* SVG Diagram */}
+                  <div className="bg-card rounded-2xl border border-border p-6 mb-4">
+                    <GarmentDiagram />
+                    {activeView === 'front-upper' && (
+                      <p className="text-xs text-muted-foreground font-sans mt-3 text-center">
+                        Tip: Select Left Sleeve and Right Sleeve separately if you want different designs on each side.
+                      </p>
+                    )}
+                    {activeView === 'lower' && (
+                      <p className="text-xs text-muted-foreground font-sans mt-3 text-center">
+                        Back panels are not drawn but can be selected as zones below.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Non-drawable zone pills for lower view */}
+                  {activeView === 'lower' && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {lowerZones.filter(z => !z.d && z.id !== 'full-lower').map(zone => {
+                        const selected = selectedZonesByView.lower.includes(zone.id);
+                        return (
+                          <button
+                            key={zone.id}
+                            onClick={() => toggleZone(zone.id)}
+                            className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                              selected ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                            }`}
+                          >
+                            {selected && <Check className="w-3 h-3 inline mr-1" />}
+                            {zone.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
 
-                  {/* Selection summary */}
-                  <div className="mb-6">
-                    {placementZones.length > 0 ? (
-                      <p className="text-sm font-sans text-foreground">
-                        <span className="font-semibold">Selected:</span> {placementZones.join(", ")}
-                      </p>
+                  {/* Selection summary bar */}
+                  <div className="mb-4 p-3 bg-muted rounded-xl">
+                    {totalSelectedZones > 0 ? (
+                      <>
+                        <p className="text-sm font-sans font-medium text-foreground mb-2">
+                          {totalSelectedZones} zone{totalSelectedZones !== 1 ? 's' : ''} selected across {Object.values(selectedZonesByView).filter(v => v.length > 0).length} view{Object.values(selectedZonesByView).filter(v => v.length > 0).length !== 1 ? 's' : ''}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {allSelectedZones.map(zoneId => {
+                            const view = getViewForZone(zoneId);
+                            const viewIcon = view === 'front-upper' ? '👕' : view === 'back' ? '🔙' : '👖';
+                            return (
+                              <span key={zoneId} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-card border border-border text-[11px] font-sans text-foreground">
+                                {viewIcon} {getZoneLabelById(zoneId)}
+                                <button onClick={() => removeZone(zoneId)} className="hover:text-destructive ml-0.5">×</button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </>
                     ) : (
-                      <p className="text-sm font-sans text-muted-foreground">Tap zones above to select placement</p>
+                      <p className="text-sm font-sans text-muted-foreground text-center">Tap zones on the diagram to select placement areas</p>
                     )}
                   </div>
 
@@ -762,13 +863,60 @@ const CustomiseFlow = () => {
                     <p className="text-sm font-sans text-destructive mb-4">Please tap at least one zone to show where you want the work done</p>
                   )}
 
-                  {/* Reference photo upload */}
-                  <div className="bg-card rounded-xl border border-border p-5">
-                    <h3 className="font-sans font-semibold text-foreground mb-1">Upload a reference image</h3>
+                  {/* Per-zone reference & notes */}
+                  {totalSelectedZones > 0 && (
+                    <div className="space-y-3 mb-6">
+                      <h3 className="font-sans font-semibold text-foreground text-sm">Zone details & references</h3>
+                      {allSelectedZones.map(zoneId => (
+                        <div key={zoneId} className="p-4 bg-card rounded-xl border border-border">
+                          <p className="font-sans font-medium text-sm text-foreground mb-2">{getZoneLabelById(zoneId)} <span className="text-muted-foreground font-normal">({viewLabels[getViewForZone(zoneId)]})</span></p>
+                          
+                          {/* Photo upload */}
+                          <div className="mb-2">
+                            {zonePhotos[zoneId] ? (
+                              <div className="flex items-center gap-3">
+                                <img src={URL.createObjectURL(zonePhotos[zoneId]!)} alt={`Ref ${zoneId}`} className="w-16 h-16 rounded-lg object-cover border border-border" />
+                                <div>
+                                  <p className="text-xs text-success font-sans">✓ Reference added</p>
+                                  <button onClick={() => setZonePhotos(prev => ({ ...prev, [zoneId]: null }))} className="text-xs text-muted-foreground hover:text-foreground font-sans">Remove</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="flex items-center gap-2 cursor-pointer text-xs font-sans text-muted-foreground hover:text-accent">
+                                <Upload className="w-3.5 h-3.5" /> Add reference image →
+                                <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => {
+                                  const f = e.target.files?.[0] || null;
+                                  if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                                  setZonePhotos(prev => ({ ...prev, [zoneId]: f }));
+                                }} />
+                              </label>
+                            )}
+                            {totalSelectedZones > 2 && !zonePhotos[zoneId] && (
+                              <span className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-sans font-medium bg-warning-light text-warning">
+                                📸 Strongly recommended — multiple zones selected
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Notes */}
+                          <Input
+                            value={zoneNotes[zoneId] || ""}
+                            onChange={(e) => setZoneNotes(prev => ({ ...prev, [zoneId]: e.target.value }))}
+                            placeholder={`e.g. "Zardozi border only on cuff" or "Same as inspiration but in gold"`}
+                            className="font-sans text-xs h-8"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* General reference photo upload */}
+                  <div className="bg-card rounded-xl border border-border p-5 mb-4">
+                    <h3 className="font-sans font-semibold text-foreground mb-1">Upload a general reference image</h3>
                     <p className="text-xs text-muted-foreground font-sans mb-3">
                       Show the artisan a design, pattern, or artwork you like — even a rough sketch works
                     </p>
-                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-amber-100 text-amber-700 mb-3">
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-warning-light text-warning mb-3">
                       Optional but strongly recommended
                     </span>
                     {referenceArtPhoto ? (
@@ -782,22 +930,19 @@ const CustomiseFlow = () => {
                       <label className="flex items-center gap-3 cursor-pointer p-3 border-2 border-dashed border-border rounded-xl hover:border-accent/40 transition-all">
                         <Upload className="w-5 h-5 text-muted-foreground" />
                         <span className="font-sans text-sm text-muted-foreground">Click to upload</span>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png"
-                          className="hidden"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0] || null;
-                            if (f && f.size > 10 * 1024 * 1024) {
-                              toast.error("File must be under 10MB");
-                              return;
-                            }
-                            setReferenceArtPhoto(f);
-                          }}
-                        />
+                        <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => {
+                          const f = e.target.files?.[0] || null;
+                          if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+                          setReferenceArtPhoto(f);
+                        }} />
                       </label>
                     )}
                   </div>
+
+                  {/* Disclaimer */}
+                  <p className="text-xs text-muted-foreground font-sans">
+                    📌 These diagrams are for placement reference only. Your artisan will work directly from your uploaded garment photos (added in Step C1) and your zone notes.
+                  </p>
                 </motion.div>
               )}
 
