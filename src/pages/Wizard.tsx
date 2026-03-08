@@ -957,7 +957,7 @@ const Wizard = () => {
     try {
       const base64 = await fileToBase64(file);
       const prompt = buildOutfitPrompt();
-      const apiKey = "AIzaSyC9xkigIehDfLKtlARosU4c3zNU1KtLNkM"; // TODO: move server-side before launch
+      const apiKey = "AIzaSyAm_EQ6hw4d6eJa3o4hH3mHn4JAikLsaKA"; // TODO: move server-side before launch
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`,
         {
