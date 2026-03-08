@@ -118,12 +118,27 @@ const VendorLeads = () => {
     setLeads(prev => prev.map(l => l.id === leadId ? { ...l, bidsCount: l.bidsCount + 1, myBidRank: l.bidsCount + 1 } : l));
   };
 
+  const outbidCount = mockMyBids.filter(b => b.status === 'active' && b.outbidAlert).length;
+
   return (
     <div>
       {/* Vacation mode banner */}
       {mockVendor.vacationMode && (
         <div className="mb-6 p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 text-sm font-sans text-amber-800 dark:text-amber-200">
           🏖️ Vacation mode is ON. You are not receiving new leads. Turn it off in your Profile.
+        </div>
+      )}
+
+      {/* Outbid alert banner */}
+      {outbidCount > 0 && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <span className="text-sm font-sans text-amber-800 dark:text-amber-200 flex-1">
+            ⚠️ You've been outbid on {outbidCount} brief{outbidCount !== 1 ? 's' : ''}.
+          </span>
+          <Button variant="ghost" size="sm" className="text-xs h-7 text-amber-700 dark:text-amber-300" onClick={() => navigate('/vendor/bids')}>
+            Review & Edit →
+          </Button>
         </div>
       )}
 
