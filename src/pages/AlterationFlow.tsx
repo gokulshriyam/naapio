@@ -134,11 +134,16 @@ const AlterationFlow = () => {
     setGarmentPhotos((prev) => ({ ...prev, [slot]: file }));
   };
 
+  const isMatchingPiece = alterationGarment === "Matching Piece";
+
   const canProceed = () => {
     if (step === 1) {
       return !!alterationGarment && (alterationGarment !== "Other" || !!alterationGarmentOther.trim());
     }
     if (step === 2) {
+      if (isMatchingPiece) {
+        return !!matchingPieceType && !!matchingForGarment && !!matchingFabricAvailable;
+      }
       const hasAtLeastOne = alterationFixes.length > 0;
       const otherValid = !alterationFixes.includes("Other") || !!(alterationFixNotes["Other"] || "").trim();
       return hasAtLeastOne && otherValid;
