@@ -1422,7 +1422,7 @@ const Wizard = () => {
                               <img
                                 src={generatedOutfitImage}
                                 alt="AI-generated outfit visualisation"
-                                className="w-full max-h-[480px] md:max-h-[480px] max-h-[280px] object-contain bg-white"
+                                className="w-full max-h-[280px] md:max-h-[480px] object-contain bg-white"
                               />
                             </div>
                             <p className="text-[11px] text-muted-foreground font-sans mt-3">
