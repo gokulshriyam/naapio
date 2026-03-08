@@ -258,6 +258,9 @@ const Wizard = () => {
   const [loading, setLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [restoredDraft, setRestoredDraft] = useState<any>(null);
+  const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
 
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
