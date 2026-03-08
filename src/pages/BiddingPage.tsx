@@ -957,9 +957,9 @@ const BiddingPage = () => {
               </div>
             </div>
           )}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleAcceptBid} className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptBid} className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
               Confirm & Proceed to Payment →
             </AlertDialogAction>
           </AlertDialogFooter>
