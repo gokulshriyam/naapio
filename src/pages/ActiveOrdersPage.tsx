@@ -544,8 +544,12 @@ const ActiveOrdersPage = () => {
 
   const handleM1Confirm = () => {
     const confirmedAt = new Date().toISOString();
+    const heightDisplay = garmentConfig.heightRequired
+      ? (heightUnit === 'ftin' ? `${heightFt}'${heightIn}"` : `${heightCm} cm`)
+      : undefined;
+    const finalMeasurements = heightDisplay ? { Height: heightDisplay, ...measurements } : { ...measurements };
     localStorage.setItem('naapio_confirmed_measurements', JSON.stringify({
-      orderId, garment: garmentLabel, confirmedAt, measurements, dpdpConsentAt: confirmedAt, consentGiven: true,
+      orderId, garment: garmentLabel, confirmedAt, measurements: finalMeasurements, dpdpConsentAt: confirmedAt, consentGiven: true,
     }));
     // Also update measurement profile
     const garmentKey = resolvedGarmentName || garmentLabel;
