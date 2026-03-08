@@ -1034,18 +1034,88 @@ const CustomiseFlow = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>
                       <h3 className="font-sans font-semibold text-foreground mb-4">Budget for the customisation work</h3>
+
+                      {/* Intelligence Card */}
+                      {customisationTypes.length > 0 && (
+                        <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>💡</span>
+                            <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                            <span className="font-sans text-[10px] text-amber-600">Based on your selections</span>
+                          </div>
+                          <p className="text-xs text-amber-800 font-sans mb-3">
+                            Estimated artisan cost: {formatBudget(custIntelligence.min)}–{formatBudget(custIntelligence.max)}
+                          </p>
+                          <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                            <div className="absolute h-full bg-accent rounded-full" style={{ left: '0%', right: `${Math.max(0, 100 - ((custIntelligence.max - custIntelligence.min) / custIntelligence.max) * 100)}%` }} />
+                            <div className="absolute w-2 h-4 bg-accent rounded-full -top-1" style={{ left: `${((custIntelligence.avg - custIntelligence.min) / (custIntelligence.max - custIntelligence.min)) * 100}%` }} />
+                          </div>
+                          <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                            <span>{formatBudget(custIntelligence.min)}</span>
+                            <span className="font-semibold">Avg {formatBudget(custIntelligence.avg)}</span>
+                            <span>{formatBudget(custIntelligence.max)}</span>
+                          </div>
+                          {custIntelligence.explanation.map((f, i) => (
+                            <p key={i} className="text-[10px] text-amber-700 font-sans">• {f}</p>
+                          ))}
+                          <Button variant="outline" size="sm" className="text-xs mt-3" onClick={() => setCustomiseBudgetRange([custIntelligence.min, custIntelligence.max])}>
+                            Use Suggested Range
+                          </Button>
+                          <p className="text-[10px] text-amber-600 font-sans mt-2">This is an estimate — final amount is what you agree with your chosen artisan.</p>
+                        </div>
+                      )}
+
+                      {/* Dual Handle Slider */}
+                      <div className="mb-4">
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm font-sans font-semibold text-accent">{formatBudget(customiseBudgetRange[0])}</span>
+                          <span className="text-sm font-sans font-semibold text-accent">{formatBudget(customiseBudgetRange[1])}</span>
+                        </div>
+                        <Slider
+                          value={customiseBudgetRange}
+                          onValueChange={(val) => { if (val[1] - val[0] >= 2000) setCustomiseBudgetRange(val); }}
+                          min={1000}
+                          max={200000}
+                          step={customiseBudgetRange[0] < 10000 ? 500 : customiseBudgetRange[0] < 50000 ? 1000 : 5000}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
+                          <span>₹1K</span>
+                          <span>₹2L</span>
+                        </div>
+                      </div>
+
+                      {/* Manual override inputs */}
                       <div className="flex gap-3 mb-3">
                         <div className="flex-1">
                           <label className="text-xs font-sans text-muted-foreground mb-1 block">Min ₹</label>
-                          <Input type="number" placeholder="500" value={customiseBudgetMin} onChange={(e) => setCustomiseBudgetMin(e.target.value)} className="font-sans" />
+                          <Input
+                            type="number"
+                            placeholder="1,000"
+                            value={customiseBudgetRange[0] || ""}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setCustomiseBudgetRange([val, Math.max(val + 2000, customiseBudgetRange[1])]);
+                            }}
+                            className="font-sans"
+                          />
                         </div>
                         <div className="flex-1">
                           <label className="text-xs font-sans text-muted-foreground mb-1 block">Max ₹</label>
-                          <Input type="number" placeholder="3,000" value={customiseBudgetMax} onChange={(e) => setCustomiseBudgetMax(e.target.value)} className="font-sans" />
+                          <Input
+                            type="number"
+                            placeholder="8,000"
+                            value={customiseBudgetRange[1] || ""}
+                            onChange={(e) => {
+                              const val = Number(e.target.value) || 0;
+                              setCustomiseBudgetRange([Math.min(customiseBudgetRange[0], val - 2000), val]);
+                            }}
+                            className="font-sans"
+                          />
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground font-sans">
-                        Artisans bid on this range. Complex hand work like Zardozi may need a higher range to attract skilled bids.
+                        💡 Set a realistic range — artisans bid within it.
                       </p>
                     </div>
 
