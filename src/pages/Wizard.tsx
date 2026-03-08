@@ -105,6 +105,24 @@ const showSleeve = ["Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Kurti"
 const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
 const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
 
+const categoryImages: Record<string, string> = {
+  "Sherwani": "https://source.unsplash.com/featured/?indian+man+sherwani+groom&1010",
+  "Kurta": "https://source.unsplash.com/featured/?indian+man+kurta+ethnic&1011",
+  "Suit": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
+  "Blazer": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
+  "Bandhgala": "https://source.unsplash.com/featured/?bandhgala+jacket+men+indian&1013",
+  "Trousers": "https://source.unsplash.com/featured/?formal+trousers+men+tailored&1015",
+  "Indo-Western": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
+  "Lehenga": "https://source.unsplash.com/featured/?indian+lehenga+bridal+woman&1020",
+  "Saree Blouse": "https://source.unsplash.com/featured/?saree+blouse+indian+fashion&1026",
+  "Salwar Kameez": "https://source.unsplash.com/featured/?salwar+kameez+indian+woman&1022",
+  "Anarkali": "https://source.unsplash.com/featured/?anarkali+suit+indian+woman&1023",
+  "Kurti": "https://source.unsplash.com/featured/?kurti+indian+woman+ethnic&1024",
+  "Gown": "https://source.unsplash.com/featured/?indian+woman+ethnic+gown&1025",
+  "Co-ord Set": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
+  "Jacket": "https://source.unsplash.com/featured/?nehru+jacket+indian+men&1014",
+};
+
 const feelOptions = [
   { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://source.unsplash.com/featured/?chiffon+fabric+flowing+breeze&1030" },
   { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://source.unsplash.com/featured/?lehenga+structured+silhouette+formal&1031" },
