@@ -300,6 +300,7 @@ const Wizard = () => {
     if (step === 4) fetchAvailableModels();
   }, [step]);
 
+  const canProceed = () => {
     if (step === 1) return uploaded;
     if (step === 2) {
       if (step2Phase === "category") return !!selectedCategory && (!!selectedSubCategory || !subCategories[selectedCategory]);
