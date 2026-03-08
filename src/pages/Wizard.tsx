@@ -2446,9 +2446,79 @@ const Wizard = () => {
                       <p className="text-muted-foreground font-sans mb-8">Final details before we match you with tailors</p>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        {/* Total Budget */}
+                        {/* Budget Intelligence Badge */}
+                        <div className="col-span-full">
+                          {(() => {
+                            const intelligence = budgetIntelligence[selectedCategory] || budgetIntelligence[selectedSubCategory];
+                            if (!intelligence) return null;
+                            return (
+                              <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span>💡</span>
+                                  <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                                </div>
+                                <p className="text-xs text-amber-800 font-sans mb-3">
+                                  Naapio customers ordering {selectedCategory} typically spend:
+                                </p>
+                                <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                                  <div
+                                    className="absolute h-full bg-accent rounded-full"
+                                    style={{
+                                      left: `${Math.max(0, ((intelligence.low - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
+                                      right: `${Math.max(0, 100 - ((intelligence.high - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
+                                    }}
+                                  />
+                                  <div
+                                    className="absolute w-2 h-4 bg-accent rounded-full -top-1"
+                                    style={{ left: `${((intelligence.avg - intelligence.low) / (intelligence.high - intelligence.low)) * 100}%` }}
+                                  />
+                                </div>
+                                <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                                  <span>{formatBudget(intelligence.low)}</span>
+                                  <span className="font-semibold">Avg {formatBudget(intelligence.avg)}</span>
+                                  <span>{formatBudget(intelligence.high)}</span>
+                                </div>
+                                <p className="text-xs text-amber-800 font-sans mb-3">{intelligence.tip}</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => setBudgetRange([intelligence.low, Math.round(intelligence.avg * 1.5)])}
+                                >
+                                  Set recommended range
+                                </Button>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Total Budget - Dual Handle Slider */}
                         <div>
                           <h3 className="font-sans font-semibold text-foreground mb-4">Total budget for the garment (including stitching)</h3>
+
+                          {/* Slider */}
+                          <div className="mb-4">
+                            <div className="flex justify-between mb-2">
+                              <span className="text-sm font-sans font-semibold text-accent">{formatBudget(budgetRange[0])}</span>
+                              <span className="text-sm font-sans font-semibold text-accent">{formatBudget(budgetRange[1])}</span>
+                            </div>
+                            <Slider
+                              value={budgetRange}
+                              onValueChange={(val) => {
+                                if (val[1] - val[0] >= 2000) setBudgetRange(val);
+                              }}
+                              min={1000}
+                              max={200000}
+                              step={budgetRange[0] < 10000 ? 500 : budgetRange[0] < 50000 ? 1000 : 5000}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
+                              <span>₹1K</span>
+                              <span>₹2L</span>
+                            </div>
+                          </div>
+
+                          {/* Manual override inputs */}
                           <div className="flex gap-3 mb-3">
                             <div className="flex-1">
                               <label className="text-xs font-sans text-muted-foreground mb-1 block">Min ₹</label>
@@ -2456,7 +2526,10 @@ const Wizard = () => {
                                 type="number"
                                 placeholder="5,000"
                                 value={budgetRange[0] || ""}
-                                onChange={(e) => setBudgetRange([Number(e.target.value) || 0, budgetRange[1]])}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value) || 0;
+                                  setBudgetRange([val, Math.max(val + 2000, budgetRange[1])]);
+                                }}
                                 className="font-sans"
                               />
                             </div>
@@ -2466,7 +2539,10 @@ const Wizard = () => {
                                 type="number"
                                 placeholder="15,000"
                                 value={budgetRange[1] || ""}
-                                onChange={(e) => setBudgetRange([budgetRange[0], Number(e.target.value) || 0])}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value) || 0;
+                                  setBudgetRange([Math.min(budgetRange[0], val - 2000), val]);
+                                }}
                                 className="font-sans"
                               />
                             </div>
