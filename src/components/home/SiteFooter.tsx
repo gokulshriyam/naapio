@@ -1,6 +1,9 @@
 import { Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const SiteFooter = () => {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-primary text-primary-foreground py-16">
       <div className="container mx-auto px-6">
@@ -21,6 +24,8 @@ const SiteFooter = () => {
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
               <li className="hover:text-accent cursor-pointer transition-colors">How It Works</li>
               <li className="hover:text-accent cursor-pointer transition-colors">Browse Categories</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/alteration")}>Alteration &amp; Repair</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/customise")}>Customise Your Garment</li>
               <li className="hover:text-accent cursor-pointer transition-colors">Pricing</li>
               <li className="hover:text-accent cursor-pointer transition-colors">Help Centre</li>
             </ul>
@@ -35,8 +40,9 @@ const SiteFooter = () => {
             </ul>
           </div>
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">Company</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">Categories</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/wizard")}>Regional Garments</li>
               <li className="hover:text-accent cursor-pointer transition-colors">About Us</li>
               <li className="hover:text-accent cursor-pointer transition-colors">Careers</li>
               <li className="hover:text-accent cursor-pointer transition-colors">Privacy Policy</li>
