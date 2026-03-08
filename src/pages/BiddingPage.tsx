@@ -105,6 +105,12 @@ const BiddingPage = () => {
   const [milestones, setMilestones] = useState<Milestone[]>(initialDemoOrder.milestones);
   const [changeNotes, setChangeNotes] = useState<Record<number, string>>({});
   const [confirmBid, setConfirmBid] = useState<typeof mockBids[0] | null>(null);
+  const [changeRequestSent, setChangeRequestSent] = useState<Record<number, boolean>>({});
+  const [changeSending, setChangeSending] = useState<Record<number, boolean>>({});
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
