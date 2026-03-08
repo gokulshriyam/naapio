@@ -558,7 +558,7 @@ const ActiveOrdersPage = () => {
       updatedAt: confirmedAt,
       source: 'M1_confirmed',
       orderId: orderId,
-      values: { ...measurements },
+      values: { ...finalMeasurements },
     };
     profile.lastUpdated = confirmedAt;
     localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
