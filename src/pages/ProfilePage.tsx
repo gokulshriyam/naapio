@@ -91,7 +91,7 @@ const ProfilePage = () => {
                 <div key={field} className="text-center">
                   <label className="text-[10px] font-sans text-muted-foreground uppercase tracking-wider block mb-1">{field}</label>
                   {editing ? (
-                    <Input type="number" defaultValue={measurementValues[i]} className="text-center font-sans text-sm h-9" />
+                    <Input type="number" defaultValue={measurementValues[i]} className="measurement-input text-center font-sans text-sm h-9" />
                   ) : (
                     <p className="font-sans font-semibold text-foreground text-lg">{measurementValues[i]}"</p>
                   )}
