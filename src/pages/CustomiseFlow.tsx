@@ -104,6 +104,12 @@ const getMinDeliveryDays = (types: string[]): number => {
   return 3;
 };
 
+const formatBudget = (value: number): string => {
+  if (value >= 100000) return `₹${(value/100000).toFixed(1).replace('.0','')}L`;
+  if (value >= 1000) return `₹${(value/1000).toFixed(1).replace('.0','')}K`;
+  return `₹${value}`;
+};
+
 const getMinDeliveryDate = (types: string[]) => {
   const d = new Date();
   d.setDate(d.getDate() + getMinDeliveryDays(types));
