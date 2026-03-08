@@ -246,11 +246,11 @@ const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActive
       <p className="text-xs font-sans font-semibold text-foreground">Brief Summary</p>
 
       {order.inspirationPhoto && (
-        <div className="w-full h-36 rounded-xl overflow-hidden flex-shrink-0 mt-2">
+        <div style={{width:'100%', height:'144px', overflow:'hidden', borderRadius:'12px', flexShrink:0}} className="mt-2">
           <img
             src={order.inspirationPhoto}
             alt="Inspiration"
-            className="w-full h-full object-cover object-top cursor-zoom-in"
+            style={{width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block', cursor:'zoom-in'}}
             onClick={() => onZoomImage?.(order.inspirationPhoto!)}
           />
         </div>
@@ -341,12 +341,14 @@ const VendorActiveOrders = () => {
   const [orderClosed, setOrderClosed] = useState(false);
 
   // Reset milestone state when order changes — START at currentMilestone (Fix 6)
+  // Auto-open first order and default to M1 on mount
   useEffect(() => {
-    if (selectedOrder) {
-      setActiveMilestone(selectedOrder.currentMilestone);
-      setM1ReadOnly(false);
+    const order = mockVendorActiveOrders[0];
+    if (order) {
+      setSelectedOrderId(order.orderId);
+      setActiveMilestone(1);
     }
-  }, [selectedOrder]);
+  }, []);
 
   // ─── ORDER LIST VIEW ───
   if (!selectedOrderId) {
@@ -401,7 +403,7 @@ const VendorActiveOrders = () => {
                   {MILESTONES.map(m => <span key={m.id} className="flex-1 text-center">{m.label}</span>)}
                 </div>
                 <Progress value={progress} className="h-1 mb-4" />
-                <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => setSelectedOrderId(order.orderId)}>
+                <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => { setSelectedOrderId(order.orderId); setActiveMilestone(order.currentMilestone === 1 ? 1 : 2); }}>
                   {order.currentMilestone === 1 ? 'Review Measurements →' : `Continue — M${order.currentMilestone} →`}
                 </Button>
               </div>
@@ -512,7 +514,7 @@ const VendorActiveOrders = () => {
       {/* Two-column layout */}
       <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
         {/* LEFT COLUMN */}
-        <aside className="w-full lg:w-72 lg:max-w-[288px] lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <aside className="w-full lg:w-72 space-y-4" style={{flexShrink:0, maxWidth:'288px'}}>
           {/* Full brief card (Fix 7) */}
           <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
@@ -570,7 +572,7 @@ const VendorActiveOrders = () => {
         </aside>
 
         {/* RIGHT COLUMN — Milestone content */}
-        <main className="flex-1 min-w-0 w-full">
+        <main className="flex-1 w-full" style={{minWidth:0, overflow:'hidden'}}>
           <AnimatePresence mode="wait">
             {/* ═══ M1 — Measurements Review (read-only if m1ReadOnly) ═══ */}
             {activeMilestone === 1 && (
