@@ -2302,7 +2302,7 @@ const Wizard = () => {
                   )}
 
                   {/* STEP 3h: EMBELLISHMENT BUDGET */}
-                  {step3Phase === "embellishment" && (
+                  {step3Phase === "embellishment" && showAdvancedFabric && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your embellishment budget?</h2>
                       <p className="text-muted-foreground font-sans mb-6">For the embroidery or surface work you selected</p>
