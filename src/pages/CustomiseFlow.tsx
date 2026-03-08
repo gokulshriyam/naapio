@@ -104,6 +104,7 @@ const svgZones: { id: string; label: string; d: string }[] = [
 
 const CustomiseFlow = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [showReview, setShowReview] = useState(false);
 

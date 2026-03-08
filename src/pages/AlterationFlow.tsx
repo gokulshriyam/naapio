@@ -77,6 +77,7 @@ const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 const AlterationFlow = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Step A1
