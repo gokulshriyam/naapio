@@ -170,6 +170,81 @@ const formatFileSize = (bytes: number): string => {
 };
 
 // ═══════════════════════════════════════
+// Dispute Modal (inline)
+// ═══════════════════════════════════════
+
+const DISPUTE_REASONS = [
+  "Measurements not followed",
+  "Fabric different from approved",
+  "Quality issues",
+  "Delivery delay",
+  "Artisan unresponsive",
+  "Other",
+];
+
+const DisputeModalInline = ({ open, onClose, orderId }: { open: boolean; onClose: () => void; orderId: string }) => {
+  const [reason, setReason] = useState('');
+  const [description, setDescription] = useState('');
+
+  const canSubmit = reason.length > 0 && description.length >= 20;
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    toast.success(`Dispute raised. Case #${orderId}-D01. Our team will contact you within 24 hours.`);
+    setReason(''); setDescription('');
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-serif">Raise a Dispute — #{orderId}</DialogTitle>
+          <DialogDescription className="font-sans">
+            Naapio will review and respond within 24 hours.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 mt-2">
+          <div>
+            <Label className="font-sans text-sm">Reason</Label>
+            <select
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-sans"
+            >
+              <option value="">Select a reason</option>
+              {DISPUTE_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+          <div>
+            <Label className="font-sans text-sm">Describe the issue</Label>
+            <Textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Please describe the issue in detail (min 20 characters)..."
+              className="mt-1 font-sans min-h-[100px]"
+            />
+            {description.length > 0 && description.length < 20 && (
+              <p className="text-xs text-destructive font-sans mt-1">Minimum 20 characters required</p>
+            )}
+          </div>
+          <div>
+            <Label className="font-sans text-sm">Upload evidence (photos / screenshots)</Label>
+            <input type="file" accept="image/*" multiple className="mt-1 text-sm font-sans" />
+          </div>
+        </div>
+        <div className="flex gap-3 mt-4">
+          <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
+          <Button variant="destructive" onClick={handleSubmit} disabled={!canSubmit} className="flex-1">
+            Submit Dispute
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// ═══════════════════════════════════════
 // Component
 // ═══════════════════════════════════════
 
