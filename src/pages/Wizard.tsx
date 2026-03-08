@@ -564,7 +564,7 @@ const Wizard = () => {
       if (mappedCategory) {
         setSelectedCategory(mappedCategory);
         setPhotoFromBadgeShown(prev => new Set([...prev, 'category']));
-        console.log('Pre-filled category:', mappedCategory);
+        
       }
     }
     
