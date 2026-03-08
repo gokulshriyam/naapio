@@ -143,12 +143,28 @@ const AlterationFlow = () => {
     return true;
   };
 
+  const generateOrderId = () => {
+    const num = Math.floor(10000 + Math.random() * 90000);
+    return `NP-2026-${num}`;
+  };
+
   const handlePay = () => {
     setLoading(true);
     setTimeout(() => {
-      toast.success("Payment confirmed! Your alteration request is now live.");
-      navigate("/dashboard");
-    }, 1500);
+      const newOrderId = generateOrderId();
+      setOrderId(newOrderId);
+      localStorage.setItem("naapio_last_order", JSON.stringify({
+        orderId: newOrderId,
+        orderType: "Alteration",
+        garment: garmentDisplay,
+        occasion: "",
+        budgetRange: `₹${alterationBudgetMin} – ₹${alterationBudgetMax || "—"}`,
+        deliveryDate: alterationDeliveryDate,
+        timestamp: new Date().toISOString()
+      }));
+      setOrderSuccess(true);
+      window.scrollTo(0, 0);
+    }, 2000);
   };
 
   const progressLabel = showReview
