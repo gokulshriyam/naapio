@@ -158,6 +158,12 @@ const CustomiseFlow = () => {
   const [zonePhotos, setZonePhotos] = useState<Record<string, File | null>>({});
   const [placementCustomNote, setPlacementCustomNote] = useState("");
 
+  const [referenceArtPhoto, setReferenceArtPhoto] = useState<File | null>(null);
+  const [placementError, setPlacementError] = useState(false);
+
+  const totalSelectedZones = Object.values(selectedZonesByView).flat().length;
+  const allSelectedZones = Object.values(selectedZonesByView).flat();
+
   // Customise Intelligence
   const custIntelligence = useMemo(() => {
     const basesPerZone: Record<string, number> = {
@@ -179,11 +185,6 @@ const CustomiseFlow = () => {
     if (zones > 1) factors.push(`${zones} zones selected`);
     return { min, max, avg, explanation: factors };
   }, [customisationTypes, totalSelectedZones]);
-  const [referenceArtPhoto, setReferenceArtPhoto] = useState<File | null>(null);
-  const [placementError, setPlacementError] = useState(false);
-
-  const totalSelectedZones = Object.values(selectedZonesByView).flat().length;
-  const allSelectedZones = Object.values(selectedZonesByView).flat();
 
   // C4
   const [customiseColourMood, setCustomiseColourMood] = useState("");
