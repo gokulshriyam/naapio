@@ -555,16 +555,16 @@ const BiddingPage = () => {
           const bidDeadline = new Date(postedDate.getTime() + 7 * 24 * 60 * 60 * 1000);
           
           // Parse budget range properly
-          let budgetRange = { min: 5000, max: 20000 };
+          let budgetRange = { min: 1000, max: 20000 };
           if (lo.budgetRange) {
-            if (typeof lo.budgetRange === "string") {
-              // Try to parse string format like "₹5K – ₹20K"
-              budgetRange = { min: 5000, max: 20000 };
-            } else if (Array.isArray(lo.budgetRange) && lo.budgetRange.length === 2) {
-              budgetRange = { min: lo.budgetRange[0], max: lo.budgetRange[1] };
-            } else if (typeof lo.budgetRange === "object" && lo.budgetRange.min !== undefined) {
-              budgetRange = lo.budgetRange;
+            if (Array.isArray(lo.budgetRange) && lo.budgetRange.length === 2) {
+              budgetRange = { min: Number(lo.budgetRange[0]) || 1000, max: Number(lo.budgetRange[1]) || 20000 };
+            } else if (typeof lo.budgetRange === 'object' && lo.budgetRange !== null && lo.budgetRange.min !== undefined) {
+              budgetRange = { min: Number(lo.budgetRange.min) || 1000, max: Number(lo.budgetRange.max) || 20000 };
             }
+            // Guard: min must be < max and both >= 1000
+            budgetRange.min = Math.max(1000, budgetRange.min);
+            budgetRange.max = Math.max(budgetRange.min + 500, budgetRange.max);
           }
           
           orders.unshift({
