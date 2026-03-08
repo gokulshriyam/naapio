@@ -181,10 +181,10 @@ const BiddingPage = () => {
     return (
       <div className="max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
         <span className="text-5xl mb-4">📋</span>
-        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">No active orders yet</h2>
-        <p className="text-muted-foreground font-sans mb-6">Start your first order to see it tracked here.</p>
+        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">{t('dashboard.noOrders')}</h2>
+        <p className="text-muted-foreground font-sans mb-6">{t('dashboard.noOrdersSubtext')}</p>
         <Button variant="gold" onClick={() => navigate("/start")}>
-          Start an Order →
+          {t('dashboard.startOrder')}
         </Button>
       </div>
     );
