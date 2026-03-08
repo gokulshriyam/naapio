@@ -2407,6 +2407,27 @@ const Wizard = () => {
                             </PopoverContent>
                           </Popover>
 
+                          {/* Day count */}
+                          {deliveryDate && (() => {
+                            const days = getDeliveryDayCount(deliveryDate);
+                            const msg = getDeliveryDayMessage(days);
+                            return <p className={`text-xs font-sans mt-2 ${msg.color}`}>{msg.text}</p>;
+                          })()}
+
+                          <p className="text-xs text-muted-foreground font-sans mt-2">
+                            🗓️ Ordering for a wedding? Pick a date 3–5 days before the event to allow for last-minute adjustments.
+                          </p>
+
+                          {/* Rush + distant date sync */}
+                          {isRushOrder && deliveryDate && getDeliveryDayCount(deliveryDate) > 21 && (
+                            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                              <p className="text-xs text-amber-800 font-sans">
+                                ⚡ Rush order is enabled but your delivery date is {getDeliveryDayCount(deliveryDate)} days away — rush may not be necessary. You can disable it to attract more bids.
+                              </p>
+                              <button onClick={() => setIsRushOrder(false)} className="text-xs text-accent font-sans hover:underline mt-1">Disable Rush Order</button>
+                            </div>
+                          )}
+
                           <div className="flex items-center gap-3 mt-4">
                             <Checkbox
                               id="flex-date"
