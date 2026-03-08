@@ -400,6 +400,93 @@ const Wizard = () => {
     return 10;
   };
 
+  // ── Contextual Budget Intelligence ──
+  const computeIntelligentBudget = (): { min: number; max: number; avg: number; explanation: string[] } => {
+    const bases: Record<string, number> = {
+      'Saree Blouse': 1500, 'High-neck Blouse': 2000, 'Backless Blouse': 2500, 'Embroidered Blouse': 3500,
+      'Kurti': 1200, 'Short Kurti': 1000,
+      'Salwar Kameez': 4000, 'Patiala Suit': 3500, 'Churidar Set': 3500,
+      'Anarkali': 5500, 'Straight Cut': 3000, 'A-Line Kurta': 3500,
+      'Co-ord Set': 5000, 'Sharara Set': 6000,
+      'Party Lehenga': 10000, 'Chaniya Choli': 8000, 'Festive Lehenga': 12000,
+      'Gown': 9000, 'Indo-Western Gown': 10000, 'Trail Gown': 15000,
+      'Bridal Lehenga': 40000, 'Bridal Lehenga (Full Set)': 55000, 'Bridal Saree Draping': 3000,
+      'Kurta': 2000, 'Casual Kurta': 1500, 'Pathani Suit': 3500,
+      'Sherwani': 18000, 'Wedding Sherwani': 35000,
+      'Bandhgala': 10000, 'Jodhpuri': 10000,
+      'Suit': 15000, 'Blazer': 8000, 'Nehru Jacket': 5000,
+      'Lehenga': 12000, 'default_women': 5000, 'default_men': 6000,
+    };
+    const base = bases[selectedSubCategory] || bases[selectedCategory] || (gender === 'men' ? bases['default_men'] : bases['default_women']);
+    const factors: string[] = [];
+    let multiplier = 1.0;
+
+    // Occasion
+    const occasionMultipliers: Record<string, number> = {
+      'Wedding / Baraat / Nikah': 2.8, 'Reception / Cocktail': 2.0, 'Engagement / Roka': 1.8,
+      'Mehendi / Haldi': 1.5, 'Pre-Wedding / Photoshoot': 1.6,
+      'Festival (Diwali / Eid / Navratri)': 1.3, 'Garba / Dandiya Night': 1.2,
+      'Religious Ceremony / Puja': 1.2, 'Formal Office / Corporate': 1.0,
+      'Casual / Daily Wear': 0.7, 'Party / Night Out': 1.3, 'Graduation / Convocation': 0.9,
+    };
+    const occMult = occasionMultipliers[selectedOccasion] || 1.0;
+    if (occMult !== 1.0) {
+      multiplier *= occMult;
+      factors.push(occMult > 1.5 ? `${selectedOccasion} (+${Math.round((occMult-1)*100)}%)` : occMult > 1.0 ? `${selectedOccasion} (moderate premium)` : 'Casual occasion (budget-friendly)');
+    }
+
+    // Fabric feel
+    const feelMultipliers: Record<string, number> = {
+      'Rich & Heavy': 2.0, 'Structured': 1.4, 'Light & Airy': 0.85,
+      'Crisp & Sharp': 1.6, 'Soft & Draped': 1.0,
+    };
+    const feelMult = feelMultipliers[selectedFeel] || 1.0;
+    if (feelMult !== 1.0) {
+      multiplier *= feelMult;
+      factors.push(feelMult > 1.3 ? `${selectedFeel} fabric adds significant cost` : `${selectedFeel} fabric (moderate impact)`);
+    }
+
+    // Surface work
+    const surfaceMultipliers: Record<string, number> = {
+      'Heavy Embroidery': 2.0, 'Zardozi / Zari Work': 2.5, 'Mirror Work': 1.8,
+      'Sequence & Beadwork': 1.6, 'Resham Thread Work': 1.5, 'Kalamkari / Block Print': 1.2,
+      'Bandhani / Tie-Dye': 1.2, 'Cutwork / Lace': 1.4, 'Smocking / Pintucks': 1.3,
+      'Digital Print': 1.1, 'Appliqué': 1.3, 'Plain / No Embellishment': 1.0,
+    };
+    const surfaceMult = selectedSurfaces.length > 0 ? Math.max(...selectedSurfaces.map(s => surfaceMultipliers[s] || 1.0)) : 1.0;
+    const multiSurfaceBonus = selectedSurfaces.length > 2 ? 1.2 : selectedSurfaces.length > 1 ? 1.1 : 1.0;
+    if (surfaceMult > 1.0) {
+      multiplier *= surfaceMult * multiSurfaceBonus;
+      const heaviest = selectedSurfaces.find(s => surfaceMultipliers[s] === surfaceMult);
+      factors.push(surfaceMult > 1.8 ? `${heaviest} is labour-intensive (+${Math.round((surfaceMult-1)*100)}%)` : 'Surface work adds to cost');
+      if (selectedSurfaces.length > 2) factors.push(`${selectedSurfaces.length} embellishment types (combination premium)`);
+    }
+
+    // Fabric budget band
+    const fabricBandMultipliers: Record<string, number> = { 'Economy': 0.75, 'Mid-Range': 1.0, 'Premium': 1.5 };
+    const fabMult = fabricBandMultipliers[fabricBudgetBand] || 1.0;
+    if (fabMult !== 1.0) {
+      multiplier *= fabMult;
+      factors.push(fabMult > 1.3 ? `${fabricBudgetBand} fabric tier — significant material cost` : fabMult < 1.0 ? 'Economy fabric — lower material cost' : '');
+    }
+
+    // Own fabric discount
+    if (isOwnFabric) {
+      multiplier *= 0.65;
+      factors.push('Own fabric: material cost deducted');
+    }
+
+    const avg = Math.round(base * multiplier / 500) * 500;
+    const min = Math.max(1000, Math.round(avg * 0.65 / 500) * 500);
+    const max = Math.round(avg * 1.65 / 500) * 500;
+    return { min, max, avg, explanation: factors.filter(Boolean) };
+  };
+
+  const budgetIntelligenceData = useMemo(
+    () => computeIntelligentBudget(),
+    [selectedSubCategory, selectedCategory, selectedOccasion, selectedFeel, selectedSurfaces, fabricBudgetBand, isOwnFabric, gender]
+  );
+
   const getMinDeliveryDate = () => {
     const d = new Date();
     d.setDate(d.getDate() + getMinDeliveryDays());
