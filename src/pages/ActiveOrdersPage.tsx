@@ -463,6 +463,7 @@ const ActiveOrdersPage = () => {
   };
 
 
+  const handleSubmitReview = () => {
     const avg = (review.quality + review.communication + review.timeliness + review.value) / 4;
     const history = JSON.parse(localStorage.getItem('naapio_order_history') || '[]');
     history.push({
