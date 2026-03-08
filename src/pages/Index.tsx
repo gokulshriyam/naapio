@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sparkles, Menu, X } from "lucide-react";
+import { Sparkles, Menu, X, User, LogOut, ShoppingBag, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -23,6 +23,45 @@ const Index = () => {
   const [loginPhone, setLoginPhone] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
   const [loginOtpSent, setLoginOtpSent] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('naapio_user'));
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const getUserData = () => {
+    try {
+      const raw = localStorage.getItem('naapio_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  };
+
+  const getInitials = () => {
+    const user = getUserData();
+    if (user?.name && user.name !== 'Customer') return user.name.charAt(0).toUpperCase();
+    if (user?.phone) return user.phone.slice(-2);
+    return 'U';
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('naapio_user');
+    setIsLoggedIn(false);
+    setShowUserMenu(false);
+    navigate('/');
+    toast.info('Logged out successfully');
+  };
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -39,7 +78,12 @@ const Index = () => {
             {!loginOtpSent ? (
               <div className="space-y-3">
                 <Input value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} placeholder="+91 98765 43210" type="tel" className="font-sans" />
-                <Button variant="gold" className="w-full" onClick={() => { if (loginPhone.trim()) setLoginOtpSent(true); }}>Send OTP →</Button>
+                <Button variant="gold" className="w-full" disabled={loginLoading} onClick={() => {
+                  if (loginPhone.trim()) {
+                    setLoginLoading(true);
+                    setTimeout(() => { setLoginOtpSent(true); setLoginLoading(false); }, 800);
+                  }
+                }}>{loginLoading ? 'Sending...' : 'Send OTP →'}</Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -47,11 +91,19 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground font-sans">Demo mode — enter any 4 digits</p>
                 <Button variant="gold" className="w-full" onClick={() => {
                   if (/^\d{4}$/.test(loginOtp)) {
+                    const userData = {
+                      phone: loginPhone,
+                      name: 'Customer',
+                      loggedInAt: new Date().toISOString(),
+                    };
+                    localStorage.setItem('naapio_user', JSON.stringify(userData));
+                    setIsLoggedIn(true);
                     setLoginOpen(false); setLoginOtpSent(false); setLoginOtp(''); setLoginPhone('');
                     toast.success("Welcome back! 👋");
                     navigate('/dashboard');
                   } else { toast.error("Enter any 4 digits"); }
                 }}>Verify →</Button>
+                <button onClick={() => setLoginOtpSent(false)} className="text-xs text-muted-foreground hover:text-foreground font-sans">← Change number</button>
               </div>
             )}
 
@@ -85,12 +137,42 @@ const Index = () => {
           <div className="hidden md:flex items-center gap-2">
             <CitySelector />
             <LanguageSelector />
-            <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)}>
-              {t('nav.login')}
-            </Button>
-            <Button variant="gold" size="sm" onClick={() => navigate("/start")}>
-              {t('nav.getStarted')}
-            </Button>
+            {isLoggedIn ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-sans font-bold text-sm hover:opacity-90 transition-opacity"
+                >
+                  {getInitials()}
+                </button>
+                {showUserMenu && (
+                  <div className="absolute right-0 top-11 w-48 bg-card border border-border rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <button onClick={() => { navigate('/dashboard'); setShowUserMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-foreground hover:bg-muted transition-colors">
+                      <ShoppingBag className="w-4 h-4" /> My Orders
+                    </button>
+                    <button onClick={() => { navigate('/dashboard/profile'); setShowUserMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-foreground hover:bg-muted transition-colors">
+                      <User className="w-4 h-4" /> Profile
+                    </button>
+                    <button onClick={() => { navigate('/dashboard/settings'); setShowUserMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-foreground hover:bg-muted transition-colors">
+                      <Settings className="w-4 h-4" /> Settings
+                    </button>
+                    <div className="h-px bg-border my-1" />
+                    <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-destructive hover:bg-muted transition-colors">
+                      <LogOut className="w-4 h-4" /> Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)}>
+                  {t('nav.login')}
+                </Button>
+                <Button variant="gold" size="sm" onClick={() => navigate("/start")}>
+                  {t('nav.getStarted')}
+                </Button>
+              </>
+            )}
           </div>
           {/* Mobile hamburger */}
           <button className="md:hidden p-2" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
@@ -108,12 +190,28 @@ const Index = () => {
             <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
             <a href="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</a>
             <div className="space-y-3 pt-3">
-              <Button variant="ghost" size="sm" onClick={() => { setLoginOpen(true); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
-                {t('nav.login')}
-              </Button>
-              <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
-                {t('nav.getStarted')}
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    My Orders
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { navigate('/dashboard/profile'); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    Profile
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => { handleLogout(); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px] text-destructive">
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => { setLoginOpen(true); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    {t('nav.login')}
+                  </Button>
+                  <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    {t('nav.getStarted')}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

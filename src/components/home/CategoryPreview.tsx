@@ -72,7 +72,12 @@ const CategoryPreview = () => {
             {orderTypes.map((type) => (
               <button
                 key={type.title}
-                onClick={() => navigate(`/start`)}
+                onClick={() => {
+                  localStorage.setItem('naapio_prefill', JSON.stringify({
+                    orderType: type.title,
+                  }));
+                  navigate('/start');
+                }}
                 className={`border-2 rounded-xl p-5 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${type.color}`}
               >
                 <div className="text-3xl mb-2">{type.emoji}</div>
@@ -107,7 +112,13 @@ const CategoryPreview = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 className="group relative overflow-hidden rounded-2xl cursor-pointer"
-                onClick={() => navigate("/start")}
+                onClick={() => {
+                  localStorage.setItem('naapio_prefill', JSON.stringify({
+                    gender: gender,
+                    orderType: 'New Order',
+                  }));
+                  navigate('/start');
+                }}
               >
                 <img src={cat.image} alt={cat.title} className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent" />
@@ -119,7 +130,12 @@ const CategoryPreview = () => {
                         key={item}
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate("/start", { state: { prefilledGender: gender, prefilledCategory: item } });
+                          localStorage.setItem('naapio_prefill', JSON.stringify({
+                            gender: gender,
+                            category: item,
+                            orderType: 'New Order',
+                          }));
+                          navigate('/start');
                         }}
                         className="px-3 py-1 text-xs font-sans font-medium bg-primary-foreground/20 text-primary-foreground rounded-full backdrop-blur-sm hover:bg-primary-foreground/40 transition-colors"
                       >
