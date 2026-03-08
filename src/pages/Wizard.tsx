@@ -350,6 +350,11 @@ const Wizard = () => {
 
 
   const canProceed = () => {
+    if (step === 0) {
+      if (orderingFor === 'self') return true;
+      if (orderingFor === 'someone') return !!recipientName.trim() && !!recipientRelation;
+      return false;
+    }
     if (step === 1) return uploaded;
     if (step === 2) {
       if (step2Phase === "category") return !!selectedCategory && (!!selectedSubCategory || !subCategories[selectedCategory]);
@@ -381,6 +386,26 @@ const Wizard = () => {
     return `NP-2026-${num}`;
   };
 
+  const buildShareText = () => {
+    const lines = [
+      "👗 *My Naapio Order Brief*",
+      "",
+      `*Order Type:* ${isOwnFabric ? "Own Fabric" : "New Order"}`,
+      `*Garment:* ${gender === "women" ? "Women's" : "Men's"} · ${selectedCategory}${selectedSubCategory ? ' · ' + selectedSubCategory : ''}`,
+      `*Occasion:* ${selectedOccasion || 'Not specified'}`,
+      `*Fit:* ${selectedFit || 'Not specified'}`,
+      selectedColourMood ? `*Colour:* ${selectedColourMood}` : null,
+      selectedFeel ? `*Fabric Feel:* ${selectedFeel}` : null,
+      budgetRange ? `*Budget:* ${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}` : null,
+      deliveryDate ? `*Delivery by:* ${deliveryDate}` : null,
+      isRushOrder ? `⚡ *Rush Order*` : null,
+      "",
+      "Review my brief and let me know what you think!",
+      "Ordering via Naapio — naapio.in"
+    ].filter(Boolean).join('\n');
+    return encodeURIComponent(lines);
+  };
+
   const handlePay = () => {
     setLoading(true);
     setTimeout(() => {
@@ -393,6 +418,9 @@ const Wizard = () => {
         occasion: selectedOccasion,
         budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
         deliveryDate,
+        rushOrder: isRushOrder,
+        giftOrder, recipientName, recipientRelation, recipientPhone,
+        timestamp: new Date().toISOString()
         timestamp: new Date().toISOString()
       }));
       localStorage.removeItem("naapio_wizard_draft");
