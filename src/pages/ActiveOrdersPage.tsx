@@ -477,6 +477,29 @@ const ActiveOrdersPage = () => {
         <ArrowLeft className="w-4 h-4" /> My Orders
       </button>
 
+      {/* Multi-order selector */}
+      {allActiveOrders.length > 1 && (
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+          {allActiveOrders.map((o: any) => (
+            <button
+              key={o.orderId}
+              onClick={() => {
+                setSelectedOrderId(o.orderId);
+                setActiveOrder(o);
+                setActiveMilestone(1);
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-sans whitespace-nowrap border transition-all ${
+                (selectedOrderId || activeOrder?.orderId) === o.orderId
+                  ? 'bg-accent text-accent-foreground border-accent'
+                  : 'bg-card text-muted-foreground border-border hover:border-accent/50'
+              }`}
+            >
+              {o.orderId}
+            </button>
+          ))}
+        </div>
+      )}
+
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
       <p className="text-muted-foreground font-sans mb-6">{garmentLabel} • {artisanRealName}</p>
 
