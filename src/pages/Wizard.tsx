@@ -2272,6 +2272,8 @@ const Wizard = () => {
                 setStep(step - 1);
                 if (step === 4) setStep3Phase("budgetDelivery");
                 if (step === 3) setStep2Phase("measurements");
+              } else if (step === 0) {
+                navigate("/start");
               } else {
                 navigate("/");
               }
