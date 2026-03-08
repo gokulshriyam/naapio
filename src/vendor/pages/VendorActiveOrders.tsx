@@ -512,7 +512,7 @@ const VendorActiveOrders = () => {
       {/* Two-column layout */}
       <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
         {/* LEFT COLUMN */}
-        <aside className="w-full lg:w-72 lg:max-w-[288px] lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <aside className="w-full lg:w-72 space-y-4" style={{flexShrink:0, maxWidth:'288px'}}>
           {/* Full brief card (Fix 7) */}
           <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
