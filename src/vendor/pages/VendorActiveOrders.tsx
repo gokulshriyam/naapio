@@ -570,7 +570,7 @@ const VendorActiveOrders = () => {
         </aside>
 
         {/* RIGHT COLUMN — Milestone content */}
-        <main className="flex-1 min-w-0 w-full">
+        <main className="flex-1 w-full" style={{minWidth:0, overflow:'hidden'}}>
           <AnimatePresence mode="wait">
             {/* ═══ M1 — Measurements Review (read-only if m1ReadOnly) ═══ */}
             {activeMilestone === 1 && (
