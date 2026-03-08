@@ -3421,26 +3421,11 @@ const Wizard = () => {
                     }
                   }
                 } else {
-                  if (step3Phase === "budgetDelivery") {
-                    if (hasEmbellishment) {
-                      setStep3Phase("embellishment");
-                    } else {
-                      setStep3Phase("fabricBudget");
-                    }
-                  } else if (step3Phase === "embellishment") {
-                    setStep3Phase("fabricBudget");
-                  } else if (step3Phase === "fabricBudget") {
-                    setStep3Phase("brand");
-                  } else if (step3Phase === "brand") {
-                    setStep3Phase("blend");
-                  } else if (step3Phase === "blend") {
-                    setStep3Phase("surface");
-                  } else if (step3Phase === "surface") {
-                    setStep3Phase("colour");
-                  } else if (step3Phase === "colour") {
-                    setStep3Phase("fabricType");
-                  } else if (step3Phase === "fabricType") {
-                    setStep3Phase("feel");
+                  // Use computed phases for correct back navigation
+                  const phases = getStep3Phases();
+                  const currentIndex = phases.indexOf(step3Phase);
+                  if (currentIndex > 0) {
+                    setStep3Phase(phases[currentIndex - 1] as any);
                   } else {
                     setStep(2);
                     setStep2Phase("measurements");
