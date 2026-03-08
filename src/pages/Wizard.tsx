@@ -268,20 +268,120 @@ const extractArrayField = (text: string, field: string): string[] => {
 
 // Map detected garment to category (moved outside component for useEffect access)
 const mapDetectedToCategory = (detected: string): string | null => {
-  const map: Record<string, string> = {
-    'Saree Blouse': 'Saree Blouse',
-    'Kurti': 'Kurti',
-    'Salwar Kameez': 'Salwar Kameez',
-    'Anarkali': 'Anarkali',
-    'Lehenga': 'Lehenga',
-    'Gown': 'Gown',
-    'Kurta': 'Kurta',
-    'Sherwani': 'Sherwani',
-    'Bandhgala': 'Bandhgala',
-    'Chaniya Choli': 'Lehenga',
-    'Suit': 'Suit',
+  if (!detected) return null;
+  const d = detected.toLowerCase().trim();
+
+  // ── WOMEN'S ──────────────────────────
+
+  // Saree Blouse variants
+  if (d.includes('blouse') || d.includes('choli') && d.includes('blouse'))
+    return 'Saree Blouse';
+
+  // Saree (suggest blouse as the stitchable part)
+  if (d === 'saree' || d === 'sari')
+    return 'Saree Blouse';
+
+  // Kurti variants
+  if (d === 'kurti' || d === 'short kurti' || d.includes('kurti'))
+    return 'Kurti';
+
+  // Salwar Kameez variants
+  if (d.includes('salwar') || d.includes('kameez') || 
+      d.includes('patiala') || d.includes('churidar') ||
+      d.includes('shalwar') || d.includes('punjabi suit') ||
+      d.includes('straight suit'))
+    return 'Salwar Kameez';
+
+  // Anarkali variants
+  if (d.includes('anarkali') || d.includes('a-line kurta') ||
+      d.includes('floor length kurta') || d.includes('frock suit'))
+    return 'Anarkali';
+
+  // Lehenga variants
+  if (d.includes('lehenga') || d.includes('lehnga') ||
+      d.includes('ghagra') || d.includes('skirt and blouse') ||
+      d.includes('bridal skirt'))
+    return 'Lehenga';
+
+  // Chaniya Choli (garba/navratri)
+  if (d.includes('chaniya') || d.includes('chania') ||
+      d.includes('garba') || d.includes('navratri dress') ||
+      (d.includes('choli') && !d.includes('blouse')))
+    return 'Chaniya Choli';
+
+  // Gown variants
+  if (d.includes('gown') || d.includes('maxi dress') ||
+      d.includes('indo western') || d.includes('indowestern') ||
+      d.includes('long dress') || d.includes('floor gown'))
+    return 'Gown';
+
+  // Co-ord Set
+  if (d.includes('co-ord') || d.includes('coord') ||
+      d.includes('matching set') || d.includes('two piece set') ||
+      d.includes('co ord'))
+    return 'Co-ord Set';
+
+  // Sharara
+  if (d.includes('sharara') || d.includes('palazzo set') ||
+      d.includes('wide leg set'))
+    return 'Sharara Set';
+
+  // Dupatta
+  if (d === 'dupatta' || d === 'chunni' || d === 'chunri' ||
+      d.includes('dupatta'))
+    return 'Dupatta';
+
+  // ── MEN'S ─────────────────────────────
+
+  // Kurta variants
+  if (d === 'kurta' || d === 'casual kurta' ||
+      d.includes('kurta') || d.includes('pathani') ||
+      d.includes('kutra'))
+    return 'Kurta';
+
+  // Sherwani variants
+  if (d.includes('sherwani') || d.includes('sherwaani') ||
+      d.includes('wedding sherwani') || d.includes('achkan'))
+    return 'Sherwani';
+
+  // Bandhgala / Jodhpuri
+  if (d.includes('bandhgala') || d.includes('jodhpuri') ||
+      d.includes('nehru collar suit') || d.includes('mandarin collar') ||
+      d.includes('prince coat'))
+    return 'Bandhgala';
+
+  // Nehru Jacket
+  if (d.includes('nehru jacket') || d.includes('modi jacket') ||
+      d.includes('waistcoat') && d.includes('ethnic'))
+    return 'Nehru Jacket';
+
+  // Suit / Blazer
+  if (d.includes('suit') || d.includes('blazer') ||
+      d.includes('two piece') || d.includes('three piece') ||
+      d.includes('tuxedo') || d.includes('lounge suit') ||
+      d.includes('business suit') || d.includes('formal suit'))
+    return 'Suit/Blazer';
+
+  // ── EXACT CATALOG MATCH (already correct) ──
+  const exactMatches: Record<string, string> = {
+    'saree blouse': 'Saree Blouse',
+    'kurti': 'Kurti',
+    'salwar kameez': 'Salwar Kameez',
+    'anarkali': 'Anarkali',
+    'lehenga': 'Lehenga',
+    'gown': 'Gown',
+    'co-ord set': 'Co-ord Set',
+    'sharara set': 'Sharara Set',
+    'chaniya choli': 'Chaniya Choli',
+    'dupatta': 'Dupatta',
+    'kurta': 'Kurta',
+    'sherwani': 'Sherwani',
+    'bandhgala': 'Bandhgala',
+    'suit/blazer': 'Suit/Blazer',
+    'nehru jacket': 'Nehru Jacket',
   };
-  return map[detected] || null;
+
+  return exactMatches[d] || null;
 };
 
 const Wizard = () => {
@@ -427,6 +527,8 @@ const Wizard = () => {
   const [inspirationPhoto, setInspirationPhoto] = useState<File | null>(null);
   const [photoAnalysis, setPhotoAnalysis] = useState<{
     detectedGarment: string;
+    detectedSubCategory: string;
+    detectedGender: string;
     detectedColour: string;
     detectedFeel: string;
     detectedSurfaces: string[];
@@ -599,6 +701,18 @@ const Wizard = () => {
       setSelectedSurfaces(photoAnalysis.detectedSurfaces);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
       
+    }
+
+    // Pre-fill gender if detected and not already set
+    if (photoAnalysis.detectedGender && !gender) {
+      setGender(photoAnalysis.detectedGender as "men" | "women");
+    }
+
+    // Pre-fill subcategory if detected and category matches
+    if (photoAnalysis.detectedSubCategory && 
+        photoAnalysis.detectedSubCategory !== '' &&
+        !selectedSubCategory) {
+      setSelectedSubCategory(photoAnalysis.detectedSubCategory);
     }
   }, [photoAnalysis]);
   // Dependency array intentionally excludes the selected* values
@@ -1034,17 +1148,35 @@ const Wizard = () => {
         reader.readAsDataURL(photoFile);
       });
       
-      const prompt = `Analyse this Indian ethnic fashion garment image.
-    
-Return a JSON object with ONLY these fields, no other text:
+      const prompt = `You are a fashion analyst for Naapio, an Indian ethnic wear platform. Analyse this garment image carefully.
+
+Return ONLY a valid JSON object. No other text, no markdown, no explanation. Just the raw JSON.
+
+Use ONLY the exact values listed for each field:
+
 {
-  "detectedGarment": "one of: Saree Blouse, Kurti, Salwar Kameez, Anarkali, Lehenga, Gown, Kurta, Sherwani, Bandhgala, Suit, Chaniya Choli, Dupatta, or Other",
-  "detectedColour": "one of: Deep Reds, Jewel Tones, Pastels, Golds & Champagne, Ivory & Cream, Greens & Teals, Pinks & Mauves, Blues & Indigos, Blacks & Charcoals, Whites & Silvers, or Other",
-  "detectedFeel": "one of: Light & Airy, Structured, Rich & Heavy, Crisp & Sharp, Soft & Draped, or Unable to determine",
-  "detectedSurfaces": ["array of visible work from: Heavy Embroidery, Zardozi / Zari Work, Mirror Work, Sequence & Beadwork, Resham Thread Work, Kalamkari / Block Print, Bandhani / Tie-Dye, Cutwork / Lace, Smocking / Pintucks, Digital Print, Appliqué, Plain / No Embellishment"],
-  "detectedOccasion": "one of: Wedding / Baraat / Nikah, Reception / Cocktail, Engagement / Roka, Festival (Diwali / Eid / Navratri), Party / Night Out, Casual / Daily Wear, Formal Office / Corporate, or Unable to determine",
-  "confidence": "high if 3+ attributes clearly visible, medium if 2 attributes visible, low if image is unclear"
-}`;
+  "detectedGarment": "Must be exactly one of: Saree Blouse, Kurti, Salwar Kameez, Anarkali, Lehenga, Gown, Co-ord Set, Sharara Set, Chaniya Choli, Dupatta, Kurta, Sherwani, Bandhgala, Suit/Blazer, Nehru Jacket, Other",
+  
+  "detectedSubCategory": "Most specific match from: High-neck Blouse, Backless Blouse, Embroidered Blouse, Short Kurti, Patiala Suit, Churidar Set, Party Lehenga, Bridal Lehenga, Festive Lehenga, Indo-Western Gown, Trail Gown, Casual Kurta, Pathani Suit, Wedding Sherwani, Jodhpuri, or leave empty string if unclear",
+  
+  "detectedGender": "Women or Men",
+  
+  "detectedColour": "Must be exactly one of: Deep Reds, Pinks & Roses, Blues & Indigos, Greens & Teals, Purples & Violets, Yellows & Golds, Oranges & Corals, Whites & Ivories, Blacks & Charcoals, Jewel Tones, Pastels & Soft, Earthy & Neutrals, Multicolour",
+  
+  "detectedFeel": "Must be exactly one of: Rich & Heavy (Silk, Velvet), Structured (Cotton Silk, Georgette), Light & Airy (Cotton, Chiffon), Crisp & Formal (Linen, Silk), Stretchy & Comfortable, or empty string if unclear",
+  
+  "detectedSurfaces": ["Array using only these exact values: Zardozi / Heavy Zari Work, Hand Embroidery, Machine Embroidery, Mirror Work, Sequins & Beadwork, Thread Work / Kantha, Block Print, Bandhani / Tie-Dye, Appliqué / Patch Work, Digital Print, Plain / No Embellishment"],
+  
+  "detectedOccasion": "Must be exactly one of: Wedding, Bridal / Wedding, Reception / Cocktail, Engagement, Mehendi / Sangeet, Pre-Wedding / Photoshoot, Festival / Puja, Garba / Navratri, Party / Night Out, Formal Office, Casual / Daily Wear, or empty string if unclear",
+  
+  "confidence": "high if 4+ attributes clearly visible, medium if 2-3 attributes visible, low if image is unclear or not a garment"
+}
+
+Important rules:
+- If the person is WEARING the garment, analyse the garment not the person
+- For partial images, analyse what is visible
+- For non-garment images, return confidence: low and empty strings
+- detectedSurfaces must be an array even if empty: []`;
 
       const apiKey = "AIzaSyAm_EQ6hw4d6eJa3o4hH3mHn4JAikLsaKA"; // TODO: move server-side before launch
       const response = await fetch(
@@ -1066,7 +1198,7 @@ Return a JSON object with ONLY these fields, no other text:
             }],
             generationConfig: {
               temperature: 0.1,
-              maxOutputTokens: 500,
+              maxOutputTokens: 1024,
             }
           })
         }
@@ -1108,6 +1240,8 @@ Return a JSON object with ONLY these fields, no other text:
         // Fallback: try to extract values manually with regex
         analysis = {
           detectedGarment: extractField(rawText, 'detectedGarment'),
+          detectedSubCategory: extractField(rawText, 'detectedSubCategory') || '',
+          detectedGender: extractField(rawText, 'detectedGender') || '',
           detectedColour: extractField(rawText, 'detectedColour'),
           detectedFeel: extractField(rawText, 'detectedFeel'),
           detectedSurfaces: extractArrayField(rawText, 'detectedSurfaces'),
@@ -1131,6 +1265,8 @@ Return a JSON object with ONLY these fields, no other text:
       // No pre-fills, no error shown to customer
       setPhotoAnalysis({
         detectedGarment: '',
+        detectedSubCategory: '',
+        detectedGender: '',
         detectedColour: '',
         detectedFeel: '',
         detectedSurfaces: [],
