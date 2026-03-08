@@ -1,8 +1,10 @@
 import { Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const SiteFooter = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <footer className="bg-primary text-primary-foreground py-16">
@@ -20,38 +22,34 @@ const SiteFooter = () => {
             </p>
           </div>
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">For Customers</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.services')}</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
-              <li className="hover:text-accent cursor-pointer transition-colors">How It Works</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Browse Categories</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/alteration")}>Alteration &amp; Repair</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/customise")}>Customise Your Garment</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Pricing</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Help Centre</li>
+              <li className="hover:text-accent cursor-pointer transition-colors">{t('nav.howItWorks')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.categories')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/alteration")}>{t('footer.alteration')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/customise")}>{t('footer.customise')}</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">For Tailors</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.company')}</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
-              <li className="hover:text-accent cursor-pointer transition-colors">Join as Vendor</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Vendor Dashboard</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Tier System</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Support</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/for-tailors")}>{t('footer.forTailors')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.faq')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.terms')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.privacy')}</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">Categories</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.categories')}</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/wizard")}>Regional Garments</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/wizard")}>{t('footer.regional')}</li>
               <li className="hover:text-accent cursor-pointer transition-colors">About Us</li>
               <li className="hover:text-accent cursor-pointer transition-colors">Careers</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Privacy Policy</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Terms of Service</li>
             </ul>
           </div>
         </div>
         <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-primary-foreground/40 font-sans text-sm">
-          © 2026 Naapio. All rights reserved. Made with ❤️ in India.
+          {t('footer.rights')} Made with ❤️ in India.
         </div>
       </div>
     </footer>

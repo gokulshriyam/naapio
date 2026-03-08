@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Sparkles, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HeroSection from "@/components/home/HeroSection";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -8,9 +10,13 @@ import CategoryPreview from "@/components/home/CategoryPreview";
 import VendorShowcase from "@/components/home/VendorShowcase";
 import FAQSection from "@/components/home/FAQSection";
 import SiteFooter from "@/components/home/SiteFooter";
+import CitySelector from "@/components/CitySelector";
+import LanguageSelector, { TranslationBanner } from "@/components/LanguageSelector";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -24,20 +30,50 @@ const Index = () => {
             <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
           </a>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
-            <a href="/for-tailors" className="hover:text-foreground transition-colors">For Tailors</a>
-            <a href="/#categories" className="hover:text-foreground transition-colors">Categories</a>
+            <a href="#how-it-works" className="hover:text-foreground transition-colors">{t('nav.howItWorks')}</a>
+            <a href="/#categories" className="hover:text-foreground transition-colors">{t('nav.categories')}</a>
+            <a href="/for-tailors" className="hover:text-foreground transition-colors">{t('nav.forTailors')}</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            <CitySelector />
+            <LanguageSelector />
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-              Login
+              {t('nav.login')}
             </Button>
             <Button variant="gold" size="sm" onClick={() => navigate("/start")}>
-              Get Started
+              {t('nav.getStarted')}
             </Button>
           </div>
+          {/* Mobile hamburger */}
+          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-1"><CitySelector variant="mobile" /></div>
+            </div>
+            <div className="flex-1"><LanguageSelector variant="mobile" /></div>
+            <div className="h-px bg-border" />
+            <a href="#how-it-works" className="block font-sans text-sm text-foreground py-2" onClick={() => setMobileMenuOpen(false)}>{t('nav.howItWorks')}</a>
+            <a href="/#categories" className="block font-sans text-sm text-foreground py-2" onClick={() => setMobileMenuOpen(false)}>{t('nav.categories')}</a>
+            <a href="/for-tailors" className="block font-sans text-sm text-foreground py-2" onClick={() => setMobileMenuOpen(false)}>{t('nav.forTailors')}</a>
+            <div className="flex gap-3 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }} className="flex-1">
+                {t('nav.login')}
+              </Button>
+              <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); }} className="flex-1">
+                {t('nav.getStarted')}
+              </Button>
+            </div>
+          </div>
+        )}
       </nav>
+
+      <TranslationBanner />
 
       <HeroSection />
       <HowItWorks />
@@ -53,7 +89,7 @@ const Index = () => {
             Join thousands of customers who trust Naapio for their bespoke fashion needs.
           </p>
           <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
-            Upload your inspiration
+            {t('hero.primaryCta')}
           </Button>
         </div>
       </section>
