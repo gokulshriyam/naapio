@@ -621,6 +621,7 @@ const BiddingPage = () => {
     localStorage.setItem('naapio_active_order', JSON.stringify({
       orderId: acceptOrderId,
       artisanAlias: acceptBid.alias,
+      artisanRealName: (acceptBid as any).realName || acceptBid.alias,
       artisanTier: acceptBid.tier,
       artisanRating: acceptBid.rating,
       artisanCompletionRate: acceptBid.completionRate,
