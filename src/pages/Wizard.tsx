@@ -1263,6 +1263,8 @@ Important rules:
       // No pre-fills, no error shown to customer
       setPhotoAnalysis({
         detectedGarment: '',
+        detectedSubCategory: '',
+        detectedGender: '',
         detectedColour: '',
         detectedFeel: '',
         detectedSurfaces: [],
