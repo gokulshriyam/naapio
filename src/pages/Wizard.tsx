@@ -862,6 +862,26 @@ const Wizard = () => {
         </div>
       )}
 
+      {/* Reorder banner */}
+      {isReorder && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-2 flex items-center justify-between">
+            <p className="font-sans text-xs text-amber-800">
+              {reorderMode === 'same'
+                ? `🔄 Reordering your ${selectedCategory} — same design, same measurements. Just pick your new colour and fabric below.`
+                : `✏️ Reordering with changes — your previous details are pre-filled. Update anything you'd like to change.`
+              }
+            </p>
+            <button
+              onClick={() => { setIsReorder(false); setReorderMode(''); setStep(1); }}
+              className="text-xs text-accent font-sans hover:underline whitespace-nowrap ml-3"
+            >
+              Change Design instead →
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
           {/* STEP 0: Who are you ordering for? */}
