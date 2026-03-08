@@ -197,8 +197,8 @@ const ActiveOrdersPage = () => {
         <Progress value={progressPercent} className="h-2" />
       </div>
 
-      {/* Milestone indicators */}
-      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2">
+      {/* Milestone indicators — scroll on small screens */}
+      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2 -mx-2 px-2">
         {MILESTONES.map((ms, i) => {
           const completed = ms.id < activeMilestone;
           const active = ms.id === activeMilestone;
@@ -211,7 +211,7 @@ const ActiveOrdersPage = () => {
                 {completed ? <Check className="w-4 h-4" /> : locked ? <Lock className="w-3.5 h-3.5" /> : ms.id}
               </div>
               {i < MILESTONES.length - 1 && (
-                <div className={`w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
+                <div className={`w-4 sm:w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
               )}
             </div>
           );
