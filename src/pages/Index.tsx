@@ -193,10 +193,12 @@ const Index = () => {
                   if (/^\d{4}$/.test(vendorOtp)) {
                     localStorage.setItem('naapio_vendor', JSON.stringify({
                       phone: vendorPhone,
-                      name: 'Artisan',
+                      name: 'Priya Designs Studio', // mockVendor.realName for demo
                       loggedInAt: new Date().toISOString(),
                       role: 'vendor',
+                      tier: 'Gold',
                     }));
+                    // TODO: AUTH_INTEGRATION — replace with actual vendor profile from API
                     setIsVendorLoggedInState(true);
                     setVendorLoginOpen(false); setVendorOtpSent(false); setVendorOtp(''); setVendorPhone('');
                     toast.success("Welcome back! Your dashboard is loading 🧵");
