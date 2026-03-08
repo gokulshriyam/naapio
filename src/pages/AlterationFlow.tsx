@@ -127,15 +127,36 @@ const AlterationFlow = () => {
   const [orderId, setOrderId] = useState("");
   const [showExitWarning, setShowExitWarning] = useState(false);
 
-  const alterationGuidance: Record<string, string> = {
-    'Saree Blouse': 'Typical alteration: ₹200 – ₹800',
-    'Lehenga': 'Typical alteration: ₹500 – ₹3,000',
-    'Salwar Kameez': 'Typical alteration: ₹300 – ₹1,500',
-    'Suit Jacket': 'Typical alteration: ₹800 – ₹4,000',
-    'Trousers': 'Typical alteration: ₹150 – ₹600',
-    'Sherwani': 'Typical alteration: ₹600 – ₹3,000',
-    'Matching Piece': 'Typical range: ₹500 – ₹5,000',
+  const formatBudget = (value: number): string => {
+    if (value >= 100000) return `₹${(value/100000).toFixed(1).replace('.0','')}L`;
+    if (value >= 1000) return `₹${(value/1000).toFixed(1).replace('.0','')}K`;
+    return `₹${value}`;
   };
+
+  const alterationBases: Record<string, number> = {
+    'Saree Blouse': 600, 'Salwar Kameez': 800, 'Lehenga': 1500,
+    'Kurti': 500, 'Trousers': 400, 'Sherwani': 1500,
+    'Suit Jacket': 1200, 'Matching Piece': 2000,
+    'Anarkali': 1000, 'Gown': 1200, 'Kurta (Men\'s)': 600,
+    'Saree (fall/pico only)': 300,
+  };
+
+  const computeAlterationIntelligence = () => {
+    const base = alterationBases[alterationGarment] || 800;
+    const majorFixes = ['Convert to different garment', 'Change neckline', 'Change sleeves', 'Add embellishment', 'Add lining', 'Add padding / structure'];
+    const hasMajor = alterationFixes.some(f => majorFixes.includes(f));
+    const multiplier = hasMajor ? 2.0 : alterationFixes.length > 2 ? 1.5 : 1.0;
+    const avg = Math.round(base * multiplier / 100) * 100;
+    const min = Math.max(1000, Math.round(avg * 0.6 / 100) * 100);
+    const max = Math.round(avg * 1.8 / 100) * 100;
+    const factors: string[] = [];
+    if (hasMajor) factors.push('Major alteration work detected (+100%)');
+    else if (alterationFixes.length > 2) factors.push(`${alterationFixes.length} fixes selected (+50%)`);
+    if (alterationGarment) factors.push(`Base for ${alterationGarment}: ₹${base}`);
+    return { min, max, avg, explanation: factors };
+  };
+
+  const altIntelligence = computeAlterationIntelligence();
 
   const getDeliveryDayCount = (dateStr: string) => {
     if (!dateStr) return 0;
