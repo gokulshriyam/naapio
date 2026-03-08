@@ -524,7 +524,14 @@ const BiddingPage = () => {
                   )}
 
                   {m.status === "changes_requested" && (
-                    <p className="text-xs text-destructive font-sans mt-1">Changes requested — awaiting tailor update</p>
+                    changeRequestSent[m.id] ? (
+                      <div className="mt-2">
+                        <p className="text-xs text-green-600 font-sans">✓ Change request sent</p>
+                        <p className="text-xs text-muted-foreground font-sans mt-0.5">Your tailor will upload an updated version shortly.</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-destructive font-sans mt-1">Changes requested — awaiting tailor update</p>
+                    )
                   )}
 
                   {m.status === "awaiting_approval" && (
