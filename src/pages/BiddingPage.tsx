@@ -596,9 +596,6 @@ const BiddingPage = () => {
   const [acceptBid, setAcceptBid] = useState<typeof mockBids[0] | null>(null);
   const [acceptOrderId, setAcceptOrderId] = useState<string | null>(null);
 
-  const needsMeasurementsBanner = activeOrders.some(
-    (o) => !o.measurementsSubmitted && o.status !== "completed" && o.status !== "expired"
-  );
 
   const handleCloseBid = (orderId: string) => {
     setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
