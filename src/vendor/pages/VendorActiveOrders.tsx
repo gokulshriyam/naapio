@@ -246,12 +246,14 @@ const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActive
       <p className="text-xs font-sans font-semibold text-foreground">Brief Summary</p>
 
       {order.inspirationPhoto && (
-        <img
-          src={order.inspirationPhoto}
-          alt=""
-          className="w-full h-36 object-cover object-top rounded-xl mt-2 cursor-pointer"
-          onClick={() => onZoomImage?.(order.inspirationPhoto!)}
-        />
+        <div className="w-full h-36 rounded-xl overflow-hidden flex-shrink-0 mt-2">
+          <img
+            src={order.inspirationPhoto}
+            alt="Inspiration"
+            className="w-full h-full object-cover object-top cursor-zoom-in"
+            onClick={() => onZoomImage?.(order.inspirationPhoto!)}
+          />
+        </div>
       )}
 
       <SectionHeader title="Order Details" />
@@ -301,12 +303,16 @@ const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActive
 const VendorActiveOrders = () => {
   const navigate = useNavigate();
   const [orders] = useState(mockVendorActiveOrders);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(
+    mockVendorActiveOrders.length === 1 ? mockVendorActiveOrders[0].orderId : null
+  );
   const selectedOrder = orders.find(o => o.orderId === selectedOrderId);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   // Milestone state — initialised from order's currentMilestone
-  const [activeMilestone, setActiveMilestone] = useState(2);
+  const [activeMilestone, setActiveMilestone] = useState(
+    mockVendorActiveOrders.length === 1 ? mockVendorActiveOrders[0].currentMilestone : 2
+  );
   const [m1ReadOnly, setM1ReadOnly] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -474,24 +480,26 @@ const VendorActiveOrders = () => {
           return (
             <div key={m.id} className="flex items-center gap-1 flex-1">
               <button
+                disabled={m.id > order.currentMilestone}
                 onClick={() => {
-                  if (m.id === 1 && activeMilestone > 1) {
+                  if (m.id > order.currentMilestone) return;
+                  if (m.id < order.currentMilestone) {
                     setM1ReadOnly(true);
-                    setActiveMilestone(1);
-                  } else if (done || current) {
+                  } else {
                     setM1ReadOnly(false);
-                    setActiveMilestone(m.id);
                   }
+                  setActiveMilestone(m.id);
                 }}
                 className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
-                  done ? 'bg-accent text-accent-foreground cursor-pointer' :
+                  m.id < order.currentMilestone ? 'bg-green-500 text-white cursor-pointer' :
                   current ? 'bg-accent/20 text-accent ring-2 ring-accent cursor-pointer' :
-                  'bg-muted text-muted-foreground cursor-default'
+                  m.id > order.currentMilestone ? 'bg-muted text-muted-foreground/40 cursor-not-allowed' :
+                  'bg-muted text-muted-foreground'
                 )}
               >
-                {done ? <Check className="w-4 h-4" /> : m.id > activeMilestone ? <Lock className="w-3.5 h-3.5" /> : <m.icon className="w-4 h-4" />}
+                {m.id < order.currentMilestone ? '✓' : m.id > order.currentMilestone ? <Lock className="w-3.5 h-3.5" /> : <m.icon className="w-4 h-4" />}
               </button>
-              {i < MILESTONES.length - 1 && <div className={cn("flex-1 h-0.5", done ? 'bg-accent' : 'bg-border')} />}
+              {i < MILESTONES.length - 1 && <div className={cn("flex-1 h-0.5", m.id < order.currentMilestone ? 'bg-green-500' : 'bg-border')} />}
             </div>
           );
         })}
@@ -502,9 +510,9 @@ const VendorActiveOrders = () => {
       <Progress value={progress} className="h-1.5 mb-8" />
 
       {/* Two-column layout */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
         {/* LEFT COLUMN */}
-        <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <aside className="w-full lg:w-72 lg:max-w-[288px] lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
           {/* Full brief card (Fix 7) */}
           <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
@@ -559,10 +567,10 @@ const VendorActiveOrders = () => {
             <MessageSquare className="w-3.5 h-3.5 mr-1" /> Message {order.customerFirstName}
           </Button>
           {chatOpen && <InlineChat customerName={order.customerFirstName} onClose={() => setChatOpen(false)} orderId={order.orderId} bidAmount={order.bidAmount} />}
-        </div>
+        </aside>
 
         {/* RIGHT COLUMN — Milestone content */}
-        <div className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 w-full">
           <AnimatePresence mode="wait">
             {/* ═══ M1 — Measurements Review (read-only if m1ReadOnly) ═══ */}
             {activeMilestone === 1 && (
@@ -902,7 +910,7 @@ const VendorActiveOrders = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </main>
       </div>
 
       {/* Dispute Modal */}
