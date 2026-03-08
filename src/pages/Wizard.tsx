@@ -1440,15 +1440,28 @@ const Wizard = () => {
         timestamp: new Date().toISOString()
       }));
       // Save measurements
+      const garmentKey = selectedSubCategory || selectedCategory;
       localStorage.setItem('naapio_measurements', JSON.stringify({
         savedAt: new Date().toISOString(),
-        garment: selectedSubCategory || selectedCategory,
+        garment: garmentKey,
         measurementType: measurementTab,
         selectedStandardSize: selectedStandardSize || null,
         measurements: { ...measurements },
         heightCm: heightUnit === 'cm' ? Number(heightCm) || null : ((Number(heightFeet) || 0) * 30.48 + (Number(heightInches) || 0) * 2.54) || null,
         source: 'wizard_step_2e',
       }));
+      // Also save to measurement profile
+      if (measurementTab !== 'later' && Object.keys(measurements).some(k => measurements[k]?.trim())) {
+        const profile = JSON.parse(localStorage.getItem('naapio_measurement_profile') || '{"measurements":{}}');
+        profile.measurements[garmentKey] = {
+          updatedAt: new Date().toISOString(),
+          source: 'wizard',
+          orderId: null,
+          values: { ...measurements },
+        };
+        profile.lastUpdated = new Date().toISOString();
+        localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
+      }
       localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);

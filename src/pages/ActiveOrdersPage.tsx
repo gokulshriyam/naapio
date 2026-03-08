@@ -417,11 +417,24 @@ const ActiveOrdersPage = () => {
   const garmentFields = garmentConfig.fields;
 
   // ── M1 state ──
-  const savedMeasurements = (() => {
+  // Check measurement profile FIRST, then fall back to wizard session
+  const resolvedGarmentName = lastOrder?.selectedSubCategory || lastOrder?.selectedCategory || '';
+  const { savedMeasurements, prefillSource } = (() => {
+    try {
+      const profile = JSON.parse(localStorage.getItem('naapio_measurement_profile') || '{"measurements":{}}');
+      const profileEntry = profile.measurements?.[resolvedGarmentName];
+      if (profileEntry && profileEntry.values && Object.keys(profileEntry.values).length > 0) {
+        return { savedMeasurements: profileEntry.values, prefillSource: `From Profile: ${profileEntry.source}` };
+      }
+    } catch {}
     try {
       const s = localStorage.getItem('naapio_measurements');
-      return s ? JSON.parse(s).measurements || {} : {};
-    } catch { return {}; }
+      const parsed = s ? JSON.parse(s) : {};
+      if (parsed.measurements && Object.keys(parsed.measurements).length > 0) {
+        return { savedMeasurements: parsed.measurements, prefillSource: 'From wizard' };
+      }
+    } catch {}
+    return { savedMeasurements: {} as Record<string, string>, prefillSource: '' };
   })();
   const hasPrefill = Object.keys(savedMeasurements).length > 0;
 
@@ -531,6 +544,17 @@ const ActiveOrdersPage = () => {
     localStorage.setItem('naapio_confirmed_measurements', JSON.stringify({
       orderId, garment: garmentLabel, confirmedAt, measurements, dpdpConsentAt: confirmedAt, consentGiven: true,
     }));
+    // Also update measurement profile
+    const garmentKey = resolvedGarmentName || garmentLabel;
+    const profile = JSON.parse(localStorage.getItem('naapio_measurement_profile') || '{"measurements":{}}');
+    profile.measurements[garmentKey] = {
+      updatedAt: confirmedAt,
+      source: 'M1_confirmed',
+      orderId: orderId,
+      values: { ...measurements },
+    };
+    profile.lastUpdated = confirmedAt;
+    localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
     setM1Locked(true);
     advance(2);
     toast.success(`Measurements confirmed ✓ — ${artisanRealName} has been notified.`);
@@ -771,7 +795,12 @@ const ActiveOrdersPage = () => {
                     {/* Pre-fill banner */}
                     {hasPrefill ? (
                       <div className="mb-6 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/40">
-                        <p className="text-sm font-sans text-foreground">📏 We've pre-filled measurements from your wizard submission. Please review and confirm everything is correct.</p>
+                        <p className="text-sm font-sans text-foreground">
+                          📏 {prefillSource.startsWith('From Profile') 
+                            ? `We found existing measurements for ${resolvedGarmentName} from your profile. Pre-filled for confirmation.`
+                            : "We've pre-filled measurements from your wizard submission. Please review and confirm everything is correct."}
+                        </p>
+                        {prefillSource && <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-sans">{prefillSource}</span>}
                       </div>
                     ) : (
                       <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
@@ -1045,20 +1074,35 @@ const ActiveOrdersPage = () => {
                   </div>
                 )}
 
-                {/* Approval section — show after 50% verified or if no measurements to verify */}
-                {(totalVerifyCount === 0 || verifiedCount >= Math.ceil(totalVerifyCount * 0.5)) && (
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setM4AlterationOpen(!m4AlterationOpen)}>
-                      Request Alteration
-                    </Button>
-                    <Button variant="gold" size="sm" onClick={() => {
+                {/* Approval section — show always but disable approve until 100% verified */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => {
+                    // Pre-populate alteration text with unchecked measurements
+                    const unchecked = confirmedKeys
+                      .filter(k => !verifiedFields[k])
+                      .map(k => `• ${k}: ${confirmedMeasurements[k]}"`)
+                      .join('\n');
+                    if (unchecked) {
+                      setM4AlterationText(`Measurements not verified on video:\n${unchecked}\n\nPlease re-record or adjust these points.`);
+                    }
+                    setM4AlterationOpen(!m4AlterationOpen);
+                  }}>
+                    Request Alteration
+                  </Button>
+                  <div className="relative group">
+                    <Button variant="gold" size="sm" disabled={totalVerifyCount > 0 && verifiedCount !== totalVerifyCount} onClick={() => {
                       advance(5);
                       toast.success(`Approved! ${artisanRealName} will now prepare dispatch.`);
                     }}>
                       Approve & Proceed to Dispatch →
                     </Button>
+                    {totalVerifyCount > 0 && verifiedCount !== totalVerifyCount && (
+                      <div className="absolute bottom-full left-0 mb-2 px-3 py-1.5 rounded-lg bg-foreground text-background text-[10px] font-sans whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Verify all measurements in the video before approving
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {m4AlterationOpen && (
                   <div className="mt-4 space-y-2">
