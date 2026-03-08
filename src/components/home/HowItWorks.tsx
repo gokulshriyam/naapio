@@ -1,48 +1,53 @@
 import { motion } from "framer-motion";
-import { Upload, Users, MessageSquare, Package } from "lucide-react";
 
 const steps = [
-  { icon: Upload, title: "Upload", desc: "Share your design inspiration — a photo, screenshot, or sketch." },
-  { icon: Users, title: "Get Bids", desc: "Receive competitive bids from verified master tailors across India." },
-  { icon: MessageSquare, title: "Chat & Accept", desc: "Compare portfolios, chat with artisans, and pick your perfect match." },
-  { icon: Package, title: "Track & Receive", desc: "Monitor every milestone from fabric to delivery with escrow protection." },
+  { num: "01", emoji: "🖊️", title: "Describe your vision", sub: "Tell us the garment, occasion, fabric feel, budget, and deadline. Takes 4 minutes." },
+  { num: "02", emoji: "🎯", title: "Receive bids from vetted artisans", sub: "Verified artisans in your city compete for your brief. Review portfolios and chat before choosing." },
+  { num: "03", emoji: "🪡", title: "Track every stitch", sub: "Five escrow-locked milestones: measurements → fabric → stitching → fitting video → delivery." },
+  { num: "04", emoji: "🚚", title: "Delivered. Loved.", sub: "Your bespoke outfit arrives. Pay only after your final approval." },
 ];
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-24 bg-secondary">
+    <section id="how-it-works" className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <h2 className="text-4xl font-serif font-bold text-foreground mb-4">How Naapio Works</h2>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">How Naapio Works</h2>
           <p className="text-muted-foreground font-sans text-lg max-w-xl mx-auto">
             From inspiration to your doorstep in four simple steps
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6 relative">
+          {/* Connecting dashed line (desktop only) */}
+          <div className="hidden md:block absolute top-16 left-[12.5%] right-[12.5%] h-px border-t-2 border-dashed border-border" />
+
           {steps.map((step, i) => (
             <motion.div
-              key={step.title}
+              key={step.num}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
+              transition={{ delay: i * 0.12 }}
               className="relative text-center"
             >
-              {i < 3 && (
-                <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-px bg-border" />
-              )}
-              <div className="relative z-10 w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
-                <step.icon className="w-8 h-8 text-primary-foreground" />
+              {/* Background number */}
+              <div className="relative">
+                <span className="text-7xl md:text-8xl font-serif font-bold text-accent/10 select-none leading-none">
+                  {step.num}
+                </span>
+                <span className="absolute inset-0 flex items-center justify-center text-3xl">
+                  {step.emoji}
+                </span>
               </div>
-              <span className="inline-block text-accent font-sans font-bold text-sm mb-2">Step {i + 1}</span>
-              <h3 className="text-xl font-serif font-semibold text-foreground mb-2">{step.title}</h3>
-              <p className="text-muted-foreground font-sans text-sm leading-relaxed">{step.desc}</p>
+
+              <h3 className="text-lg font-serif font-bold text-foreground mt-4 mb-2">{step.title}</h3>
+              <p className="text-sm font-sans text-muted-foreground leading-relaxed max-w-xs mx-auto">{step.sub}</p>
             </motion.div>
           ))}
         </div>

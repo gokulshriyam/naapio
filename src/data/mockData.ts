@@ -270,4 +270,16 @@ export const faqItems = [
     q: "Do you cover regional garments like Mundu, Mekhela Chador, or Nauvari Saree?",
     a: "Yes — regional garments are covered under Men's Regional Traditional and Women's Regional Traditional categories in the wizard. These garments have their own measurement and construction logic built in, so your brief reaches tailors who specialise in them.",
   },
+  {
+    q: "I'm a tailor. How do I start receiving orders?",
+    a: "Visit our Artisan page, submit your details for verification. Once approved (typically 2 business days), you'll see open customer briefs in your city and can start placing bids.",
+  },
+  {
+    q: "When do I get paid as an artisan?",
+    a: "Payments are released within 7 days of the customer's final delivery approval. Funds are held in escrow throughout — so you're always protected.",
+  },
+  {
+    q: "Can I set my own prices?",
+    a: "Yes. You see the customer's budget range and submit your own bid. You decide your price — Naapio takes a platform commission on completed orders.",
+  },
 ];
