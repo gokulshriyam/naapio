@@ -306,6 +306,7 @@ const VendorMyBids = () => {
   const navigate = useNavigate();
   const [bids, setBids] = useState<MyBid[]>(mockMyBids);
   const [expandedBriefs, setExpandedBriefs] = useState<Set<string>>(new Set());
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState('All');
@@ -397,6 +398,7 @@ const VendorMyBids = () => {
         {filtered.map(bid => {
           const sc = STATUS_CONFIG[bid.status];
           const isExpanded = expandedBriefs.has(bid.id);
+          const thumbSrc = bid.inspirationPhoto || bid.inspirationThumb;
           return (
             <div key={bid.id} className="bg-card border border-border rounded-2xl overflow-hidden">
               {/* Accepted banner */}
@@ -414,97 +416,83 @@ const VendorMyBids = () => {
                 </div>
               )}
 
-              {/* Inspiration photo */}
-              {bid.inspirationPhoto && (
-                <img src={bid.inspirationPhoto} alt="" className="w-full h-48 object-cover" />
-              )}
-
               <div className="p-4">
-                <div className="flex gap-3">
-                  {!bid.inspirationPhoto && (
-                    <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
-                      {bid.inspirationThumb ? (
-                        <img src={bid.inspirationThumb} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        bid.category.includes('Women') ? '👗' : '🤵'
-                      )}
+                <div className="flex gap-3 items-start">
+                  {/* Thumbnail */}
+                  {thumbSrc ? (
+                    <button onClick={() => setZoomImage(thumbSrc)} className="flex-shrink-0">
+                      <img src={thumbSrc} alt="" className="w-16 h-16 rounded-lg object-cover object-top" />
+                    </button>
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-2xl flex-shrink-0">
+                      {bid.category.includes('Women') ? '👗' : '🤵'}
                     </div>
                   )}
 
+                  {/* Main info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-sans font-semibold", sc.classes)}>
                         {sc.label}
                       </span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{bid.orderType}</Badge>
-                      <span className="text-xs font-sans text-muted-foreground">{bid.category} · {bid.subCategory}</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{bid.subCategory}</Badge>
                     </div>
+                    <p className="text-sm font-serif font-semibold text-foreground">{bid.category} · {bid.subCategory}</p>
+                    <p className="text-xs text-muted-foreground font-sans">#{bid.leadId} · {bid.customerFirstName}, {bid.city}</p>
 
-                    <p className="text-xs font-sans text-muted-foreground">#{bid.leadId} · {bid.customerFirstName}, {bid.city}</p>
-                    {bid.occasion && <p className="text-xs font-sans text-muted-foreground">Occasion: {bid.occasion}</p>}
-
-                    <p className="mt-1.5 text-sm font-sans">
-                      <span className="text-muted-foreground">My bid:</span>{' '}
-                      <span className="font-serif font-bold text-accent">₹{bid.bidAmount.toLocaleString('en-IN')}</span>
-                      <span className="text-muted-foreground ml-3">Delivery:</span>{' '}
-                      <span className="text-foreground text-xs">{bid.deliveryDate}</span>
-                    </p>
-
-                    <p className="text-xs font-sans text-muted-foreground mt-0.5">
-                      Customer budget: ₹{bid.budgetMin.toLocaleString('en-IN')} – ₹{bid.budgetMax.toLocaleString('en-IN')}
-                    </p>
-
-                    {/* Competition panel */}
-                    <div className="mt-2 p-2.5 rounded-lg bg-muted/70 space-y-1">
-                      <p className="text-xs font-sans text-foreground">
-                        📊 You are ranked <span className="font-semibold text-accent">#{bid.myRank}</span> of {bid.totalBids} bids
-                      </p>
-                      <p className="text-xs font-sans text-muted-foreground">
-                        Bid range: ₹{bid.bidRangeMin.toLocaleString('en-IN')} – ₹{bid.bidRangeMax.toLocaleString('en-IN')}
-                      </p>
-                      {bid.myRank > 1 && !bid.outbidAlert && (
-                        <p className="text-xs font-sans text-amber-700 dark:text-amber-400">⚠️ A lower-priced bid exists. Consider revising.</p>
-                      )}
-                      {bid.outbidAlert && (
-                        <p className="text-xs font-sans text-destructive">🔔 You've been outbid! Update your bid before the deadline.</p>
-                      )}
+                    {/* Competition panel — compact */}
+                    <div className="mt-1 text-xs font-sans bg-muted rounded-lg px-2 py-1 inline-flex items-center gap-2 flex-wrap">
+                      <span>Rank #{bid.myRank} of {bid.totalBids}</span>
+                      <span>·</span>
+                      <span>₹{(bid.bidRangeMin / 1000).toFixed(0)}K–₹{(bid.bidRangeMax / 1000).toFixed(0)}K</span>
+                      {bid.outbidAlert && <span className="text-amber-600">⚠ Outbid</span>}
                     </div>
+                  </div>
 
-                    {/* Collapsible brief */}
-                    <button
-                      onClick={() => toggleBrief(bid.id)}
-                      className="flex items-center gap-1 text-xs font-sans text-accent hover:underline mt-2"
-                    >
-                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                      {isExpanded ? 'Hide Brief ↑' : 'View Brief ↓'}
-                    </button>
-                    {isExpanded && <FullBriefGrid data={bid} />}
-
-                    <p className="text-xs font-sans text-muted-foreground mt-2">
-                      Bid deadline: <span className="font-semibold">{formatCountdown(bid.bidDeadline)}</span>
-                      <span className="mx-2">·</span>
-                      Submitted: {formatDistanceToNow(bid.submittedAt, { addSuffix: true })}
-                    </p>
-
-                    {bid.message && (
-                      <p className="text-xs font-sans text-muted-foreground mt-1 italic line-clamp-2">"{bid.message}"</p>
-                    )}
-
-                    {bid.status === 'active' && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        <Button variant="outline" size="sm" className="text-xs h-7 min-h-[44px]" onClick={() => setOpenChatId(openChatId === bid.id ? null : bid.id)}>
-                          <MessageSquare className="w-3 h-3 mr-1" /> Chat
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-xs h-7 min-h-[44px]" onClick={() => setEditBid(bid)}>
-                          <Pencil className="w-3 h-3 mr-1" /> Edit Bid
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-xs h-7 min-h-[44px] text-destructive" onClick={() => setWithdrawConfirmId(bid.id)}>
-                          Withdraw
-                        </Button>
-                      </div>
-                    )}
+                  {/* Bid amount — right aligned */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-serif font-bold text-accent">₹{bid.bidAmount.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-muted-foreground">My bid</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Due {bid.deliveryDate}</p>
                   </div>
                 </div>
+
+                {/* Collapsible brief */}
+                <button
+                  onClick={() => toggleBrief(bid.id)}
+                  className="text-xs text-accent hover:underline font-sans mt-2 block"
+                >
+                  {isExpanded ? 'Hide Brief ↑' : 'View Brief ↓'}
+                </button>
+                {isExpanded && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <FullBriefGrid data={bid} />
+                  </div>
+                )}
+
+                <p className="text-xs font-sans text-muted-foreground mt-2">
+                  Bid deadline: <span className="font-semibold">{formatCountdown(bid.bidDeadline)}</span>
+                  <span className="mx-2">·</span>
+                  Submitted: {formatDistanceToNow(bid.submittedAt, { addSuffix: true })}
+                </p>
+
+                {bid.message && (
+                  <p className="text-xs font-sans text-muted-foreground mt-1 italic line-clamp-2">"{bid.message}"</p>
+                )}
+
+                {bid.status === 'active' && (
+                  <div className="mt-3 pt-3 border-t border-border flex gap-2 justify-end flex-wrap">
+                    <Button variant="ghost" size="sm" className="text-xs min-h-[44px]" onClick={() => setOpenChatId(openChatId === bid.id ? null : bid.id)}>
+                      💬 Chat
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-xs min-h-[44px]" onClick={() => setEditBid(bid)}>
+                      ✏️ Edit Bid
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-xs min-h-[44px] text-destructive" onClick={() => setWithdrawConfirmId(bid.id)}>
+                      Withdraw
+                    </Button>
+                  </div>
+                )}
 
                 {openChatId === bid.id && (
                   <InlineChatPanel bidId={bid.id} customerName={bid.customerFirstName} onClose={() => setOpenChatId(null)} />
@@ -514,6 +502,16 @@ const VendorMyBids = () => {
           );
         })}
       </div>
+
+      {/* Lightbox */}
+      {zoomImage && (
+        <div className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center" onClick={() => setZoomImage(null)}>
+          <button onClick={() => setZoomImage(null)} className="fixed top-4 right-4 text-white z-[401]">
+            <X className="w-6 h-6" />
+          </button>
+          <img src={zoomImage} alt="" className="max-w-[90vw] max-h-[85vh] rounded-2xl object-contain shadow-2xl" />
+        </div>
+      )}
 
       {editBid && (
         <EditBidModal open={!!editBid} onClose={() => setEditBid(null)} bid={editBid} onSave={handleEditSave} />

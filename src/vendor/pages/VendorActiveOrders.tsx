@@ -230,7 +230,7 @@ type FabricEntry = {
 // ═══════════════════════════════════════
 // Full Brief Card (left column)
 // ═══════════════════════════════════════
-const OrderBriefCard = ({ order }: { order: typeof mockVendorActiveOrders[0] }) => {
+const OrderBriefCard = ({ order, onZoomImage }: { order: typeof mockVendorActiveOrders[0]; onZoomImage?: (src: string) => void }) => {
   const SectionHeader = ({ title }: { title: string }) => (
     <p className="text-[10px] uppercase tracking-wider font-sans text-muted-foreground border-b border-border pb-1 mt-4 mb-2">{title}</p>
   );
@@ -246,7 +246,12 @@ const OrderBriefCard = ({ order }: { order: typeof mockVendorActiveOrders[0] }) 
       <p className="text-xs font-sans font-semibold text-foreground">Brief Summary</p>
 
       {order.inspirationPhoto && (
-        <img src={order.inspirationPhoto} alt="" className="w-full h-40 object-cover rounded-xl mt-2" />
+        <img
+          src={order.inspirationPhoto}
+          alt=""
+          className="w-full h-36 object-cover object-top rounded-xl mt-2 cursor-pointer"
+          onClick={() => onZoomImage?.(order.inspirationPhoto!)}
+        />
       )}
 
       <SectionHeader title="Order Details" />
@@ -298,8 +303,9 @@ const VendorActiveOrders = () => {
   const [orders] = useState(mockVendorActiveOrders);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const selectedOrder = orders.find(o => o.orderId === selectedOrderId);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
-  // Milestone state (for demo, advance from current)
+  // Milestone state — initialised from order's currentMilestone
   const [activeMilestone, setActiveMilestone] = useState(2);
   const [m1ReadOnly, setM1ReadOnly] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
@@ -390,7 +396,7 @@ const VendorActiveOrders = () => {
                 </div>
                 <Progress value={progress} className="h-1 mb-4" />
                 <Button variant="gold" size="sm" className="text-xs min-h-[44px]" onClick={() => setSelectedOrderId(order.orderId)}>
-                  Track Order →
+                  {order.currentMilestone === 1 ? 'Review Measurements →' : `Continue — M${order.currentMilestone} →`}
                 </Button>
               </div>
             );
@@ -496,11 +502,11 @@ const VendorActiveOrders = () => {
       <Progress value={progress} className="h-1.5 mb-8" />
 
       {/* Two-column layout */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* LEFT COLUMN */}
-        <div className="lg:w-72 flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
           {/* Full brief card (Fix 7) */}
-          <OrderBriefCard order={order} />
+          <OrderBriefCard order={order} onZoomImage={setZoomImage} />
 
           {/* Measurements */}
           <div className="bg-muted rounded-xl p-4">
@@ -901,6 +907,16 @@ const VendorActiveOrders = () => {
 
       {/* Dispute Modal */}
       <VendorDisputeModal open={disputeOpen} onClose={() => setDisputeOpen(false)} orderId={order.orderId} />
+
+      {/* Lightbox */}
+      {zoomImage && (
+        <div className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center" onClick={() => setZoomImage(null)}>
+          <button onClick={() => setZoomImage(null)} className="fixed top-4 right-4 text-white z-[401]">
+            <X className="w-6 h-6" />
+          </button>
+          <img src={zoomImage} alt="" className="max-w-[90vw] max-h-[85vh] rounded-2xl object-contain shadow-2xl" />
+        </div>
+      )}
     </div>
   );
 };
