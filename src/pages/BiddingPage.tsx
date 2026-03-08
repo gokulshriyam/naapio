@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock, Edit, Eye, X as XIcon, Star, RotateCcw, Plus,
   CheckCircle2, ChevronDown, ChevronUp, Send, MapPin,
-  MessageSquare, Shield, Award, Info,
+  MessageSquare, Shield, Award, Info, Paperclip, FileText, Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,27 @@ const maskContactInfo = (text: string): string => {
   );
   
   return masked;
+};
+
+type ChatMessage = {
+  id: string;
+  text?: string;
+  from: 'you' | 'artisan' | 'tailor' | 'system';
+  masked?: boolean;
+  status: 'sent' | 'delivered' | 'read';
+  timestamp: number;
+  attachment?: {
+    type: 'image' | 'video' | 'file';
+    name: string;
+    url: string; // object URL from FileReader (TODO: FILE_STORAGE — replace with CDN URL)
+    size?: string;
+  };
+};
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
 };
 
 const daysSince = (d: Date) => Math.floor((Date.now() - d.getTime()) / 86400000);
@@ -258,8 +279,9 @@ const BiddingRoom = ({
   const [showRankInfo, setShowRankInfo] = useState(false);
   const [expandedPortfolio, setExpandedPortfolio] = useState<string | null>(null);
   const [expandedChat, setExpandedChat] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Record<string, { text: string; from: string; masked?: boolean }[]>>({});
+  const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({});
   const [chatInputs, setChatInputs] = useState<Record<string, string>>({});
+  const chatFileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [ignoredBids, setIgnoredBids] = useState<Set<string>>(new Set());
   const [undoTimers, setUndoTimers] = useState<Record<string, NodeJS.Timeout>>({});
 
@@ -305,23 +327,73 @@ const BiddingRoom = ({
     const rawMsg = input.trim();
     const maskedMsg = maskContactInfo(rawMsg);
     const wasContactMasked = rawMsg !== maskedMsg;
+    const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const now = Date.now();
     
+    const userMsg: ChatMessage = { id: msgId, text: maskedMsg, from: "you", masked: wasContactMasked, status: 'sent', timestamp: now };
     setChatMessages((prev) => ({
       ...prev,
-      [bidId]: [...(prev[bidId] || []), { text: maskedMsg, from: "you", masked: wasContactMasked }],
+      [bidId]: [...(prev[bidId] || []), userMsg],
     }));
     setChatInputs(prev => ({ ...prev, [bidId]: "" }));
+
+    // Simulate status progression
+    setTimeout(() => {
+      setChatMessages(prev => ({
+        ...prev,
+        [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'delivered' as const } : m),
+      }));
+    }, 600);
+    setTimeout(() => {
+      setChatMessages(prev => ({
+        ...prev,
+        [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'read' as const } : m),
+      }));
+    }, 2000);
     
     if (wasContactMasked) {
       toast.info("ℹ️ Contact info was hidden — share after selection");
+      // System message for contact masking
+      const sysMsg: ChatMessage = {
+        id: `sys-${Date.now()}`, from: 'system', status: 'read', timestamp: Date.now(),
+        text: '🔒 Naapio blocked a contact detail in this message. For security, phone numbers, emails, and WhatsApp links cannot be shared until your order is confirmed and delivered. This keeps both parties protected.',
+      };
+      setChatMessages(prev => ({
+        ...prev,
+        [bidId]: [...(prev[bidId] || []), sysMsg],
+      }));
     }
     
+    // Auto-reply
     setTimeout(() => {
+      const replyMsg: ChatMessage = {
+        id: `reply-${Date.now()}`, text: "Thank you for your message. I'll review your brief and respond shortly.",
+        from: "tailor", status: 'read', timestamp: Date.now(),
+      };
       setChatMessages((prev) => ({
         ...prev,
-        [bidId]: [...(prev[bidId] || []), { text: "Thank you for your message. I'll review your brief and respond shortly.", from: "tailor" }],
+        [bidId]: [...(prev[bidId] || []), replyMsg],
       }));
     }, 1000);
+  };
+
+  const handleFileAttach = (bidId: string, file: File) => {
+    const url = URL.createObjectURL(file);
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    const attachType: 'image' | 'video' | 'file' = isImage ? 'image' : isVideo ? 'video' : 'file';
+    const msgId = `att-${Date.now()}`;
+    const msg: ChatMessage = {
+      id: msgId, from: 'you', status: 'sent', timestamp: Date.now(),
+      attachment: { type: attachType, name: file.name, url, size: formatFileSize(file.size) },
+    };
+    setChatMessages(prev => ({ ...prev, [bidId]: [...(prev[bidId] || []), msg] }));
+    setTimeout(() => {
+      setChatMessages(prev => ({ ...prev, [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'delivered' as const } : m) }));
+    }, 600);
+    setTimeout(() => {
+      setChatMessages(prev => ({ ...prev, [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'read' as const } : m) }));
+    }, 2000);
   };
 
   return (
@@ -468,9 +540,10 @@ const BiddingRoom = ({
                 </button>
                 {expandedChat === bid.id && (
                   <div className="mt-2 border border-border rounded-lg overflow-hidden">
-                    <div className="px-3 py-2 bg-muted flex items-center justify-between">
-                      <span className="text-xs font-sans font-medium text-foreground">Message {bid.alias}</span>
-                      <span className="text-[10px] text-muted-foreground font-sans">Contacts masked until selection</span>
+                    {/* Chat header */}
+                    <div className="px-3 py-2 bg-muted border-b border-border flex items-center justify-between">
+                      <span className="text-xs font-sans font-medium text-foreground">{bid.alias}</span>
+                      <span className="text-[10px] text-muted-foreground font-sans">Last seen 3 min ago</span>
                     </div>
                     {/* Contact masking notice */}
                     <div className="px-3 py-2 bg-warning-light border-b border-warning/20">
@@ -482,17 +555,59 @@ const BiddingRoom = ({
                       {(!chatMessages[bid.id] || chatMessages[bid.id].length === 0) && (
                         <p className="text-xs text-muted-foreground font-sans text-center py-8">Ask about fabric options, timeline, or previous work.</p>
                       )}
-                      {(chatMessages[bid.id] || []).map((m, i) => (
-                        <div key={i} className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
-                            m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
-                          }`}>
-                            {maskContactInfo(m.text)}
+                      {(chatMessages[bid.id] || []).map((m) => {
+                        if (m.from === 'system') {
+                          return (
+                            <div key={m.id} className="text-center my-2">
+                              <span className="text-[10px] font-sans text-muted-foreground italic bg-muted px-3 py-1.5 rounded-full inline-block max-w-[90%]">
+                                {m.text}
+                              </span>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={m.id} className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}>
+                            <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs font-sans ${
+                              m.from === "you" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
+                            }`}>
+                              {m.attachment ? (
+                                m.attachment.type === 'image' ? (
+                                  <img src={m.attachment.url} alt={m.attachment.name} className="max-w-[160px] rounded-lg" />
+                                ) : m.attachment.type === 'video' ? (
+                                  <div className="flex items-center gap-2"><Video className="w-4 h-4" /><span>{m.attachment.name}</span><span className="opacity-60">▶ Play</span></div>
+                                ) : (
+                                  <div className="flex items-center gap-2"><FileText className="w-4 h-4" /><span>{m.attachment.name}</span>{m.attachment.size && <span className="opacity-60">{m.attachment.size}</span>}</div>
+                                )
+                              ) : (
+                                maskContactInfo(m.text || '')
+                              )}
+                            </div>
+                            {m.from === 'you' && (
+                              <span className="ml-1 self-end text-[10px] leading-none">
+                                {m.status === 'sent' && <span className="text-muted-foreground">✓</span>}
+                                {m.status === 'delivered' && <span className="text-muted-foreground">✓✓</span>}
+                                {m.status === 'read' && <span className="text-blue-500">✓✓</span>}
+                              </span>
+                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="flex gap-2 p-2 border-t border-border">
+                      <input
+                        type="file"
+                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        className="hidden"
+                        ref={el => { chatFileRefs.current[bid.id] = el; }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileAttach(bid.id, file);
+                          e.target.value = '';
+                        }}
+                      />
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0" onClick={() => chatFileRefs.current[bid.id]?.click()}>
+                        <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />
+                      </Button>
                       <Input
                         value={chatInputs[bid.id] ?? ""}
                         onChange={(e) => setChatInputs(prev => ({ ...prev, [bid.id]: e.target.value }))}
