@@ -1050,7 +1050,7 @@ const Wizard = () => {
                   setColourNote('');
                   setSelectedSurfaces([]);
                   setSelectedBlend('');
-                  setSelectedBrand('');
+                  setSelectedBrand([]);
                   setFabricBudgetBand('');
                   setEmbellishmentBudget('');
                   setBudgetRange([5000, 50000]);
