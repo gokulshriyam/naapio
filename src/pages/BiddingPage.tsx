@@ -327,23 +327,73 @@ const BiddingRoom = ({
     const rawMsg = input.trim();
     const maskedMsg = maskContactInfo(rawMsg);
     const wasContactMasked = rawMsg !== maskedMsg;
+    const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const now = Date.now();
     
+    const userMsg: ChatMessage = { id: msgId, text: maskedMsg, from: "you", masked: wasContactMasked, status: 'sent', timestamp: now };
     setChatMessages((prev) => ({
       ...prev,
-      [bidId]: [...(prev[bidId] || []), { text: maskedMsg, from: "you", masked: wasContactMasked }],
+      [bidId]: [...(prev[bidId] || []), userMsg],
     }));
     setChatInputs(prev => ({ ...prev, [bidId]: "" }));
+
+    // Simulate status progression
+    setTimeout(() => {
+      setChatMessages(prev => ({
+        ...prev,
+        [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'delivered' as const } : m),
+      }));
+    }, 600);
+    setTimeout(() => {
+      setChatMessages(prev => ({
+        ...prev,
+        [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'read' as const } : m),
+      }));
+    }, 2000);
     
     if (wasContactMasked) {
       toast.info("ℹ️ Contact info was hidden — share after selection");
+      // System message for contact masking
+      const sysMsg: ChatMessage = {
+        id: `sys-${Date.now()}`, from: 'system', status: 'read', timestamp: Date.now(),
+        text: '🔒 Naapio blocked a contact detail in this message. For security, phone numbers, emails, and WhatsApp links cannot be shared until your order is confirmed and delivered. This keeps both parties protected.',
+      };
+      setChatMessages(prev => ({
+        ...prev,
+        [bidId]: [...(prev[bidId] || []), sysMsg],
+      }));
     }
     
+    // Auto-reply
     setTimeout(() => {
+      const replyMsg: ChatMessage = {
+        id: `reply-${Date.now()}`, text: "Thank you for your message. I'll review your brief and respond shortly.",
+        from: "tailor", status: 'read', timestamp: Date.now(),
+      };
       setChatMessages((prev) => ({
         ...prev,
-        [bidId]: [...(prev[bidId] || []), { text: "Thank you for your message. I'll review your brief and respond shortly.", from: "tailor" }],
+        [bidId]: [...(prev[bidId] || []), replyMsg],
       }));
     }, 1000);
+  };
+
+  const handleFileAttach = (bidId: string, file: File) => {
+    const url = URL.createObjectURL(file);
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    const attachType: 'image' | 'video' | 'file' = isImage ? 'image' : isVideo ? 'video' : 'file';
+    const msgId = `att-${Date.now()}`;
+    const msg: ChatMessage = {
+      id: msgId, from: 'you', status: 'sent', timestamp: Date.now(),
+      attachment: { type: attachType, name: file.name, url, size: formatFileSize(file.size) },
+    };
+    setChatMessages(prev => ({ ...prev, [bidId]: [...(prev[bidId] || []), msg] }));
+    setTimeout(() => {
+      setChatMessages(prev => ({ ...prev, [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'delivered' as const } : m) }));
+    }, 600);
+    setTimeout(() => {
+      setChatMessages(prev => ({ ...prev, [bidId]: (prev[bidId] || []).map(m => m.id === msgId ? { ...m, status: 'read' as const } : m) }));
+    }, 2000);
   };
 
   return (
