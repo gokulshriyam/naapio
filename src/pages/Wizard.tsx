@@ -1114,11 +1114,6 @@ Return a JSON object with ONLY these fields, no other text:
         };
       }
 
-      // === FIX 1: Debug Logging ===
-      console.log('=== GEMINI PHOTO ANALYSIS RESULT ===');
-      console.log('Raw response text:', rawText);
-      console.log('Parsed analysis:', analysis);
-      console.log('=====================================');
       
       setPhotoAnalysis({
         ...analysis,
