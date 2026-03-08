@@ -693,6 +693,23 @@ const AlterationFlow = () => {
                       </p>
                     </div>
 
+                    {/* Rush Order Toggle */}
+                    <div className={`p-5 rounded-xl border transition-all col-span-full mb-4 ${isRushOrder ? "bg-amber-50 border-amber-300" : "bg-card border-border"}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">⚡</span>
+                          <div>
+                            <p className="font-sans font-bold text-foreground text-sm">Rush Order</p>
+                            <p className="text-xs text-muted-foreground font-sans mt-0.5">Need it faster? Rush orders attract tailors who specialise in quick turnaround.</p>
+                          </div>
+                        </div>
+                        <Switch checked={isRushOrder} onCheckedChange={setIsRushOrder} />
+                      </div>
+                      {isRushOrder && (
+                        <p className="mt-3 p-3 bg-amber-100/60 rounded-lg text-xs text-amber-800 font-sans">⚡ Rush surcharge: Tailors may add 20–40% to their bid for rush orders.</p>
+                      )}
+                    </div>
+
                     {/* Delivery Date */}
                     <div>
                       <h3 className="font-sans font-semibold text-foreground mb-4">When do you need it back?</h3>
