@@ -393,7 +393,45 @@ const CustomiseFlow = () => {
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
           {/* ═══ REVIEW ═══ */}
-          {showReview ? (
+          {showReview && orderSuccess ? (
+            <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="flex flex-col items-center justify-center min-h-[70vh] max-w-[560px] mx-auto text-center">
+                <span className="text-6xl mb-6">✅</span>
+                <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Your brief is live!</h2>
+                <p className="text-muted-foreground font-sans mb-8">
+                  Artisans in your city are reviewing your brief.<br />You'll receive bids within 7 days.
+                </p>
+                <div className="w-full p-5 bg-muted rounded-xl mb-8">
+                  <p className="text-xs text-muted-foreground font-sans uppercase tracking-wider mb-1">Order ID</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-lg font-serif font-bold text-foreground">{orderId}</span>
+                    <button onClick={() => { navigator.clipboard.writeText(orderId); toast.success("Copied!"); }} className="p-1.5 rounded-md hover:bg-card transition-colors" title="Copy Order ID">📋</button>
+                  </div>
+                </div>
+                <div className="w-full space-y-4 mb-8 text-left">
+                  <p className="font-sans font-semibold text-foreground text-sm">What happens next</p>
+                  {[
+                    { icon: "📋", text: "Artisans review your brief and submit bids" },
+                    { icon: "👗", text: "You choose your artisan and confirm" },
+                    { icon: "🔒", text: "Work begins — escrow protects every milestone" },
+                  ].map((item) => (
+                    <div key={item.text} className="flex items-center gap-3">
+                      <span className="text-xl">{item.icon}</span>
+                      <p className="font-sans text-sm text-foreground">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="inline-flex px-4 py-2 rounded-full bg-accent/10 text-accent font-sans text-sm font-medium mb-8">
+                  Expect your first bids within 7 days
+                </div>
+                <div className="w-full space-y-3">
+                  <Button variant="gold" size="hero" className="w-full" onClick={() => navigate("/dashboard")}>View My Order →</Button>
+                  <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/start")}>Start Another Order</Button>
+                </div>
+                <p className="text-xs text-muted-foreground font-sans mt-6">A summary has been sent to your WhatsApp number {phone}</p>
+              </div>
+            </motion.div>
+          ) : showReview ? (
             <motion.div key="review" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
               <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Review Your Customisation</h2>
               <p className="text-muted-foreground font-sans mb-8">Check everything below — once you pay, your brief goes live to artisans</p>
