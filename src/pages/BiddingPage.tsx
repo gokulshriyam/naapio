@@ -763,21 +763,21 @@ const BiddingPage = () => {
                       <CountdownTimer deadline={order.bidDeadline} postedAt={order.postedAt} />
                     )}
 
-                    {/* Action row */}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      <Button size="sm" variant="outline" className="text-xs" onClick={() => navigate("/wizard")}>
+                    {/* Action row — stack on mobile */}
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                      <Button size="sm" variant="outline" className="text-xs w-full sm:w-auto" onClick={() => navigate("/wizard")}>
                         <Edit className="w-3 h-3 mr-1" /> Edit Brief
                       </Button>
                       <Button
                         size="sm"
                         variant={order.bidsReceived > 0 ? "outline-gold" : "outline"}
-                        className="text-xs"
+                        className="text-xs w-full sm:w-auto"
                         disabled={order.bidsReceived === 0}
                         onClick={() => setBiddingRoomOpen(biddingRoomOpen === order.id ? null : order.id)}
                       >
                         <Eye className="w-3 h-3 mr-1" /> View Bids ({order.bidsReceived})
                       </Button>
-                      <Button size="sm" variant="outline" className="text-xs text-muted-foreground" onClick={() => setCloseBidDialog(order.id)}>
+                      <Button size="sm" variant="outline" className="text-xs text-muted-foreground w-full sm:w-auto" onClick={() => setCloseBidDialog(order.id)}>
                         <XIcon className="w-3 h-3 mr-1" /> Close Bid
                       </Button>
                     </div>
