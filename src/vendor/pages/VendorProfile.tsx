@@ -96,7 +96,7 @@ const VendorProfile = () => {
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="font-serif font-bold text-xl text-foreground">{mockVendor.realName}</h2>
               <div className="flex items-center gap-1 text-xs font-sans text-green-600 dark:text-green-400">
-                <CheckCircle className="w-3.5 h-3.5" /> Aadhaar Verified
+                <CheckCircle className="w-3.5 h-3.5" /> Verified
               </div>
             </div>
             <p className="text-sm font-sans text-muted-foreground">{mockVendor.alias}</p>
@@ -139,9 +139,7 @@ const VendorProfile = () => {
 
         {/* Edit profile + vacation */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-5 pt-5 border-t border-border">
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate('/for-tailors')}>
-            <Pencil className="w-3 h-3 mr-1" /> Edit Profile
-          </Button>
+          <div />
           <div className="flex items-center gap-3">
             <div>
               <p className="text-xs font-sans font-semibold text-foreground">Vacation Mode</p>
