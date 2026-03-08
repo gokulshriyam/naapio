@@ -1,0 +1,15 @@
+{
+  "nav": { "howItWorks": "", "forTailors": "", "categories": "", "login": "", "getStarted": "" },
+  "hero": { "headline": "", "subheadline": "", "primaryCta": "", "secondaryCta": "" },
+  "start": { "heading": "", "subheading": "", "newOrder": "", "newOrderDesc": "", "alteration": "", "alterationDesc": "", "ownFabric": "", "ownFabricDesc": "", "customise": "", "customiseDesc": "", "selectCityPrompt": "" },
+  "wizard": { "step1": { "heading": "", "subheading": "", "uploadLabel": "", "descriptionLabel": "", "descriptionPlaceholder": "", "nextButton": "", "skipLink": "" }, "step2": { "genderHeading": "", "mens": "", "womens": "", "kids": "", "comingSoon": "", "categoryHeading": "", "occasionHeading": "", "fitHeading": "", "designHeading": "", "measurementsHeading": "" }, "step4": { "heading": "", "subheading": "", "payButton": "", "escrowBadge": "", "outfitPreviewHeading": "", "outfitPreviewSubtext": "" } },
+  "dashboard": { "heading": "", "noOrders": "", "noOrdersSubtext": "", "startOrder": "", "orderStatus": "", "milestones": "", "milestonesSubtext": "", "approve": "", "requestChanges": "" },
+  "common": { "back": "", "next": "", "skip": "", "edit": "", "save": "", "cancel": "", "loading": "", "error": "", "required": "", "optional": "", "recommended": "", "noPreference": "", "comingSoon": "" },
+  "footer": { "services": "", "newOrder": "", "alteration": "", "customise": "", "categories": "", "regional": "", "company": "", "forTailors": "", "faq": "", "terms": "", "privacy": "", "rights": "" },
+  "citySelector": { "label": "", "placeholder": "", "notListed": "", "registerInterest": "", "tier1Cities": "", "otherCities": "" },
+  "languageSelector": { "label": "" },
+  "faq": { "heading": "", "subheading": "" },
+  "alteration": { "step1Heading": "", "step2Heading": "", "step3Heading": "", "step4Heading": "", "reviewHeading": "", "reviewSubheading": "", "payButton": "" },
+  "customise": { "step1Heading": "", "step2Heading": "", "step3Heading": "", "step4Heading": "", "step5Heading": "", "reviewHeading": "", "reviewSubheading": "", "payButton": "" },
+  "translationBanner": { "comingSoon": "", "helpTranslate": "" }
+}
