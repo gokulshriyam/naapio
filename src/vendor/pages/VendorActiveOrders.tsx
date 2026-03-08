@@ -906,6 +906,16 @@ const VendorActiveOrders = () => {
 
       {/* Dispute Modal */}
       <VendorDisputeModal open={disputeOpen} onClose={() => setDisputeOpen(false)} orderId={order.orderId} />
+
+      {/* Lightbox */}
+      {zoomImage && (
+        <div className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center" onClick={() => setZoomImage(null)}>
+          <button onClick={() => setZoomImage(null)} className="fixed top-4 right-4 text-white z-[401]">
+            <X className="w-6 h-6" />
+          </button>
+          <img src={zoomImage} alt="" className="max-w-[90vw] max-h-[85vh] rounded-2xl object-contain shadow-2xl" />
+        </div>
+      )}
     </div>
   );
 };
