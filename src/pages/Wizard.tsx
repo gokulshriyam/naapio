@@ -2077,6 +2077,37 @@ const Wizard = () => {
                     <p className="text-xs text-muted-foreground font-sans mt-2 text-right">{ownFabricDescription.length}/300</p>
                   </div>
                   {/* TODO: API_INTEGRATION_POINT — ownFabricYards used by tailor to confirm fabric sufficiency during bid */}
+
+                  {/* Multi-piece from same fabric */}
+                  <div className="mt-6 p-4 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-sans text-sm font-medium text-foreground">Making more than one piece from this fabric?</p>
+                      </div>
+                      <Switch checked={multiplePieces} onCheckedChange={setMultiplePieces} />
+                    </div>
+                    {multiplePieces && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 space-y-3">
+                        <p className="font-sans text-xs font-medium text-muted-foreground">Which pieces? (select all that apply)</p>
+                        <div className="space-y-2">
+                          {["Blouse / Choli top", "Skirt / Lehenga skirt", "Dupatta", "Lining piece", "Jacket / Shrug", "Other"].map((piece) => (
+                            <label key={piece} className="flex items-center gap-2 cursor-pointer">
+                              <Checkbox
+                                checked={additionalPieces.includes(piece)}
+                                onCheckedChange={(checked) => {
+                                  setAdditionalPieces(prev =>
+                                    checked ? [...prev, piece] : prev.filter(p => p !== piece)
+                                  );
+                                }}
+                              />
+                              <span className="font-sans text-sm text-foreground">{piece}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans">📌 Your tailor will confirm fabric sufficiency for all pieces at Milestone 1 before cutting.</p>
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
               )}
 
