@@ -932,6 +932,45 @@ const Wizard = () => {
 
               {/* SUB-PHASE: MEASUREMENTS — existing UI preserved exactly */}
               {step2Phase === "measurements" && (
+                <div>
+                  {/* Measurement Guide */}
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setMeasureGuideOpen(!measureGuideOpen)}
+                      className="font-sans text-sm font-medium text-accent hover:underline"
+                    >
+                      📏 How to take your measurements {measureGuideOpen ? "↑" : "→"}
+                    </button>
+                    {measureGuideOpen && (
+                      <div className="mt-3 p-5 bg-card rounded-xl border border-border">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                          {[
+                            { title: "Bust / Chest", tip: "Measure around the fullest part of your chest, keeping the tape parallel to the floor." },
+                            { title: "Waist", tip: "Measure around your natural waist — the narrowest part of your torso, usually 2–3 inches above your navel." },
+                            { title: "Hips", tip: "Measure around the fullest part of your hips and seat, about 7–9 inches below your natural waist." },
+                            { title: "Height", tip: "Stand straight without shoes. Measure from the top of your head to the floor." },
+                            { title: "Shoulder Width", tip: "Measure from the edge of one shoulder to the other across your back." },
+                            { title: "Sleeve Length", tip: "From the shoulder edge, down the outside of your arm to your wrist with arm slightly bent." },
+                          ].map((item) => (
+                            <div key={item.title}>
+                              <p className="font-sans text-sm font-semibold text-foreground">{item.title}</p>
+                              <p className="font-sans text-xs text-muted-foreground mt-0.5">{item.tip}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans mb-3">
+                          📌 Tip: Ask someone to help measure you — self-measurements are often inaccurate. Your tailor will confirm all measurements at Milestone 1 before cutting any fabric.
+                        </p>
+                        <button
+                          onClick={() => setMeasureGuideOpen(false)}
+                          className="text-xs text-accent font-sans hover:underline"
+                        >
+                          Got it — close guide ↑
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements</h2>
