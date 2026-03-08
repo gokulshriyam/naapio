@@ -1355,7 +1355,18 @@ const Wizard = () => {
         if (isBlouseCategory) return !!blouseFrontNeck && !!blouseBackNeck && !!blouseSleeveStyle;
         return true;
       }
-      if (step2Phase === "measurements") return consent1 && consent2;
+      if (step2Phase === "measurements") {
+        const gc = resolveGarmentMeasurementConfig(selectedCategory, selectedSubCategory);
+        if (gc.noStitching) return true;
+        if (measurementTab === 'later') return measureLaterConsent;
+        if (measurementTab === 'standard') return !!selectedStandardSize && consent1 && consent2;
+        // custom tab: all fields filled + consents
+        const allFilled = gc.fields.every(f => {
+          if (f.field.toLowerCase().includes('heel')) return true; // optional
+          return !!measurements[f.field] && Number(measurements[f.field]) > 0;
+        });
+        return allFilled && consent1 && consent2;
+      }
       return false;
     }
     if (step === 3) {
