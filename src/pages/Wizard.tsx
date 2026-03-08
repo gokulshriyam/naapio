@@ -291,6 +291,40 @@ const Wizard = () => {
     setDeliveryDate(min.toISOString().split("T")[0]);
   }, [selectedCategory]);
 
+  // Restore draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("naapio_wizard_draft");
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.step && draft.step > 1) {
+          setDraftRestored(true);
+          setRestoredDraft(draft);
+        }
+      } catch (e) {
+        localStorage.removeItem("naapio_wizard_draft");
+      }
+    }
+  }, []);
+
+  // Save draft on step changes
+  useEffect(() => {
+    if (step > 1) {
+      const draft = {
+        step, step2Phase, step3Phase, orderType, gender,
+        selectedCategory, selectedSubCategory, selectedOccasion,
+        selectedFit, selectedNeckline, selectedSleeve, selectedDupatta,
+        selectedLining, measurementType, standardSize, sizeRegion,
+        selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
+        selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
+        embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
+      };
+      localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+    }
+  }, [step, step2Phase, step3Phase, gender, selectedCategory,
+      selectedOccasion, selectedFit, measurementType,
+      selectedFeel, selectedColourMood, budgetRange]);
+
 
   const canProceed = () => {
     if (step === 1) return uploaded;
