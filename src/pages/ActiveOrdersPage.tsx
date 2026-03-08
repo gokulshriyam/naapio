@@ -21,239 +21,11 @@ import { toast } from "sonner";
 import redLehenga from "@/assets/red-lehenga.jpg";
 import virtualTrialCover from "@/assets/virtualtrialcover.jpg";
 
-// ═══════════════════════════════════════
-// Measurement Config System (Spec v2.0)
-// ═══════════════════════════════════════
+import { resolveGarmentConfig, type GarmentMeasurementConfig, type MeasurementField } from "@/data/measurementConfig";
 
-type MeasurementField = {
-  field: string;
-  unit: 'inches';
-  description: string;
-  videoTip: string;
-};
+// MEASUREMENT_CONFIG, resolveGarmentConfig, types
+// are now imported from @/data/measurementConfig
 
-type GarmentMeasurementConfig = {
-  supportsStandard: boolean;
-  heightRequired: boolean;
-  fields: MeasurementField[];
-  noMeasurementNeeded?: boolean;
-  noMeasurementMessage?: string;
-};
-
-const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
-  'Saree (fabric only)': {
-    supportsStandard: false, heightRequired: false, noMeasurementNeeded: true,
-    noMeasurementMessage: "Saree is unstitched fabric — no measurements needed. If adding a blouse, select Saree + Custom Blouse.",
-    fields: [],
-  },
-  'Saree Blouse': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest part of chest', videoTip: 'Measure around the fullest part of your chest, tape parallel to floor.' },
-      { field: 'Under-bust', unit: 'inches', description: 'Just below bust', videoTip: 'Measure just below your bust where a bra band sits.' },
-      { field: 'Waist (blouse)', unit: 'inches', description: 'Natural waist', videoTip: 'Narrowest part of your natural waist.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder seam to seam', videoTip: 'Across back, from one shoulder edge to the other.' },
-      { field: 'Armhole circumference', unit: 'inches', description: 'Around the arm opening', videoTip: 'Around the armhole — relaxed, not tight.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder point to desired end', videoTip: 'From shoulder point to where you want the sleeve to end.' },
-      { field: 'Sleeve end circumference', unit: 'inches', description: 'Around wrist or sleeve end', videoTip: 'Around your wrist, or where sleeve ends.' },
-      { field: 'Blouse length front', unit: 'inches', description: 'Front neckline to blouse hem', videoTip: 'From front neckline to where you want the blouse to end.' },
-      { field: 'Blouse length back', unit: 'inches', description: 'Back neckline to blouse hem', videoTip: 'From back neckline to blouse hem.' },
-      { field: 'Front neck depth', unit: 'inches', description: 'Depth of front neckline', videoTip: 'From shoulder neckline to the lowest point of front neckline.' },
-      { field: 'Back neck depth', unit: 'inches', description: 'Depth of back neckline', videoTip: 'From shoulder neckline to lowest point of back neckline.' },
-    ],
-  },
-  'Nauvari / 9-Yard Saree': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist measurement.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hip measurement.' },
-      { field: 'Length (waist to floor)', unit: 'inches', description: 'Waist to floor', videoTip: 'From natural waist straight down to floor.' },
-    ],
-  },
-  'Lehenga Skirt': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hips', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips, approx 8 inches below waist.' },
-      { field: 'Length (waist to floor)', unit: 'inches', description: 'Waist to floor', videoTip: 'From waist straight to floor.' },
-    ],
-  },
-  'Lehenga': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest (for choli)', videoTip: 'Fullest chest measurement.' },
-      { field: 'Under-bust', unit: 'inches', description: 'Below bust (for choli)', videoTip: 'Just below bust.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hip measurement.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back, shoulder to shoulder.' },
-      { field: 'Armhole circumference', unit: 'inches', description: 'Around arm opening', videoTip: 'Around armhole, relaxed.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'From shoulder to desired sleeve end.' },
-      { field: 'Sleeve end circumference', unit: 'inches', description: 'Around sleeve end', videoTip: 'Around wrist or sleeve end.' },
-      { field: 'Blouse length front', unit: 'inches', description: 'Front neck to blouse hem', videoTip: 'Front neckline to blouse hem.' },
-      { field: 'Blouse length back', unit: 'inches', description: 'Back neck to blouse hem', videoTip: 'Back neckline to blouse hem.' },
-      { field: 'Front neck depth', unit: 'inches', description: 'Front neckline depth', videoTip: 'Depth of front neckline.' },
-      { field: 'Back neck depth', unit: 'inches', description: 'Back neckline depth', videoTip: 'Depth of back neckline.' },
-      { field: 'Skirt length (waist to floor)', unit: 'inches', description: 'Waist to floor for skirt', videoTip: 'From waist to floor.' },
-    ],
-  },
-  'Bridal Lehenga': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
-      { field: 'Under-bust', unit: 'inches', description: 'Below bust', videoTip: 'Below bust.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Armhole circumference', unit: 'inches', description: 'Around arm opening', videoTip: 'Around armhole.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to sleeve end.' },
-      { field: 'Sleeve end circumference', unit: 'inches', description: 'Around sleeve end', videoTip: 'Around wrist.' },
-      { field: 'Blouse length front', unit: 'inches', description: 'Front neck to hem', videoTip: 'Front neckline to hem.' },
-      { field: 'Blouse length back', unit: 'inches', description: 'Back neck to hem', videoTip: 'Back neckline to hem.' },
-      { field: 'Front neck depth', unit: 'inches', description: 'Front neckline depth', videoTip: 'Depth of front neckline.' },
-      { field: 'Back neck depth', unit: 'inches', description: 'Back neckline depth', videoTip: 'Depth of back neckline.' },
-      { field: 'Skirt length (waist to floor)', unit: 'inches', description: 'Waist to floor', videoTip: 'Waist to floor.' },
-      { field: 'Heel height preference', unit: 'inches', description: 'Heel height for length calibration', videoTip: 'Height of heels you will wear with this lehenga.' },
-    ],
-  },
-  'Chaniya Choli': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Waist (chaniya)', unit: 'inches', description: 'Waist for skirt', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Chaniya length', unit: 'inches', description: 'Waist to hem', videoTip: 'From waist to desired hem.' },
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest (for choli)', videoTip: 'Fullest chest.' },
-      { field: 'Under-bust', unit: 'inches', description: 'Below bust (for choli)', videoTip: 'Below bust.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Blouse length back', unit: 'inches', description: 'Back neck to hem', videoTip: 'Back neckline to blouse hem.' },
-    ],
-  },
-  'Salwar Kameez': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Kameez length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired hem.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to desired sleeve end.' },
-      { field: 'Sleeve width', unit: 'inches', description: 'Around upper arm', videoTip: 'Around the fullest part of upper arm.' },
-      { field: 'Neck depth', unit: 'inches', description: 'Neckline depth', videoTip: 'Depth of neckline from shoulder.' },
-    ],
-  },
-  'Anarkali': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Anarkali length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired length.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to sleeve end.' },
-    ],
-  },
-  'Kurti': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Kurti length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired length.' },
-    ],
-  },
-  'Gown': {
-    supportsStandard: true, heightRequired: true,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
-      { field: 'Under-bust', unit: 'inches', description: 'Below bust', videoTip: 'Below bust.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Gown length', unit: 'inches', description: 'Shoulder to floor', videoTip: 'Shoulder to floor or desired length.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to end', videoTip: 'Shoulder to sleeve end.' },
-      { field: 'Heel height preference', unit: 'inches', description: 'Heels worn with gown', videoTip: 'Height of heels you will wear.' },
-    ],
-  },
-  'Mermaid/Fishtail Gown': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest.' },
-      { field: 'Under-bust', unit: 'inches', description: 'Below bust', videoTip: 'Below bust.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Thigh', unit: 'inches', description: 'Fullest thigh', videoTip: 'Fullest part of thigh.' },
-      { field: 'Knee', unit: 'inches', description: 'Around knee', videoTip: 'Around the knee.' },
-      { field: 'Ankle', unit: 'inches', description: 'Around ankle', videoTip: 'Around ankle bone.' },
-      { field: 'Total length', unit: 'inches', description: 'Shoulder to floor', videoTip: 'Shoulder to floor.' },
-    ],
-  },
-  'Kurta': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back, shoulder to shoulder.' },
-      { field: 'Kurta length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From shoulder to desired length.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist, arm slightly bent.' },
-    ],
-  },
-  'Sherwani': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
-      { field: 'Chest 2 (relaxed)', unit: 'inches', description: 'Chest relaxed', videoTip: 'Chest measured while relaxed (not fully exhaled).' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips/seat', videoTip: 'Fullest part of hips or seat.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back, shoulder to shoulder.' },
-      { field: 'Sherwani length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'From highest shoulder point to desired hem.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist bone.' },
-      { field: 'Sleeve width (bicep)', unit: 'inches', description: 'Around upper arm', videoTip: 'Around fullest part of upper arm.' },
-      { field: 'Bicep circumference', unit: 'inches', description: 'Fullest bicep', videoTip: 'Around the fullest part of your bicep.' },
-    ],
-  },
-  'Bandhgala': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest measurement.' },
-      { field: 'Chest 2 (relaxed)', unit: 'inches', description: 'Chest relaxed', videoTip: 'Chest relaxed.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips/seat', videoTip: 'Fullest seat.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Jacket length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'Shoulder to desired hem.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist.' },
-      { field: 'Bicep circumference', unit: 'inches', description: 'Fullest bicep', videoTip: 'Around fullest bicep.' },
-    ],
-  },
-  'Suit/Blazer': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Chest', unit: 'inches', description: 'Fullest chest', videoTip: 'Fullest chest over shirt.' },
-      { field: 'Chest 2 (relaxed)', unit: 'inches', description: 'Chest relaxed', videoTip: 'Chest relaxed.' },
-      { field: 'Waist', unit: 'inches', description: 'Natural waist', videoTip: 'Natural waist.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips/seat', videoTip: 'Fullest seat.' },
-      { field: 'Shoulder width', unit: 'inches', description: 'Shoulder to shoulder', videoTip: 'Across back.' },
-      { field: 'Jacket length', unit: 'inches', description: 'Shoulder to hem', videoTip: 'Centre back to hem.' },
-      { field: 'Sleeve length', unit: 'inches', description: 'Shoulder to wrist', videoTip: 'Shoulder to wrist bone.' },
-      { field: 'Bicep circumference', unit: 'inches', description: 'Fullest bicep', videoTip: 'Around fullest bicep.' },
-    ],
-  },
-  'Salwar / Pyjama / Churidar': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Waist', unit: 'inches', description: 'Waist where salwar sits', videoTip: 'Waist where salwar waistband sits.' },
-      { field: 'Hip', unit: 'inches', description: 'Fullest hips', videoTip: 'Fullest hips.' },
-      { field: 'Thigh', unit: 'inches', description: 'Fullest thigh', videoTip: 'Fullest part of thigh.' },
-      { field: 'Knee', unit: 'inches', description: 'Around knee', videoTip: 'Around the knee.' },
-      { field: 'Ankle', unit: 'inches', description: 'Around ankle', videoTip: 'Around ankle.' },
-      { field: 'Inseam', unit: 'inches', description: 'Crotch to ankle inside', videoTip: 'Inside leg from crotch to ankle.' },
-      { field: 'Total length', unit: 'inches', description: 'Waist to ankle', videoTip: 'From waist to ankle.' },
-    ],
-  },
-};
-
-const resolveGarmentConfig = (category: string, subCategory: string, gender?: string): GarmentMeasurementConfig => {
-  if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
-  if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
-  return gender === 'men' ? MEASUREMENT_CONFIG['Kurta'] : MEASUREMENT_CONFIG['Kurti'];
-};
 
 // ═══════════════════════════════════════
 // Size Reference Tables
@@ -382,13 +154,28 @@ const ActiveOrdersPage = () => {
   // Data from localStorage
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [lastOrder, setLastOrder] = useState<any>(null);
+  const [allActiveOrders, setAllActiveOrders] = useState<any[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
+      // Multi-order array support
+      const rawArr = localStorage.getItem('naapio_active_orders');
+      const orders = rawArr ? JSON.parse(rawArr) : [];
+      setAllActiveOrders(orders);
+
+      // Single-order compat
       const raw = localStorage.getItem('naapio_active_order');
       if (raw) setActiveOrder(JSON.parse(raw));
       const raw2 = localStorage.getItem('naapio_last_order');
       if (raw2) setLastOrder(JSON.parse(raw2));
+
+      // If multi-order, pre-select the most recent
+      if (orders.length > 1) {
+        const mostRecent = orders[orders.length - 1];
+        setSelectedOrderId(mostRecent.orderId);
+        setActiveOrder(mostRecent);
+      }
     } catch {}
     setTimeout(() => setLoading(false), 300);
   }, []);
@@ -689,6 +476,29 @@ const ActiveOrdersPage = () => {
       <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-accent font-sans font-medium text-sm mb-6 hover:gap-3 transition-all">
         <ArrowLeft className="w-4 h-4" /> My Orders
       </button>
+
+      {/* Multi-order selector */}
+      {allActiveOrders.length > 1 && (
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+          {allActiveOrders.map((o: any) => (
+            <button
+              key={o.orderId}
+              onClick={() => {
+                setSelectedOrderId(o.orderId);
+                setActiveOrder(o);
+                setActiveMilestone(1);
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-sans whitespace-nowrap border transition-all ${
+                (selectedOrderId || activeOrder?.orderId) === o.orderId
+                  ? 'bg-accent text-accent-foreground border-accent'
+                  : 'bg-card text-muted-foreground border-border hover:border-accent/50'
+              }`}
+            >
+              {o.orderId}
+            </button>
+          ))}
+        </div>
+      )}
 
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
       <p className="text-muted-foreground font-sans mb-6">{garmentLabel} • {artisanRealName}</p>
@@ -1309,7 +1119,7 @@ const ActiveOrdersPage = () => {
             <div className="space-y-4">
               <div className="text-4xl text-center">{getTipEmoji(tipField.field)}</div>
               <p className="text-sm font-sans text-foreground">{tipField.description}</p>
-              <p className="text-sm font-sans text-muted-foreground">{tipField.videoTip}</p>
+              <p className="text-sm font-sans text-muted-foreground">{tipField.videoTip || tipField.tip}</p>
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
                 <p className="text-xs font-sans text-foreground">💡 Measure over regular undergarments. Keep tape snug but comfortable — you should be able to breathe easily.</p>
               </div>

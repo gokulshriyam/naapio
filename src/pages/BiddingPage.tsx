@@ -620,7 +620,7 @@ const BiddingPage = () => {
     toast.success(`✓ ${acceptBid.alias} selected! Order milestones are now active.`);
 
     // Save accepted bid details to localStorage
-    localStorage.setItem('naapio_active_order', JSON.stringify({
+    const orderEntry = {
       orderId: acceptOrderId,
       artisanAlias: acceptBid.alias,
       artisanRealName: (acceptBid as any).realName || acceptBid.alias,
@@ -632,7 +632,18 @@ const BiddingPage = () => {
       netPayable: acceptBid.bidAmount - 499,
       deliveryDays: acceptBid.deliveryDays,
       acceptedAt: new Date().toISOString(),
-    }));
+    };
+    // Single-order compat
+    localStorage.setItem('naapio_active_order', JSON.stringify(orderEntry));
+    // Multi-order array
+    try {
+      const existing = JSON.parse(localStorage.getItem('naapio_active_orders') || '[]');
+      const filtered = existing.filter((o: any) => o.orderId !== acceptOrderId);
+      filtered.push(orderEntry);
+      localStorage.setItem('naapio_active_orders', JSON.stringify(filtered));
+    } catch {
+      localStorage.setItem('naapio_active_orders', JSON.stringify([orderEntry]));
+    }
     // TODO: PAYMENT_INTEGRATION — before launch, trigger
     // Razorpay payment here. On success callback:
     // save to naapio_active_order then navigate.

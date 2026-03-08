@@ -15,7 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { menCategories, womenCategories, measurementFields } from "@/data/mockData";
+import { menCategories, womenCategories } from "@/data/mockData";
+import { MEASUREMENT_CONFIG, resolveGarmentMeasurementConfig, HEIGHT_FIELD, type GarmentMeasurementConfig, type MeasurementField } from "@/data/measurementConfig";
 import { fabricOptionsWithImages } from "@/data/fabricData";
 import redLehenga from "@/assets/red-lehenga.jpg";
 
@@ -248,300 +249,9 @@ const ownFabricTypeOptions = ["Silk", "Cotton", "Georgette", "Chiffon", "Velvet"
 const ownFabricWidthOptions = ["36 inches (narrow)", "44 inches (standard)", "54 inches (wide)", "I don't know"];
 const ownFabricConditionOptions = ["New / Unwashed", "Washed / Pre-treated", "Vintage / Heirloom", "Recycled (from another garment)"];
 
-// ═══ MEASUREMENT CONFIG SYSTEM (Naapio Wizard Spec v2.0) ═══
-type MeasurementField = {
-  field: string;
-  description: string;
-  tip: string;
-  videoUrl: string | null;
-};
+// MEASUREMENT_CONFIG, resolveGarmentMeasurementConfig, HEIGHT_FIELD, types
+// are now imported from @/data/measurementConfig
 
-type GarmentMeasurementConfig = {
-  supportsStandard: boolean;
-  heightRequired: boolean;
-  noStitching?: boolean;
-  noStitchingMessage?: string;
-  fields: MeasurementField[];
-};
-
-const HEIGHT_FIELD: MeasurementField = {
-  field: 'Height',
-  description: 'Your full standing height',
-  tip: 'Stand straight against a wall. Mark the top of your head. Measure from floor to that mark. Enter in feet+inches (e.g. 5\'6") or cm (e.g. 168cm).',
-  videoUrl: null,
-};
-
-const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
-  'Saree (fabric only)': {
-    supportsStandard: false, heightRequired: false,
-    noStitching: true,
-    noStitchingMessage: "Saree is unstitched fabric — no measurements needed. If you're adding a blouse, please select 'Saree Blouse' as your category.",
-    fields: [],
-  },
-  'Saree Blouse': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Bust', description: 'Fullest part of chest', tip: 'Measure around the fullest part of your chest, keeping the tape parallel to the floor.', videoUrl: null },
-      { field: 'Under-bust', description: 'Just below the bust', tip: 'Measure just below your bust where a bra band naturally sits.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist (for blouse waist seam)', tip: 'Measure your narrowest natural waist point.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Measure across your upper back from one shoulder edge to the other.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around the arm opening', tip: 'Measure around the armhole loosely — you need room for movement.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder point to desired sleeve end', tip: 'From your shoulder point to where you want the sleeve to end.', videoUrl: null },
-      { field: 'Sleeve end circumference', description: 'Around wrist or sleeve opening', tip: 'Around your wrist bone, or the opening size you prefer.', videoUrl: null },
-      { field: 'Blouse length — front', description: 'Front neckline to blouse hem', tip: 'From the centre front neckline down to where you want the blouse to end.', videoUrl: null },
-      { field: 'Blouse length — back', description: 'Back neckline to blouse hem', tip: 'From the centre back neckline down to the blouse hem.', videoUrl: null },
-      { field: 'Front neck depth', description: 'Depth of front neckline opening', tip: 'From the shoulder seam down to the lowest point of your front neckline.', videoUrl: null },
-      { field: 'Back neck depth', description: 'Depth of back neckline opening', tip: 'From the shoulder seam down to the lowest point of your back neckline.', videoUrl: null },
-    ],
-  },
-  'Kurti': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest measurement', tip: 'Around the fullest part of your chest, tape parallel to floor.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest part of your natural waist.', videoUrl: null },
-      { field: 'Hip', description: 'Fullest hips (if kurti is hip-length or longer)', tip: 'Around the fullest part of your hips, approx 8 inches below your waist.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Across your upper back from shoulder edge to shoulder edge.', videoUrl: null },
-      { field: 'Kurti length', description: 'Highest shoulder point to hem', tip: 'From the highest point of your shoulder straight down to where you want the kurti to end.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder point to desired sleeve end', tip: 'From shoulder point to desired sleeve length.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around the arm opening', tip: 'Around the armhole loosely for ease of movement.', videoUrl: null },
-    ],
-  },
-  'Salwar Kameez': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest', tip: 'Around fullest chest, tape parallel to floor.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest natural waist.', videoUrl: null },
-      { field: 'Hip', description: 'Fullest hips', tip: 'Fullest hip measurement.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Across upper back.', videoUrl: null },
-      { field: 'Kameez length', description: 'Shoulder to hem', tip: 'From shoulder to desired kameez length.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'From shoulder to desired sleeve end.', videoUrl: null },
-      { field: 'Sleeve width', description: 'Around upper arm (bicep area)', tip: 'Around the fullest part of your upper arm.', videoUrl: null },
-      { field: 'Neck depth', description: 'Front neckline depth', tip: 'From shoulder seam to lowest front neckline point.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole — relaxed, not tight.', videoUrl: null },
-    ],
-  },
-  'Salwar / Churidar / Pyjama': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Waist', description: 'Where waistband sits', tip: 'Around your waist where the waistband will sit.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hip point', tip: 'Fullest part of hips, usually 8 inches below waist.', videoUrl: null },
-      { field: 'Thigh circumference', description: 'Around fullest thigh', tip: 'Around the fullest part of your thigh when standing.', videoUrl: null },
-      { field: 'Knee circumference', description: 'Around knee', tip: 'Around the knee when standing straight.', videoUrl: null },
-      { field: 'Calf circumference', description: 'Around fullest calf', tip: 'Around the fullest part of your calf.', videoUrl: null },
-      { field: 'Ankle / hem opening', description: 'Around ankle or desired opening', tip: 'Around ankle, or the opening size you want at the hem.', videoUrl: null },
-      { field: 'Inseam length', description: 'Crotch to ankle (inside leg)', tip: 'From crotch seam down the inside of your leg to your ankle bone.', videoUrl: null },
-      { field: 'Outseam length', description: 'Waistband to ankle (outside leg)', tip: 'From the top of the waistband down the outside of your leg to ankle.', videoUrl: null },
-      { field: 'Rise', description: 'Waistband to crotch seam', tip: 'From the top of your waistband down to your crotch point. Sit on a hard chair — measure from waist to seat.', videoUrl: null },
-    ],
-  },
-  'Anarkali': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest', tip: 'Around fullest chest.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder seam to seam', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
-      { field: 'Anarkali length', description: 'Shoulder to desired hem', tip: 'From highest shoulder point to desired hem.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole, relaxed.', videoUrl: null },
-      { field: 'Neck depth', description: 'Front neckline depth', tip: 'Shoulder seam to lowest front neckline point.', videoUrl: null },
-    ],
-  },
-  'Lehenga': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest (for choli)', tip: 'Around fullest chest for the blouse.', videoUrl: null },
-      { field: 'Under-bust', description: 'Below bust (for choli)', tip: 'Just below bust where bra band sits.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hip measurement.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder (for choli)', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening (for choli)', tip: 'Around armhole, relaxed.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to sleeve end (for choli)', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
-      { field: 'Sleeve end circumference', description: 'Around wrist / sleeve opening', tip: 'Around wrist or sleeve end opening.', videoUrl: null },
-      { field: 'Blouse length — front', description: 'Front neckline to choli hem', tip: 'Front neckline to where choli ends.', videoUrl: null },
-      { field: 'Blouse length — back', description: 'Back neckline to choli hem', tip: 'Back neckline to choli hem.', videoUrl: null },
-      { field: 'Front neck depth', description: 'Front neckline depth', tip: 'Shoulder seam to lowest front neckline point.', videoUrl: null },
-      { field: 'Back neck depth', description: 'Back neckline depth', tip: 'Shoulder seam to lowest back neckline.', videoUrl: null },
-      { field: 'Skirt length (waist to floor)', description: 'Waist to floor for skirt', tip: 'From waistband to floor — wear your heels when measuring if applicable.', videoUrl: null },
-    ],
-  },
-  'Bridal Lehenga': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest (for choli)', tip: 'Around fullest chest.', videoUrl: null },
-      { field: 'Under-bust', description: 'Below bust', tip: 'Below bust, bra band area.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Narrowest waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
-      { field: 'Sleeve end circumference', description: 'Around wrist / sleeve end', tip: 'Around wrist or sleeve end.', videoUrl: null },
-      { field: 'Blouse length — front', description: 'Front neckline to choli hem', tip: 'Front neckline to choli hem.', videoUrl: null },
-      { field: 'Blouse length — back', description: 'Back neckline to choli hem', tip: 'Back neckline to choli hem.', videoUrl: null },
-      { field: 'Front neck depth', description: 'Front neckline depth', tip: 'Shoulder seam to lowest front neckline.', videoUrl: null },
-      { field: 'Back neck depth', description: 'Back neckline depth', tip: 'Shoulder seam to lowest back neckline.', videoUrl: null },
-      { field: 'Skirt length (waist to floor)', description: 'Waist to floor', tip: 'Waistband to floor, wearing heels if applicable.', videoUrl: null },
-      { field: 'Heel height', description: 'Height of heels you will wear', tip: 'Measure height of the specific heels you plan to wear on the day. This calibrates the skirt length.', videoUrl: null },
-    ],
-  },
-  'Chaniya Choli': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest (for choli)', tip: 'Fullest chest.', videoUrl: null },
-      { field: 'Under-bust', description: 'Below bust (for choli)', tip: 'Below bust.', videoUrl: null },
-      { field: 'Waist', description: 'Waist for chaniya waistband', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
-      { field: 'Chaniya length', description: 'Waist to desired hem', tip: 'From waistband to desired hem.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder (choli)', tip: 'Across back.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Armhole circumference, relaxed.', videoUrl: null },
-      { field: 'Blouse length — back', description: 'Back neckline to choli hem', tip: 'Back neckline to choli hem.', videoUrl: null },
-    ],
-  },
-  'Nauvari / 9-Yard Saree': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
-      { field: 'Length (waist to floor)', description: 'Waist to floor', tip: 'From natural waist to floor.', videoUrl: null },
-    ],
-  },
-  'Gown': {
-    supportsStandard: true, heightRequired: true,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest', tip: 'Fullest chest measurement.', videoUrl: null },
-      { field: 'Under-bust', description: 'Below bust', tip: 'Below bust.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to sleeve end', tip: 'Shoulder to desired sleeve end.', videoUrl: null },
-      { field: 'Gown length', description: 'Shoulder to floor', tip: 'From shoulder to floor — wear heels when measuring.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole.', videoUrl: null },
-      { field: 'Heel height', description: 'Heel height for length calibration', tip: 'Height of heels you will wear with this gown.', videoUrl: null },
-    ],
-  },
-  'Mermaid / Fishtail Gown': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Bust', description: 'Fullest chest', tip: 'Fullest chest.', videoUrl: null },
-      { field: 'Under-bust', description: 'Below bust', tip: 'Below bust.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hips', tip: 'Fullest hips.', videoUrl: null },
-      { field: 'Thigh circumference', description: 'Fullest thigh', tip: 'Around fullest thigh.', videoUrl: null },
-      { field: 'Knee circumference', description: 'Around knee', tip: 'Around the knee.', videoUrl: null },
-      { field: 'Calf circumference', description: 'Around fullest calf', tip: 'Around the fullest calf.', videoUrl: null },
-      { field: 'Ankle / flare opening', description: 'Ankle or desired flare start', tip: 'Around ankle, or where you want the fishtail to start.', videoUrl: null },
-      { field: 'Total length', description: 'Shoulder to floor', tip: 'Shoulder to floor, wearing heels.', videoUrl: null },
-      { field: 'Heel height', description: 'Heel height for calibration', tip: 'Height of heels to be worn.', videoUrl: null },
-    ],
-  },
-  'Kurta': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Chest', description: 'Fullest chest', tip: 'Around fullest chest.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
-      { field: 'Kurta length', description: 'Shoulder to desired hem', tip: 'From highest shoulder to desired hem.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'From shoulder to wrist, arm slightly bent.', videoUrl: null },
-      { field: 'Armhole circumference', description: 'Around arm opening', tip: 'Around armhole.', videoUrl: null },
-      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
-    ],
-  },
-  'Sherwani': {
-    supportsStandard: false, heightRequired: true,
-    fields: [
-      { field: 'Chest — inhaled', description: 'Chest at full breath in', tip: 'Measure around fullest chest while breathing in. This ensures enough room.', videoUrl: null },
-      { field: 'Chest — relaxed', description: 'Chest at rest', tip: 'Measure around chest while breathing normally, relaxed.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest hips/seat', tip: 'Fullest seat measurement.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
-      { field: 'Sherwani length', description: 'Shoulder to desired hem', tip: 'From highest shoulder to desired hem length.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist, arm slightly bent.', videoUrl: null },
-      { field: 'Bicep circumference', description: 'Around fullest bicep', tip: 'Around the fullest part of your upper arm.', videoUrl: null },
-      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
-      { field: 'Trouser waist', description: 'Waist for churidar/trouser', tip: 'Where the trouser waistband sits.', videoUrl: null },
-      { field: 'Trouser hip / seat', description: 'Fullest hip for trousers', tip: 'Fullest seat for trouser fit.', videoUrl: null },
-      { field: 'Thigh circumference', description: 'Fullest thigh', tip: 'Around fullest thigh.', videoUrl: null },
-      { field: 'Inseam length', description: 'Crotch to ankle (inside)', tip: 'Inside leg from crotch to ankle.', videoUrl: null },
-      { field: 'Outseam length', description: 'Waist to ankle (outside)', tip: 'Outside leg from waist to ankle.', videoUrl: null },
-      { field: 'Ankle / churidar hem', description: 'Around ankle', tip: 'Around ankle bone.', videoUrl: null },
-    ],
-  },
-  'Bandhgala': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Chest — inhaled', description: 'Chest at full breath', tip: 'Fullest chest breathing in.', videoUrl: null },
-      { field: 'Chest — relaxed', description: 'Chest at rest', tip: 'Chest relaxed.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest seat', tip: 'Fullest seat.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
-      { field: 'Jacket length', description: 'Shoulder to hem', tip: 'Shoulder to desired hem.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist.', videoUrl: null },
-      { field: 'Bicep circumference', description: 'Around fullest bicep', tip: 'Around fullest upper arm.', videoUrl: null },
-      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
-    ],
-  },
-  'Suit / Blazer': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Chest — inhaled', description: 'Chest at full breath', tip: 'Fullest chest breathing in — for proper jacket ease.', videoUrl: null },
-      { field: 'Chest — relaxed', description: 'Chest at rest', tip: 'Chest breathing normally.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest seat', tip: 'Fullest seat.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back, shoulder to shoulder.', videoUrl: null },
-      { field: 'Jacket length', description: 'Shoulder to hem', tip: 'Centre back from neckline to desired hem.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist bone.', videoUrl: null },
-      { field: 'Bicep circumference', description: 'Around fullest bicep', tip: 'Around fullest upper arm.', videoUrl: null },
-      { field: 'Wrist circumference', description: 'Around wrist', tip: 'Around wrist bone.', videoUrl: null },
-    ],
-  },
-  'Trouser / Chinos / Western Trouser': {
-    supportsStandard: false, heightRequired: false,
-    fields: [
-      { field: 'Waist', description: 'Where waistband sits', tip: 'Around your waist where the trouser waistband will sit.', videoUrl: null },
-      { field: 'Hip / Seat', description: 'Fullest seat (approx 8" below waist)', tip: 'Around the fullest part of your seat, usually 8 inches below the waist.', videoUrl: null },
-      { field: 'Thigh circumference', description: 'Around fullest thigh', tip: 'Around the fullest part of your thigh when standing normally.', videoUrl: null },
-      { field: 'Knee circumference', description: 'Around knee', tip: 'Around the knee, standing straight.', videoUrl: null },
-      { field: 'Calf circumference', description: 'Around fullest calf', tip: 'Around the fullest part of your calf.', videoUrl: null },
-      { field: 'Ankle / hem opening', description: 'Desired trouser opening', tip: 'How wide you want the trouser opening at the ankle. Standard trouser: 14–16 inches.', videoUrl: null },
-      { field: 'Inseam length', description: 'Crotch to ankle (inside leg)', tip: 'From your crotch seam, down the inside of your leg to your ankle bone.', videoUrl: null },
-      { field: 'Outseam length', description: 'Waistband to ankle (outside leg)', tip: 'From the top of the waistband down the outside of your leg to ankle bone.', videoUrl: null },
-      { field: 'Rise', description: 'Waistband to crotch seam', tip: 'Sit on a hard flat chair. Measure from waist to the seat surface. This is your rise.', videoUrl: null },
-    ],
-  },
-  'Formal Shirt': {
-    supportsStandard: true, heightRequired: false,
-    fields: [
-      { field: 'Chest', description: 'Fullest chest', tip: 'Around fullest chest over undergarments.', videoUrl: null },
-      { field: 'Waist', description: 'Natural waist', tip: 'Natural waist.', videoUrl: null },
-      { field: 'Shoulder width', description: 'Shoulder to shoulder', tip: 'Across back.', videoUrl: null },
-      { field: 'Sleeve length', description: 'Shoulder to wrist', tip: 'Shoulder to wrist, arm slightly bent.', videoUrl: null },
-      { field: 'Collar circumference', description: 'Around base of neck', tip: 'Around the base of your neck. Add 0.5 inch for comfort.', videoUrl: null },
-      { field: 'Shirt length', description: 'Back neckline to hem', tip: 'From back neckline to desired shirt length.', videoUrl: null },
-      { field: 'Wrist circumference', description: 'Around wrist for cuff', tip: 'Around wrist bone.', videoUrl: null },
-    ],
-  },
-  'Veshti / Mundu': {
-    supportsStandard: false, heightRequired: false,
-    noStitching: true,
-    noStitchingMessage: "Standard fabric dimensions apply. No body measurements needed. Mention any specific draping style preference in your brief.",
-    fields: [],
-  },
-  'Dhoti / Panche': {
-    supportsStandard: false, heightRequired: false,
-    noStitching: true,
-    noStitchingMessage: "Standard fabric dimensions apply. No body measurements needed.",
-    fields: [],
-  },
-};
-
-const resolveGarmentMeasurementConfig = (
-  category: string,
-  subCategory?: string
-): GarmentMeasurementConfig => {
-  if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
-  if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
-  return MEASUREMENT_CONFIG['Kurti'];
-};
 
 const WOMEN_SIZES = [
   { size: 'XS', bust: '31–32', waist: '23–24', hip: '33–34', eu: '32', us: '0', uk: '4' },
@@ -1237,24 +947,27 @@ const Wizard = () => {
     }
   }, []);
 
-  // Save draft on step changes
+  // Save draft on step changes (debounced 500ms)
   useEffect(() => {
     if (step > 1) {
-      const draft = {
-        step, step2Phase, step3Phase, orderType, gender,
-        selectedCategory, selectedSubCategory, selectedOccasion,
-        selectedFit, selectedNeckline, selectedSleeve, selectedDupatta,
-        selectedLining, measurementType, standardSize, sizeRegion,
-        selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
-        selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
-        embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
-        isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
-        isGroupOrder, groupSize, groupMembers: groupMembers.map(m => ({ name: m.name, phone: m.phone, size: m.size, notes: m.notes })),
-        blouseFrontNeck, blouseBackNeck, blouseBackClosure, blouseSleeveStyle,
-        blouseSleeveLength, blousePadding, blouseCupSize, blouseLength, blouseExtraNotes,
-        ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
-      };
-      localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+      const timer = setTimeout(() => {
+        const draft = {
+          step, step2Phase, step3Phase, orderType, gender,
+          selectedCategory, selectedSubCategory, selectedOccasion,
+          selectedFit, selectedNeckline, selectedSleeve, selectedDupatta,
+          selectedLining, measurementType, standardSize, sizeRegion,
+          selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
+          selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
+          embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
+          isRushOrder, orderingFor, recipientName, recipientPhone, recipientRelation, giftOrder,
+          isGroupOrder, groupSize, groupMembers: groupMembers.map(m => ({ name: m.name, phone: m.phone, size: m.size, notes: m.notes })),
+          blouseFrontNeck, blouseBackNeck, blouseBackClosure, blouseSleeveStyle,
+          blouseSleeveLength, blousePadding, blouseCupSize, blouseLength, blouseExtraNotes,
+          ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
+        };
+        localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [step, step2Phase, step3Phase, gender, selectedCategory,
       selectedOccasion, selectedFit, measurementType,
