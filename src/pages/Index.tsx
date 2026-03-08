@@ -13,7 +13,7 @@ import VendorShowcase from "@/components/home/VendorShowcase";
 import FAQSection from "@/components/home/FAQSection";
 import SiteFooter from "@/components/home/SiteFooter";
 import CitySelector from "@/components/CitySelector";
-import LanguageSelector, { TranslationBanner } from "@/components/LanguageSelector";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -401,8 +401,6 @@ const Index = () => {
         )}
       </nav>
 
-      <TranslationBanner />
-
       <HeroSection />
       <HowItWorks />
       <TrustSignals />
@@ -412,13 +410,23 @@ const Index = () => {
       {/* CTA Banner */}
       <section className="py-24 bg-primary">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-serif font-bold text-primary-foreground mb-4">Ready to bring your vision to life?</h2>
+          <h2 className="text-4xl font-serif font-bold text-primary-foreground mb-4">India's finest bespoke fashion, made for you.</h2>
           <p className="text-primary-foreground/70 font-sans text-lg mb-8 max-w-xl mx-auto">
-            Join thousands of customers who trust Naapio for their bespoke fashion needs.
+            Join 500+ artisans and thousands of customers already on Naapio.
           </p>
-          <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
-            {t('hero.primaryCta')}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
+              Start My Bespoke Order →
+            </Button>
+            <Button
+              variant="outline"
+              size="hero"
+              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+              onClick={() => navigate("/for-tailors")}
+            >
+              Join as Artisan
+            </Button>
+          </div>
         </div>
       </section>
 

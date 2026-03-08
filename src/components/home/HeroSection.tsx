@@ -1,86 +1,120 @@
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Upload, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import womensFashion from "@/assets/womens-fashion.jpg";
+import mensFashion from "@/assets/mens-fashion.jpg";
+import redLehenga from "@/assets/red-lehenga.jpg";
 
 const HeroSection = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      {/* Background image */}
-      <div className="absolute inset-0">
-        <img
-          src="https://source.unsplash.com/featured/?indian+bridal+lehenga+ethnic+fashion&1001"
-          alt="Luxury Indian fashion atelier"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/40" />
-      </div>
-
-      <div className="container relative z-10 mx-auto px-6 py-20">
-        <div className="max-w-2xl">
+    <section className="relative min-h-screen bg-primary flex items-center overflow-hidden">
+      <div className="container relative z-10 mx-auto px-6 py-32 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
+          {/* Left — Text */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="w-5 h-5 text-accent" />
-              <span className="text-accent font-sans font-medium tracking-wide uppercase text-sm">India's Premier Bespoke Marketplace</span>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-primary-foreground leading-tight mb-6">
-              {t('hero.headline').split('.')[0]}.<br />
-              <span className="italic text-accent">{t('hero.headline').split('.')[1]?.trim() || 'Stitch It'}.</span>
+            <span className="text-accent font-sans font-medium tracking-[0.2em] uppercase text-xs mb-6 block">
+              India's Bespoke Fashion Marketplace
+            </span>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-primary-foreground leading-[1.1] mb-8">
+              Wear something made
+              <br />
+              for you, and{" "}
+              <span className="italic text-accent">only you</span>.
             </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/80 font-sans mb-10 max-w-lg leading-relaxed">
-              {t('hero.subheadline')}
+
+            <p className="text-base md:text-lg text-primary-foreground/70 font-sans mb-10 max-w-lg leading-relaxed">
+              Describe your dream outfit. Verified artisans across India compete to craft it. Escrow-protected. Delivered to your door.
             </p>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <Button
-              variant="gold"
-              size="hero"
-              onClick={() => navigate("/start")}
-              className="animate-pulse-gold"
-            >
-              <Upload className="w-5 h-5" />
-              {t('hero.primaryCta')}
-            </Button>
-            <Button
-              variant="outline"
-              size="hero"
-              onClick={() => {
-                document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="bg-primary-foreground/20 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/30 hover:border-primary-foreground/60"
-            >
-              {t('hero.secondaryCta')}
-            </Button>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="mt-12 flex items-center gap-6 text-primary-foreground/60 font-sans text-sm"
-          >
-            <div className="flex -space-x-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-8 h-8 rounded-full bg-accent/30 border-2 border-primary-foreground/20 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary-foreground/70" />
+            {/* Social proof strip */}
+            <div className="flex items-center gap-0 mb-10">
+              {[
+                { value: "500+", label: "Verified Artisans" },
+                { value: "12", label: "Cities" },
+                { value: "4.8★", label: "Avg Rating" },
+              ].map((stat, i) => (
+                <div key={stat.label} className={`${i > 0 ? "border-l border-primary-foreground/20 pl-6 ml-6" : ""}`}>
+                  <p className="text-2xl md:text-3xl font-serif font-bold text-accent">{stat.value}</p>
+                  <p className="text-xs font-sans text-primary-foreground/50 mt-0.5">{stat.label}</p>
                 </div>
               ))}
             </div>
-            <span>2,400+ happy customers this month</span>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
+                Start My Order →
+              </Button>
+            </div>
+            <button
+              onClick={() => navigate("/for-tailors")}
+              className="text-sm text-accent font-sans hover:underline"
+            >
+              Are you an artisan? Join Naapio →
+            </button>
+          </motion.div>
+
+          {/* Right — Image collage (desktop) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="hidden md:block"
+          >
+            <div className="relative h-[520px] w-full">
+              {/* Card 1 — top left */}
+              <div className="absolute top-0 left-0 -rotate-3 z-0">
+                <img
+                  src={womensFashion}
+                  alt="Women's bespoke fashion"
+                  className="w-48 h-64 object-cover rounded-2xl shadow-lg"
+                />
+              </div>
+              {/* Card 2 — centre */}
+              <div className="absolute top-12 left-1/2 -translate-x-1/2 rotate-2 z-10">
+                <div className="relative">
+                  <img
+                    src={redLehenga}
+                    alt="Red bridal lehenga"
+                    className="w-56 h-72 object-cover rounded-2xl shadow-xl"
+                  />
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
+                    <span className="text-xs font-sans font-medium text-foreground whitespace-nowrap">
+                      ₹499 to post · Escrow protected
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Card 3 — bottom right */}
+              <div className="absolute bottom-0 right-0 -rotate-1 z-0">
+                <img
+                  src={mensFashion}
+                  alt="Men's bespoke fashion"
+                  className="w-48 h-64 object-cover rounded-2xl shadow-lg"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Mobile single image */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="md:hidden"
+          >
+            <img
+              src={redLehenga}
+              alt="Red bridal lehenga"
+              className="w-full rounded-2xl shadow-xl"
+            />
           </motion.div>
         </div>
       </div>

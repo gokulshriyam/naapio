@@ -1,22 +1,13 @@
 import { motion } from "framer-motion";
-import { Star, MapPin, Award } from "lucide-react";
-
-const vendors = [
-  { name: "Master Artisan", tier: "Gold", rating: 4.9, city: "Bangalore", spec: "Bridal & Lehenga", orders: 340, img: "https://source.unsplash.com/featured/?indian+tailor+sewing+workshop&1060" },
-  { name: "Heritage Weaver", tier: "Gold", rating: 4.8, city: "Jaipur", spec: "Sherwani & Kurta", orders: 280, img: "https://source.unsplash.com/featured/?master+tailor+measuring+fabric&1061" },
-  { name: "Silk Studio", tier: "Silver", rating: 4.7, city: "Surat", spec: "Saree Blouse", orders: 195, img: "https://source.unsplash.com/featured/?tailor+workshop+india+stitching&1062" },
-  { name: "Royal Stitch", tier: "Gold", rating: 4.9, city: "Lucknow", spec: "Indo-Western", orders: 310, img: "https://source.unsplash.com/featured/?indian+craftsman+textile+work&1063" },
-];
-
-const tierColor: Record<string, string> = {
-  Gold: "bg-accent text-accent-foreground",
-  Silver: "bg-muted text-foreground",
-  Bronze: "bg-warning-light text-warning",
-};
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 
 const VendorShowcase = () => {
+  const navigate = useNavigate();
+
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-secondary">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -24,40 +15,73 @@ const VendorShowcase = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-serif font-bold text-foreground mb-4">Our Master Tailors</h2>
-          <p className="text-muted-foreground font-sans text-lg">Handpicked artisans from across India</p>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">
+            A Platform Built for Both Sides of Fashion
+          </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {vendors.map((v, i) => (
-            <motion.div
-              key={v.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-2xl border border-border hover:border-accent/30 hover:shadow-lg transition-all bg-card overflow-hidden"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Customer card */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="bg-card rounded-2xl border border-border p-8"
+          >
+            <span className="text-4xl block mb-4">👗</span>
+            <h3 className="text-xl font-serif font-bold text-foreground mb-3">For Fashion Lovers</h3>
+            <p className="text-sm font-sans text-muted-foreground mb-6 leading-relaxed">
+              Post a brief in 4 minutes. Get bids from 5–10 skilled artisans within 7 days. Your payment stays in escrow until you're happy.
+            </p>
+            <ul className="space-y-3 mb-8">
+              {[
+                "Bespoke made-to-measure outfits",
+                "Verified artisans with portfolios",
+                "Escrow-backed payment protection",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm font-sans text-foreground">
+                  <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button variant="gold" onClick={() => navigate('/start')} className="w-full">
+              Start My Order →
+            </Button>
+          </motion.div>
+
+          {/* Vendor card */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="bg-card rounded-2xl border border-border p-8"
+          >
+            <span className="text-4xl block mb-4">✂️</span>
+            <h3 className="text-xl font-serif font-bold text-foreground mb-3">For Master Artisans</h3>
+            <p className="text-sm font-sans text-muted-foreground mb-6 leading-relaxed">
+              Earn ₹60,000/month on 5 orders. No client hunting, no payment chasing. Naapio brings verified customers with confirmed budgets directly to you.
+            </p>
+            <ul className="space-y-3 mb-8">
+              {[
+                "Guaranteed escrow payments",
+                "Build a verified reputation score",
+                "Gold Tier artisans get priority leads",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm font-sans text-foreground">
+                  <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/for-tailors')}
+              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
             >
-              <img src={v.img} alt={v.name} className="w-full h-40 object-cover" />
-              <div className="p-5">
-                <h3 className="font-sans font-semibold text-foreground mb-1">{v.name}</h3>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className={`text-xs font-sans font-bold px-2 py-0.5 rounded-full ${tierColor[v.tier]}`}>
-                    {v.tier.toUpperCase()}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-                    <span className="text-sm font-sans font-medium text-foreground">{v.rating}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 text-muted-foreground text-sm font-sans mb-2">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {v.city}
-                </div>
-                <p className="text-xs text-muted-foreground font-sans">{v.spec} • {v.orders} orders</p>
-              </div>
-            </motion.div>
-          ))}
+              Join as Artisan →
+            </Button>
+          </motion.div>
         </div>
       </div>
     </section>
