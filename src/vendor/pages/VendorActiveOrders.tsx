@@ -298,8 +298,9 @@ const VendorActiveOrders = () => {
   const [orders] = useState(mockVendorActiveOrders);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const selectedOrder = orders.find(o => o.orderId === selectedOrderId);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
-  // Milestone state (for demo, advance from current)
+  // Milestone state — initialised from order's currentMilestone
   const [activeMilestone, setActiveMilestone] = useState(2);
   const [m1ReadOnly, setM1ReadOnly] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
