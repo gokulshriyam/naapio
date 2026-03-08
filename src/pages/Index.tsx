@@ -137,12 +137,42 @@ const Index = () => {
           <div className="hidden md:flex items-center gap-2">
             <CitySelector />
             <LanguageSelector />
-            <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)}>
-              {t('nav.login')}
-            </Button>
-            <Button variant="gold" size="sm" onClick={() => navigate("/start")}>
-              {t('nav.getStarted')}
-            </Button>
+            {isLoggedIn ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-sans font-bold text-sm hover:opacity-90 transition-opacity"
+                >
+                  {getInitials()}
+                </button>
+                {showUserMenu && (
+                  <div className="absolute right-0 top-11 w-48 bg-card border border-border rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <button onClick={() => { navigate('/dashboard'); setShowUserMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-foreground hover:bg-muted transition-colors">
+                      <ShoppingBag className="w-4 h-4" /> My Orders
+                    </button>
+                    <button onClick={() => { navigate('/dashboard/profile'); setShowUserMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-foreground hover:bg-muted transition-colors">
+                      <User className="w-4 h-4" /> Profile
+                    </button>
+                    <button onClick={() => { navigate('/dashboard/settings'); setShowUserMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-foreground hover:bg-muted transition-colors">
+                      <Settings className="w-4 h-4" /> Settings
+                    </button>
+                    <div className="h-px bg-border my-1" />
+                    <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-sans text-destructive hover:bg-muted transition-colors">
+                      <LogOut className="w-4 h-4" /> Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)}>
+                  {t('nav.login')}
+                </Button>
+                <Button variant="gold" size="sm" onClick={() => navigate("/start")}>
+                  {t('nav.getStarted')}
+                </Button>
+              </>
+            )}
           </div>
           {/* Mobile hamburger */}
           <button className="md:hidden p-2" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
