@@ -276,6 +276,9 @@ const Wizard = () => {
   const [draftRestored, setDraftRestored] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState<any>(null);
   const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
+  const [isReorder, setIsReorder] = useState(false);
+  const [reorderFrom, setReorderFrom] = useState('');
+  const [reorderMode, setReorderMode] = useState<'same' | 'changes' | ''>('');
 
   // Rush Order
   const [isRushOrder, setIsRushOrder] = useState(false);
