@@ -556,7 +556,7 @@ const Wizard = () => {
   useEffect(() => {
     if (!photoAnalysis || !photoAnalysis.analysisComplete || photoAnalysis.analysisError) return;
     
-    console.log('Applying pre-fills from photo analysis:', photoAnalysis);
+    
     
     // Pre-fill category if detected and not already set
     if (photoAnalysis.detectedGarment && !selectedCategory) {
@@ -564,7 +564,7 @@ const Wizard = () => {
       if (mappedCategory) {
         setSelectedCategory(mappedCategory);
         setPhotoFromBadgeShown(prev => new Set([...prev, 'category']));
-        console.log('Pre-filled category:', mappedCategory);
+        
       }
     }
     
@@ -574,7 +574,7 @@ const Wizard = () => {
         !selectedOccasion) {
       setSelectedOccasion(photoAnalysis.detectedOccasion);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'occasion']));
-      console.log('Pre-filled occasion:', photoAnalysis.detectedOccasion);
+      
     }
     
     // Pre-fill fabric feel if detected and not already set
@@ -583,14 +583,14 @@ const Wizard = () => {
         !selectedFeel) {
       setSelectedFeel(photoAnalysis.detectedFeel);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'feel']));
-      console.log('Pre-filled feel:', photoAnalysis.detectedFeel);
+      
     }
     
     // Pre-fill colour mood if detected and not already set
     if (photoAnalysis.detectedColour && !selectedColourMood) {
       setSelectedColourMood(photoAnalysis.detectedColour);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'colour']));
-      console.log('Pre-filled colour:', photoAnalysis.detectedColour);
+      
     }
     
     // Pre-fill surfaces if detected and not already set
@@ -598,7 +598,7 @@ const Wizard = () => {
         selectedSurfaces.length === 0) {
       setSelectedSurfaces(photoAnalysis.detectedSurfaces);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
-      console.log('Pre-filled surfaces:', photoAnalysis.detectedSurfaces);
+      
     }
   }, [photoAnalysis]);
   // Dependency array intentionally excludes the selected* values
@@ -1047,7 +1047,7 @@ Return a JSON object with ONLY these fields, no other text:
 
       const apiKey = "AIzaSyBTMDZOq0B2x7xEgVX6Sis-U80jgXohICg"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1072,7 +1072,6 @@ Return a JSON object with ONLY these fields, no other text:
       );
 
       const data = await response.json();
-      console.log('=== GEMINI RAW DATA ===', JSON.stringify(data));
 
       // Try multiple possible response paths
       rawText = 
@@ -1083,16 +1082,7 @@ Return a JSON object with ONLY these fields, no other text:
           ?.find((p: any) => p.text)?.text ||
         // Fallback path
         data.candidates?.[0]?.output ||
-        // Error path — log and return empty
-        (() => {
-          console.log('=== ALL RESPONSE PATHS FAILED ===');
-          console.log('candidates:', data.candidates);
-          console.log('promptFeedback:', data.promptFeedback);
-          console.log('error:', data.error);
-          return '';
-        })();
-
-      console.log('=== EXTRACTED rawText ===', rawText);
+        '';
 
       // === FIX 2: Robust JSON Extraction ===
       let cleanText = rawText || '';
@@ -1124,11 +1114,6 @@ Return a JSON object with ONLY these fields, no other text:
         };
       }
 
-      // === FIX 1: Debug Logging ===
-      console.log('=== GEMINI PHOTO ANALYSIS RESULT ===');
-      console.log('Raw response text:', rawText);
-      console.log('Parsed analysis:', analysis);
-      console.log('=====================================');
       
       setPhotoAnalysis({
         ...analysis,
