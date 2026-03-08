@@ -254,4 +254,20 @@ export const faqItems = [
     q: "How is my measurement data protected?",
     a: "Your body measurements are sensitive personal data protected under the Digital Personal Data Protection Act, 2023. Data is encrypted, shared only with your accepted vendor, and can be deleted upon request within 72 hours.",
   },
+  {
+    q: "Can I get my existing clothes altered?",
+    a: "Yes — select 'Alteration / Repair' when you start. Upload photos of your garment, describe what needs to change, and tailors will bid on your brief. Simple alterations take 3 days; major rework takes 7 days. The ₹499 posting fee applies and is deducted from your final payment.",
+  },
+  {
+    q: "Can I get embroidery or artwork added to my jacket or kurta?",
+    a: "Yes — select 'Customise My Garment'. Upload photos of your existing garment and describe the artwork or embellishment you want. Embroiderers, zari artisans, and painters in our network will bid on your brief. This flow is for adding to an existing finished garment — not for stitching a new one.",
+  },
+  {
+    q: "I have my own fabric. Can Naapio help with just the stitching?",
+    a: "Yes — select 'I Have My Own Fabric' when you start. You skip the fabric sourcing steps and go straight to design, fit, and measurements. Your tailor works with the fabric you provide. Describe your fabric (type, colour, metres available) and the tailor will confirm it's sufficient for your garment.",
+  },
+  {
+    q: "Do you cover regional garments like Mundu, Mekhela Chador, or Nauvari Saree?",
+    a: "Yes — regional garments are covered under Men's Regional Traditional and Women's Regional Traditional categories in the wizard. These garments have their own measurement and construction logic built in, so your brief reaches tailors who specialise in them.",
+  },
 ];
