@@ -901,7 +901,13 @@ const AlterationFlow = () => {
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground font-sans">
-                        Tailors bid on this range. The ₹499 posting fee still applies to go live, and is deducted from the tailor's final payment.
+                        {alterationGuidance[alterationGarment] || 'Enter your comfortable range'}
+                      </p>
+                      {Number(alterationBudgetMin) > 0 && Number(alterationBudgetMax) > 0 && Number(alterationBudgetMin) > Number(alterationBudgetMax) && (
+                        <p className="text-xs text-destructive font-sans mt-1">Min budget can't be higher than max</p>
+                      )}
+                      <p className="text-xs text-muted-foreground font-sans mt-2">
+                        💡 Set a realistic range — tailors bid within it.
                       </p>
                     </div>
 
