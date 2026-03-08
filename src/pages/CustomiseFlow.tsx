@@ -599,7 +599,7 @@ const CustomiseFlow = () => {
                       <button onClick={() => { setShowReview(false); setStep(5); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
                     <p className="text-sm text-foreground font-sans">
-                      Budget: ₹{customiseBudgetMin} – ₹{customiseBudgetMax || "—"}
+                      Budget: {formatBudget(customiseBudgetRange[0])} – {formatBudget(customiseBudgetRange[1])}
                     </p>
                     <p className="text-sm text-foreground font-sans mt-1">
                       Delivery by: {customiseDeliveryDate ? format(new Date(customiseDeliveryDate + "T00:00:00"), "PPP") : "Not set"}
