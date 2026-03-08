@@ -749,8 +749,8 @@ const BiddingPage = () => {
 
                     {/* Action row — stack on mobile */}
                     <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                      <Button size="sm" variant="outline" className="text-xs w-full sm:w-auto" onClick={() => navigate("/wizard")}>
-                        <Edit className="w-3 h-3 mr-1" /> Edit Brief
+                      <Button size="sm" variant="outline" className="text-xs w-full sm:w-auto" onClick={() => navigate(`/order/${order.id}`)} title="Your brief has been posted and cannot be edited while bids are open">
+                        <Edit className="w-3 h-3 mr-1" /> 📋 View Brief
                       </Button>
                       <Button
                         size="sm"
