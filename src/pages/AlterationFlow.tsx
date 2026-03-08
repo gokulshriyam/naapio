@@ -113,6 +113,8 @@ const AlterationFlow = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isRushOrder, setIsRushOrder] = useState(false);
+  const [briefShared, setBriefShared] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
 
