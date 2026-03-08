@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info } from "lucide-react";
+import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { menCategories, womenCategories, measurementFields } from "@/data/mockData";
 import { fabricOptionsWithImages } from "@/data/fabricData";
@@ -149,6 +153,31 @@ const surfaceOptions = [
   { label: "No Preference", img: null },
 ];
 
+const blendOptions = [
+  { label: "Pure Natural", desc: "100% cotton, silk, linen or wool — breathes best, premium feel", icon: "🌿" },
+  { label: "Natural Blend", desc: "Natural fibre mixed with a small % synthetic for durability", icon: "🪡" },
+  { label: "Synthetic Blend", desc: "Poly-blend or viscose — more affordable, easier to maintain", icon: "✨" },
+  { label: "No Preference", desc: "Let the tailor recommend what works for your garment", icon: "🤍" },
+];
+
+const brandOptions = [
+  "Nalli Silks", "Kancheepuram Co-op", "Fabindia", "W for Woman",
+  "Raymond", "Manyavar (fabric)", "Soch", "Biba", "Meena Bazaar",
+  "Taneira", "Good Earth", "No preference",
+];
+
+const fabricBudgetOptions = [
+  { label: "Economy", range: "₹100 – ₹500 / metre", desc: "Polycotton, synthetic blends, basic cotton", accent: "border-green-300 bg-green-50" },
+  { label: "Mid-Range", range: "₹500 – ₹2,000 / metre", desc: "Good cotton, georgette, light silks, linen", accent: "border-amber-300 bg-amber-50" },
+  { label: "Premium", range: "₹2,000+ / metre", desc: "Pure silk, Banarasi, Kanjivaram, designer fabric", accent: "border-purple-300 bg-purple-50" },
+];
+
+const embellishmentBudgetOptions = [
+  { label: "Light Detailing", range: "₹500 – ₹3,000", desc: "Simple thread work, basic prints, minimal mirror work", accent: "border-teal-300 bg-teal-50" },
+  { label: "Medium Work", range: "₹3,000 – ₹10,000", desc: "Resham embroidery, bandhani, moderate zari", accent: "border-amber-300 bg-amber-50" },
+  { label: "Heavy / Bridal", range: "₹10,000+", desc: "Zardozi, full zari, dense mirror work, bridal-grade", accent: "border-rose-300 bg-rose-50" },
+];
+
 const quickBrackets = [
   { label: "₹5K – ₹15K", min: 5000, max: 15000 },
   { label: "₹15K – ₹35K", min: 15000, max: 35000 },
@@ -198,6 +227,11 @@ const Wizard = () => {
   const [colourReferencePhoto, setColourReferencePhoto] = useState<File | null>(null);
   const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>([]);
   const [ownFabricDescription, setOwnFabricDescription] = useState("");
+  const [selectedBlend, setSelectedBlend] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState<string[]>([]);
+  const [fabricBudgetBand, setFabricBudgetBand] = useState("");
+  const [embellishmentBudget, setEmbellishmentBudget] = useState("");
+  const [showOwnFabricInput, setShowOwnFabricInput] = useState(true);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -205,17 +239,27 @@ const Wizard = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const min = new Date();
-    min.setDate(min.getDate() + 14);
-    setDeliveryDate(min.toISOString().split("T")[0]);
-  }, []);
+  const hasEmbellishment = selectedSurfaces.length > 0 &&
+    !selectedSurfaces.every((s) => s === "Plain / No Embellishment" || s === "No Preference");
 
-  const minDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 14);
-    return d.toISOString().split("T")[0];
+  const getMinDeliveryDays = () => {
+    const bridal = ["Lehenga", "Saree Blouse"];
+    const formal = ["Sherwani", "Suit", "Bandhgala"];
+    if (bridal.includes(selectedCategory)) return 21;
+    if (formal.includes(selectedCategory)) return 14;
+    return 10;
   };
+
+  const getMinDeliveryDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + getMinDeliveryDays());
+    return d;
+  };
+
+  useEffect(() => {
+    const min = getMinDeliveryDate();
+    setDeliveryDate(min.toISOString().split("T")[0]);
+  }, [selectedCategory]);
 
   const canProceed = () => {
     if (step === 1) return uploaded;
@@ -228,11 +272,16 @@ const Wizard = () => {
       return false;
     }
     if (step === 3) {
-      if (isOwnFabric) return true;
+      if (isOwnFabric && showOwnFabricInput) return true;
       if (step3Phase === "feel") return !!selectedFeel;
       if (step3Phase === "fabricType") return true;
       if (step3Phase === "colour") return true;
       if (step3Phase === "surface") return true;
+      if (step3Phase === "blend") return true;
+      if (step3Phase === "brand") return true;
+      if (step3Phase === "fabricBudget") return !!fabricBudgetBand;
+      if (step3Phase === "embellishment") return !!embellishmentBudget;
+      if (step3Phase === "budgetDelivery") return budgetRange[0] >= 1000 && !!deliveryDate;
       return true;
     }
     if (step === 4) return otpVerified && termsAccepted;
@@ -274,8 +323,8 @@ const Wizard = () => {
                   : step2Phase === "design"
                   ? "Step 2d — Design Details"
                   : "Step 2e — Measurements"
-                : step === 3
-                ? isOwnFabric
+               : step === 3
+                ? isOwnFabric && showOwnFabricInput
                   ? "Step 3 — Your Fabric"
                   : step3Phase === "feel"
                   ? "Step 3a — Fabric Feel"
@@ -285,6 +334,16 @@ const Wizard = () => {
                   ? "Step 3c — Colour Mood"
                   : step3Phase === "surface"
                   ? "Step 3d — Surface & Texture"
+                  : step3Phase === "blend"
+                  ? "Step 3e — Fabric Blend"
+                  : step3Phase === "brand"
+                  ? "Step 3f — Brand Preference"
+                  : step3Phase === "fabricBudget"
+                  ? "Step 3g — Fabric Budget"
+                  : step3Phase === "embellishment"
+                  ? "Step 3h — Embellishment Budget"
+                  : step3Phase === "budgetDelivery"
+                  ? "Step 3i — Budget & Delivery"
                   : `Step 3 of 4`
                 : `Step ${step} of 4`}
             </span>
@@ -697,7 +756,8 @@ const Wizard = () => {
             <motion.div key={`s3-${step3Phase}`} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
 
               {/* OWN FABRIC PATH */}
-              {isOwnFabric && (
+              {/* OWN FABRIC PATH */}
+              {isOwnFabric && showOwnFabricInput && (
                 <div>
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Tell us about your fabric</h2>
                   <p className="text-muted-foreground font-sans mb-6">Describe your fabric — type, colour, weight, condition</p>
@@ -713,7 +773,7 @@ const Wizard = () => {
               )}
 
               {/* STANDARD PATH */}
-              {!isOwnFabric && (
+              {(!isOwnFabric || !showOwnFabricInput) && (
                 <>
                   {/* STEP 3a: FABRIC FEEL */}
                   {step3Phase === "feel" && (
@@ -915,11 +975,224 @@ const Wizard = () => {
                         })}
                       </div>
                       <button
-                        onClick={() => { setStep(4); setStep3Phase("feel"); }}
+                        onClick={() => setStep3Phase("blend")}
                         className="mt-4 text-sm font-sans text-accent hover:underline"
                       >
                         Skip this step →
                       </button>
+                    </div>
+                  )}
+
+                  {/* STEP 3e: FABRIC BLEND */}
+                  {step3Phase === "blend" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any preference on fabric composition?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">This helps your tailor source the right quality</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {blendOptions.map((b) => (
+                          <button
+                            key={b.label}
+                            onClick={() => setSelectedBlend(b.label)}
+                            className={`p-5 rounded-xl text-left font-sans transition-all border ${
+                              selectedBlend === b.label
+                                ? "border-accent bg-gold-light ring-2 ring-accent/30"
+                                : "border-border bg-card hover:border-accent/30"
+                            }`}
+                          >
+                            <span className="text-3xl block mb-3">{b.icon}</span>
+                            <p className="font-semibold text-sm text-foreground mb-1 flex items-center gap-2">
+                              {selectedBlend === b.label && <Check className="w-4 h-4 text-accent" />}
+                              {b.label}
+                            </p>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{b.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setStep3Phase("brand")}
+                        className="mt-4 text-sm font-sans text-accent hover:underline"
+                      >
+                        Skip this step →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* STEP 3f: BRAND PREFERENCE */}
+                  {step3Phase === "brand" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any preferred fabric brand?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">Optional — leave blank if you have no preference</p>
+                      <div className="flex flex-wrap gap-2">
+                        {brandOptions.map((br) => (
+                          <button
+                            key={br}
+                            onClick={() => {
+                              if (br === "No preference") {
+                                setSelectedBrand(["No preference"]);
+                              } else {
+                                setSelectedBrand((prev) => {
+                                  const without = prev.filter((b) => b !== "No preference");
+                                  return without.includes(br) ? without.filter((b) => b !== br) : [...without, br];
+                                });
+                              }
+                            }}
+                            className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                              (Array.isArray(selectedBrand) ? selectedBrand : []).includes(br)
+                                ? "border-accent bg-accent text-accent-foreground font-medium"
+                                : "border-border bg-card text-foreground hover:border-accent/40"
+                            } ${(Array.isArray(selectedBrand) ? selectedBrand : []).includes("No preference") && br !== "No preference" ? "opacity-40 pointer-events-none" : ""}`}
+                          >
+                            {br}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setStep3Phase("fabricBudget")}
+                        className="mt-4 text-sm font-sans text-accent hover:underline"
+                      >
+                        Skip this step →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* STEP 3g: FABRIC BUDGET BAND */}
+                  {step3Phase === "fabricBudget" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your fabric budget per metre?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">Helps your tailor source within your range</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {fabricBudgetOptions.map((fb) => (
+                          <button
+                            key={fb.label}
+                            onClick={() => setFabricBudgetBand(fb.label)}
+                            className={`p-6 rounded-xl text-left font-sans transition-all border-2 ${
+                              fabricBudgetBand === fb.label
+                                ? "border-accent ring-2 ring-accent/30 bg-gold-light"
+                                : `${fb.accent} hover:border-accent/30`
+                            }`}
+                          >
+                            <p className="font-bold text-lg text-foreground mb-1 flex items-center gap-2">
+                              {fabricBudgetBand === fb.label && <Check className="w-5 h-5 text-accent" />}
+                              {fb.label}
+                            </p>
+                            <p className="font-semibold text-sm text-accent mb-2">{fb.range}</p>
+                            <p className="text-xs text-muted-foreground">{fb.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3h: EMBELLISHMENT BUDGET */}
+                  {step3Phase === "embellishment" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your embellishment budget?</h2>
+                      <p className="text-muted-foreground font-sans mb-6">For the embroidery or surface work you selected</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {embellishmentBudgetOptions.map((eb) => (
+                          <button
+                            key={eb.label}
+                            onClick={() => setEmbellishmentBudget(eb.label)}
+                            className={`p-6 rounded-xl text-left font-sans transition-all border-2 ${
+                              embellishmentBudget === eb.label
+                                ? "border-accent ring-2 ring-accent/30 bg-gold-light"
+                                : `${eb.accent} hover:border-accent/30`
+                            }`}
+                          >
+                            <p className="font-bold text-lg text-foreground mb-1 flex items-center gap-2">
+                              {embellishmentBudget === eb.label && <Check className="w-5 h-5 text-accent" />}
+                              {eb.label}
+                            </p>
+                            <p className="font-semibold text-sm text-accent mb-2">{eb.range}</p>
+                            <p className="text-xs text-muted-foreground">{eb.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3i: TOTAL BUDGET + DELIVERY DATE */}
+                  {step3Phase === "budgetDelivery" && (
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's your total budget and when do you need it?</h2>
+                      <p className="text-muted-foreground font-sans mb-8">Final details before we match you with tailors</p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {/* Total Budget */}
+                        <div>
+                          <h3 className="font-sans font-semibold text-foreground mb-4">Total budget for the garment (including stitching)</h3>
+                          <div className="flex gap-3 mb-3">
+                            <div className="flex-1">
+                              <label className="text-xs font-sans text-muted-foreground mb-1 block">Min ₹</label>
+                              <Input
+                                type="number"
+                                placeholder="5,000"
+                                value={budgetRange[0] || ""}
+                                onChange={(e) => setBudgetRange([Number(e.target.value) || 0, budgetRange[1]])}
+                                className="font-sans"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-xs font-sans text-muted-foreground mb-1 block">Max ₹</label>
+                              <Input
+                                type="number"
+                                placeholder="15,000"
+                                value={budgetRange[1] || ""}
+                                onChange={(e) => setBudgetRange([budgetRange[0], Number(e.target.value) || 0])}
+                                className="font-sans"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground font-sans">
+                            Vendor bids will be based on this range. You're not locked in — bids above range won't be shown.
+                          </p>
+                        </div>
+
+                        {/* Delivery Date */}
+                        <div>
+                          <h3 className="font-sans font-semibold text-foreground mb-4">When do you need this ready?</h3>
+                          <p className="text-xs text-muted-foreground font-sans mb-3">
+                            Minimum {getMinDeliveryDays()} days from today for {selectedCategory || "this garment"}
+                          </p>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-sans",
+                                  !deliveryDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {deliveryDate ? format(new Date(deliveryDate + "T00:00:00"), "PPP") : "Pick a date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={deliveryDate ? new Date(deliveryDate + "T00:00:00") : undefined}
+                                onSelect={(date) => {
+                                  if (date) setDeliveryDate(date.toISOString().split("T")[0]);
+                                }}
+                                disabled={(date) => date < getMinDeliveryDate()}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
+
+                          <div className="flex items-center gap-3 mt-4">
+                            <Checkbox
+                              id="flex-date"
+                              checked={flexibleDate}
+                              onCheckedChange={(v) => setFlexibleDate(!!v)}
+                            />
+                            <label htmlFor="flex-date" className="text-sm font-sans text-foreground cursor-pointer">
+                              My date is flexible ±3 days
+                            </label>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </>
@@ -986,8 +1259,39 @@ const Wizard = () => {
                         <p className="text-sm text-muted-foreground font-sans mt-1">
                           Surface: {selectedSurfaces.length > 0 ? selectedSurfaces.join(", ") : "No preference"}
                         </p>
+                        <p className="text-sm text-muted-foreground font-sans mt-1">
+                          Blend: {selectedBlend || "No preference"}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-sans mt-1">
+                          Brand: {(Array.isArray(selectedBrand) && selectedBrand.length > 0) ? selectedBrand.join(", ") : "No preference"}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-sans mt-1">
+                          Fabric Budget: {fabricBudgetBand || "Not specified"}
+                        </p>
+                        {hasEmbellishment && (
+                          <p className="text-sm text-muted-foreground font-sans mt-1">
+                            Embellishment Budget: {embellishmentBudget || "Not specified"}
+                          </p>
+                        )}
+                        {selectedSurfaces.every((s) => s === "Plain / No Embellishment") && selectedSurfaces.length > 0 && (
+                          <p className="text-sm text-muted-foreground font-sans mt-1">
+                            Embellishment Budget: N/A — Plain finish
+                          </p>
+                        )}
                       </>
                     )}
+                  </div>
+                  <div className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-sans font-semibold text-foreground">Budget & Delivery</h3>
+                      <button onClick={() => { setStep(3); setStep3Phase("budgetDelivery"); }} className="text-accent font-sans text-sm font-medium">Edit</button>
+                    </div>
+                    <p className="text-sm text-muted-foreground font-sans">
+                      {formatINR(budgetRange[0])} – {formatINR(budgetRange[1])}
+                    </p>
+                    <p className="text-sm text-muted-foreground font-sans mt-1">
+                      Delivery: {deliveryDate}{flexibleDate ? " (±3 days flexible)" : ""}
+                    </p>
                   </div>
                 </div>
 
@@ -1059,16 +1363,47 @@ const Wizard = () => {
           <Button
             variant="outline"
             onClick={() => {
-              if (step === 3 && !isOwnFabric) {
-                if (step3Phase === "surface") {
-                  setStep3Phase("colour");
-                } else if (step3Phase === "colour") {
-                  setStep3Phase("fabricType");
-                } else if (step3Phase === "fabricType") {
-                  setStep3Phase("feel");
-                } else {
+              if (step === 3) {
+                if (isOwnFabric && showOwnFabricInput) {
                   setStep(2);
                   setStep2Phase("measurements");
+                } else if (isOwnFabric && !showOwnFabricInput) {
+                  if (step3Phase === "fabricBudget") {
+                    setShowOwnFabricInput(true);
+                  } else if (step3Phase === "embellishment") {
+                    setStep3Phase("fabricBudget");
+                  } else if (step3Phase === "budgetDelivery") {
+                    if (hasEmbellishment) {
+                      setStep3Phase("embellishment");
+                    } else {
+                      setStep3Phase("fabricBudget");
+                    }
+                  }
+                } else {
+                  if (step3Phase === "budgetDelivery") {
+                    if (hasEmbellishment) {
+                      setStep3Phase("embellishment");
+                    } else {
+                      setStep3Phase("fabricBudget");
+                    }
+                  } else if (step3Phase === "embellishment") {
+                    setStep3Phase("fabricBudget");
+                  } else if (step3Phase === "fabricBudget") {
+                    setStep3Phase("brand");
+                  } else if (step3Phase === "brand") {
+                    setStep3Phase("blend");
+                  } else if (step3Phase === "blend") {
+                    setStep3Phase("surface");
+                  } else if (step3Phase === "surface") {
+                    setStep3Phase("colour");
+                  } else if (step3Phase === "colour") {
+                    setStep3Phase("fabricType");
+                  } else if (step3Phase === "fabricType") {
+                    setStep3Phase("feel");
+                  } else {
+                    setStep(2);
+                    setStep2Phase("measurements");
+                  }
                 }
               } else if (step === 2) {
                 if (step2Phase === "measurements") {
@@ -1084,7 +1419,7 @@ const Wizard = () => {
                 }
               } else if (step > 1) {
                 setStep(step - 1);
-                if (step === 4) setStep3Phase("feel");
+                if (step === 4) setStep3Phase("budgetDelivery");
                 if (step === 3) setStep2Phase("measurements");
               } else {
                 navigate("/");
@@ -1112,8 +1447,9 @@ const Wizard = () => {
                     setStep3Phase("feel");
                   }
                 } else if (step === 3) {
-                  if (isOwnFabric) {
-                    setStep(4);
+                  if (isOwnFabric && showOwnFabricInput) {
+                    setShowOwnFabricInput(false);
+                    setStep3Phase("fabricBudget");
                   } else if (step3Phase === "feel") {
                     setStep3Phase("fabricType");
                   } else if (step3Phase === "fabricType") {
@@ -1121,6 +1457,20 @@ const Wizard = () => {
                   } else if (step3Phase === "colour") {
                     setStep3Phase("surface");
                   } else if (step3Phase === "surface") {
+                    setStep3Phase("blend");
+                  } else if (step3Phase === "blend") {
+                    setStep3Phase("brand");
+                  } else if (step3Phase === "brand") {
+                    setStep3Phase("fabricBudget");
+                  } else if (step3Phase === "fabricBudget") {
+                    if (hasEmbellishment) {
+                      setStep3Phase("embellishment");
+                    } else {
+                      setStep3Phase("budgetDelivery");
+                    }
+                  } else if (step3Phase === "embellishment") {
+                    setStep3Phase("budgetDelivery");
+                  } else if (step3Phase === "budgetDelivery") {
                     setStep(4);
                     setStep3Phase("feel");
                   } else {
