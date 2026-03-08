@@ -2559,48 +2559,42 @@ const Wizard = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         {/* Budget Intelligence Badge */}
                         <div className="col-span-full">
-                          {(() => {
-                            const intelligence = budgetIntelligence[selectedCategory] || budgetIntelligence[selectedSubCategory];
-                            if (!intelligence) return null;
-                            return (
-                              <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span>💡</span>
-                                  <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
-                                </div>
-                                <p className="text-xs text-amber-800 font-sans mb-3">
-                                  Naapio customers ordering {selectedCategory} typically spend:
-                                </p>
-                                <div className="relative h-2 bg-amber-200 rounded-full mb-2">
-                                  <div
-                                    className="absolute h-full bg-accent rounded-full"
-                                    style={{
-                                      left: `${Math.max(0, ((intelligence.low - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
-                                      right: `${Math.max(0, 100 - ((intelligence.high - intelligence.low) / (intelligence.high - intelligence.low)) * 100)}%`,
-                                    }}
-                                  />
-                                  <div
-                                    className="absolute w-2 h-4 bg-accent rounded-full -top-1"
-                                    style={{ left: `${((intelligence.avg - intelligence.low) / (intelligence.high - intelligence.low)) * 100}%` }}
-                                  />
-                                </div>
-                                <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
-                                  <span>{formatBudget(intelligence.low)}</span>
-                                  <span className="font-semibold">Avg {formatBudget(intelligence.avg)}</span>
-                                  <span>{formatBudget(intelligence.high)}</span>
-                                </div>
-                                <p className="text-xs text-amber-800 font-sans mb-3">{intelligence.tip}</p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-xs"
-                                  onClick={() => setBudgetRange([intelligence.low, Math.round(intelligence.avg * 1.5)])}
-                                >
-                                  Set recommended range
-                                </Button>
+                          <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl mb-6">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span>💡</span>
+                              <span className="font-sans text-xs font-bold uppercase tracking-wider text-amber-800">Naapio Intelligence</span>
+                              <span className="font-sans text-[10px] text-amber-600">Based on your selections</span>
+                            </div>
+                            <div className="relative h-2 bg-amber-200 rounded-full mb-2">
+                              <div className="absolute h-full bg-accent rounded-full" style={{ left: '0%', right: `${Math.max(0, 100 - ((budgetIntelligenceData.max - budgetIntelligenceData.min) / budgetIntelligenceData.max) * 100)}%` }} />
+                              <div className="absolute w-2 h-4 bg-accent rounded-full -top-1" style={{ left: `${((budgetIntelligenceData.avg - budgetIntelligenceData.min) / (budgetIntelligenceData.max - budgetIntelligenceData.min)) * 100}%` }} />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-amber-700 font-sans mb-2">
+                              <span>{formatBudget(budgetIntelligenceData.min)}</span>
+                              <span className="font-semibold">Avg {formatBudget(budgetIntelligenceData.avg)}</span>
+                              <span>{formatBudget(budgetIntelligenceData.max)}</span>
+                            </div>
+                            {budgetIntelligenceData.explanation.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-[10px] text-amber-800 font-sans font-semibold mb-1">What's included in this estimate:</p>
+                                {budgetIntelligenceData.explanation.slice(0, 4).map((f, i) => (
+                                  <p key={i} className="text-[10px] text-amber-700 font-sans">• {f}</p>
+                                ))}
+                                {budgetIntelligenceData.explanation.length > 4 && (
+                                  <p className="text-[10px] text-amber-600 font-sans">+ {budgetIntelligenceData.explanation.length - 4} more factors</p>
+                                )}
                               </div>
-                            );
-                          })()}
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs"
+                              onClick={() => setBudgetRange([budgetIntelligenceData.min, budgetIntelligenceData.max])}
+                            >
+                              Use Suggested Range
+                            </Button>
+                            <p className="text-[10px] text-amber-600 font-sans mt-2">This is an estimate — final amount is what you agree with your chosen artisan.</p>
+                          </div>
                         </div>
 
                         {/* Total Budget - Dual Handle Slider */}
