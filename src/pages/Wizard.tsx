@@ -457,6 +457,9 @@ const Wizard = () => {
   // Exit Warning
   const [showExitWarning, setShowExitWarning] = useState(false);
 
+  // Step transition
+  const [stepTransitioning, setStepTransitioning] = useState(false);
+
   // Measurement Photo
   const [measurementPhoto, setMeasurementPhoto] = useState<File | null>(null);
 
@@ -831,7 +834,12 @@ const Wizard = () => {
     }
   }, []);
 
-  // Restore draft on mount
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
+
   useEffect(() => {
     const saved = localStorage.getItem("naapio_wizard_draft");
     if (saved) {
@@ -1019,8 +1027,9 @@ const Wizard = () => {
   };
 
   const generateOrderId = () => {
+    const year = new Date().getFullYear();
     const num = Math.floor(10000 + Math.random() * 90000);
-    return `NP-2026-${num}`;
+    return `NP-${year}-${num}`;
   };
 
   const buildShareText = () => {
@@ -1797,7 +1806,7 @@ Important rules:
         </div>
       )}
 
-      <div className="container mx-auto px-6 py-10 max-w-5xl">
+      <div className="container mx-auto px-6 py-10 max-w-5xl" style={{ opacity: stepTransitioning ? 0 : 1, transition: 'opacity 0.15s ease' }}>
         <AnimatePresence mode="wait">
           {/* STEP 0: Who are you ordering for? */}
           {step === 0 && (
@@ -4254,7 +4263,7 @@ Important rules:
                       <div>
                           <div className="flex gap-2">
                             <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="4-digit OTP" maxLength={4} className="font-sans" />
-                            <Button variant="gold" onClick={() => { if (/^\d{4}$/.test(otp)) { setOtpVerified(true); toast.success("Mobile verified!"); } else { toast.error("Enter any 4 digits"); } }}>Verify OTP</Button>
+                            <Button variant="gold" onClick={() => { if (/^\d{4}$/.test(otp)) { setOtpVerified(true); toast.success("Phone verified ✓"); } else { toast.error("Enter any 4 digits"); } }}>Verify OTP</Button>
                           </div>
                           <p className="text-xs text-muted-foreground font-sans mt-2">Demo mode — enter any 4 digits to verify</p>
                         </div>

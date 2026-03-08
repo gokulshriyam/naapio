@@ -702,10 +702,15 @@ const BiddingPage = () => {
         <TabsContent value="active">
           {activeOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <span className="text-5xl mb-4">📋</span>
-              <h2 className="text-xl font-serif font-bold text-foreground mb-2">No active orders</h2>
-              <p className="text-muted-foreground font-sans text-sm mb-6">Start your first custom order and see it here.</p>
-              <Button variant="gold" onClick={() => navigate("/start")}>Start an Order →</Button>
+              <span className="text-6xl mb-4">🧵</span>
+              <h2 className="text-xl font-serif font-bold text-foreground mb-2">No active orders yet</h2>
+              <p className="text-muted-foreground font-sans text-sm mb-6 max-w-sm mx-auto">
+                Post your first brief and get bids from verified artisans in your city.
+              </p>
+              <Button variant="gold" size="lg" onClick={() => navigate("/start")}>Start Your First Order →</Button>
+              <p className="text-xs text-muted-foreground font-sans mt-4">
+                ₹499 to post · 7 days to receive bids · Escrow protected
+              </p>
             </div>
           ) : (
             <div className="space-y-5">

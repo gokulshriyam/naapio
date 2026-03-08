@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Edit, Download, Star, ShoppingBag, CreditCard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,41 @@ import { toast } from "sonner";
 
 const ProfilePage = () => {
   const [editing, setEditing] = useState(false);
-  const measurementValues = Object.values(customer.measurements);
+
+  // Dynamic user data from localStorage
+  const [userData, setUserData] = useState<any>(null);
+  const [savedMeasurements, setSavedMeasurements] = useState<Record<string, string> | null>(null);
+  const [orderCount, setOrderCount] = useState(0);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('naapio_user');
+      if (raw) setUserData(JSON.parse(raw));
+    } catch {}
+    try {
+      const raw = localStorage.getItem('naapio_measurements');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.measurements) setSavedMeasurements(parsed.measurements);
+      }
+    } catch {}
+    // Count orders
+    let count = 0;
+    if (localStorage.getItem('naapio_last_order')) count++;
+    if (localStorage.getItem('naapio_active_order')) count++;
+    setOrderCount(Math.max(count, customer.totalOrders));
+  }, []);
+
+  const displayName = userData?.name && userData.name !== 'Customer' ? userData.name : customer.name;
+  const displayPhone = userData?.phone || customer.phone;
+  const displayInitials = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+  const memberSince = userData?.loggedInAt
+    ? new Date(userData.loggedInAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+    : customer.memberSince;
+
+  const measurementValues = measurementFields.map((f) =>
+    savedMeasurements?.[f] || String(customer.measurements[f as keyof typeof customer.measurements] || '')
+  );
 
   return (
     <div className="max-w-4xl">
@@ -19,23 +53,23 @@ const ProfilePage = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-6 h-fit">
           <div className="text-center mb-6">
             <div className="w-20 h-20 mx-auto rounded-full bg-accent/20 flex items-center justify-center mb-3">
-              <span className="text-2xl font-serif font-bold text-accent">PS</span>
+              <span className="text-2xl font-serif font-bold text-accent">{displayInitials}</span>
             </div>
-            <h2 className="font-serif font-bold text-lg text-foreground">{customer.name}</h2>
+            <h2 className="font-serif font-bold text-lg text-foreground">{displayName}</h2>
             <p className="text-sm text-muted-foreground font-sans">{customer.city}</p>
-            <p className="text-xs text-muted-foreground font-sans mt-1">Member since {customer.memberSince}</p>
+            <p className="text-xs text-muted-foreground font-sans mt-1">Member since {memberSince}</p>
           </div>
 
           <div className="space-y-3 text-sm font-sans">
             <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="text-foreground">{customer.email}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-foreground">{customer.phone}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-foreground">{displayPhone}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">City</span><span className="text-foreground">{customer.city}</span></div>
           </div>
 
           <div className="mt-6 pt-4 border-t border-border grid grid-cols-3 gap-3 text-center">
             <div>
               <div className="flex items-center justify-center gap-1 mb-1"><ShoppingBag className="w-3.5 h-3.5 text-accent" /></div>
-              <p className="text-lg font-serif font-bold text-foreground">{customer.totalOrders}</p>
+              <p className="text-lg font-serif font-bold text-foreground">{orderCount}</p>
               <p className="text-[10px] text-muted-foreground font-sans">Orders</p>
             </div>
             <div>
