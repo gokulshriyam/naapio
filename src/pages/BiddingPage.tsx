@@ -905,23 +905,32 @@ const BiddingPage = () => {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Artisan:</span> <span className="font-medium">{acceptBid.alias} ({acceptBid.tier})</span></div>
                 <div><span className="text-muted-foreground">Quality:</span> <span className="font-medium">{acceptBid.rankScore}/100</span></div>
-                <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium font-serif text-accent">{formatBudget(acceptBid.bidAmount)}</span></div>
                 <div><span className="text-muted-foreground">Delivery:</span> <span className="font-medium">{acceptBid.deliveryDays} days</span></div>
               </div>
 
-              <div className="p-3 bg-muted rounded-lg text-xs space-y-1">
-                <p className="font-medium text-foreground mb-2">Payment released in 5 instalments:</p>
-                {["Measurement confirmation", "Fabric approval", "Stitching preview", "Final fitting", "Delivery"].map((label, i) => (
-                  <p key={i} className="text-muted-foreground">
-                    M{i + 1} (20%) — ₹{Math.round(acceptBid.bidAmount * 0.2).toLocaleString("en-IN")} after {label}
-                  </p>
-                ))}
-                <p className="font-medium text-foreground mt-2">Total: {formatBudget(acceptBid.bidAmount)} (held in escrow by Naapio)</p>
+              {/* Payment Summary Card */}
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium text-foreground mb-3">Payment Summary</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Artisan bid</span>
+                    <span className="font-medium">{formatBudget(acceptBid.bidAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Brief fee (paid)</span>
+                    <span className="font-medium text-success">- ₹499</span>
+                  </div>
+                  <div className="border-t border-border my-2" />
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-foreground">Amount payable now</span>
+                    <span className="font-bold text-lg font-serif text-accent">{formatBudget(acceptBid.bidAmount - 499)}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-start gap-2 p-3 bg-success-light rounded-lg text-xs">
                 <Shield className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                <p className="text-foreground">Your payment is protected. Funds are only released at each milestone after your explicit approval.</p>
+                <p className="text-foreground">Your payment is protected. Funds are only released after your final approval.</p>
               </div>
             </div>
           )}
@@ -931,6 +940,9 @@ const BiddingPage = () => {
               Confirm & Proceed to Payment →
             </AlertDialogAction>
           </AlertDialogFooter>
+          {/* TODO: PAYMENT_INTEGRATION — before launch, replace navigate() with Razorpay/payment gateway call.
+              On payment success callback: navigate to /order/:id
+              On payment failure: show error, keep modal open with retry */}
         </AlertDialogContent>
       </AlertDialog>
     </div>

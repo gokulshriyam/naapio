@@ -3487,20 +3487,27 @@ const Wizard = () => {
                   } else if (step3Phase === "colour") {
                     setStep3Phase("surface");
                   } else if (step3Phase === "surface") {
-                    if (showAdvancedFabric) {
-                      setStep3Phase("blend");
+                    // Use computed phases for correct forward navigation
+                    const phases = getStep3Phases();
+                    const currentIndex = phases.indexOf(step3Phase);
+                    const nextPhase = phases[currentIndex + 1];
+                    if (nextPhase) {
+                      setStep3Phase(nextPhase as any);
                     } else {
-                      setStep3Phase("fabricBudget");
+                      setStep(4);
                     }
                   } else if (step3Phase === "blend") {
                     setStep3Phase("brand");
                   } else if (step3Phase === "brand") {
                     setStep3Phase("fabricBudget");
                   } else if (step3Phase === "fabricBudget") {
-                    if (hasEmbellishment && showAdvancedFabric) {
-                      setStep3Phase("embellishment");
+                    const phases = getStep3Phases();
+                    const currentIndex = phases.indexOf(step3Phase);
+                    const nextPhase = phases[currentIndex + 1];
+                    if (nextPhase) {
+                      setStep3Phase(nextPhase as any);
                     } else {
-                      setStep3Phase("budgetDelivery");
+                      setStep(4);
                     }
                   } else if (step3Phase === "embellishment") {
                     setStep3Phase("budgetDelivery");
