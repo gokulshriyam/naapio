@@ -516,7 +516,7 @@ const AlterationFlow = () => {
                       <button onClick={() => { setShowReview(false); setStep(4); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
                     <p className="text-sm text-foreground font-sans">
-                      Budget: ₹{alterationBudgetMin} – ₹{alterationBudgetMax || "—"}
+                      Budget: {formatBudget(alterationBudgetRange[0])} – {formatBudget(alterationBudgetRange[1])}
                     </p>
                     <p className="text-sm text-foreground font-sans mt-1">
                       Delivery by: {alterationDeliveryDate ? format(new Date(alterationDeliveryDate + "T00:00:00"), "PPP") : "Not set"}
