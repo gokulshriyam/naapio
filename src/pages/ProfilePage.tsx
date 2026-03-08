@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Edit, Download, Star, ShoppingBag, CreditCard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,41 @@ import { toast } from "sonner";
 
 const ProfilePage = () => {
   const [editing, setEditing] = useState(false);
-  const measurementValues = Object.values(customer.measurements);
+
+  // Dynamic user data from localStorage
+  const [userData, setUserData] = useState<any>(null);
+  const [savedMeasurements, setSavedMeasurements] = useState<Record<string, string> | null>(null);
+  const [orderCount, setOrderCount] = useState(0);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('naapio_user');
+      if (raw) setUserData(JSON.parse(raw));
+    } catch {}
+    try {
+      const raw = localStorage.getItem('naapio_measurements');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.measurements) setSavedMeasurements(parsed.measurements);
+      }
+    } catch {}
+    // Count orders
+    let count = 0;
+    if (localStorage.getItem('naapio_last_order')) count++;
+    if (localStorage.getItem('naapio_active_order')) count++;
+    setOrderCount(Math.max(count, customer.totalOrders));
+  }, []);
+
+  const displayName = userData?.name && userData.name !== 'Customer' ? userData.name : customer.name;
+  const displayPhone = userData?.phone || customer.phone;
+  const displayInitials = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+  const memberSince = userData?.loggedInAt
+    ? new Date(userData.loggedInAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+    : customer.memberSince;
+
+  const measurementValues = measurementFields.map((f) =>
+    savedMeasurements?.[f] || String(customer.measurements[f as keyof typeof customer.measurements] || '')
+  );
 
   return (
     <div className="max-w-4xl">
