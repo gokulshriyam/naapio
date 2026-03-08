@@ -313,9 +313,153 @@ const BiddingPage = () => {
             </span>
             <h3 className="font-sans font-semibold text-foreground">{demoOrder.garment}</h3>
             <p className="text-xs text-muted-foreground font-sans mt-0.5">Order #{demoOrder.id}</p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button
+                variant="gold"
+                size="sm"
+                onClick={() => {
+                  const reorderDraft = {
+                    step: 3, step2Phase: 'fabric' as const, step3Phase: 'colour' as const,
+                    orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
+                    gender: lastOrder.gender || "women",
+                    selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
+                    selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
+                    selectedOccasion: lastOrder.occasion || "",
+                    selectedFit: lastOrder.selectedFit || "",
+                    selectedNeckline: lastOrder.selectedNeckline || "",
+                    selectedSleeve: lastOrder.selectedSleeve || "",
+                    measurementType: 'saved',
+                    selectedColourMood: '',
+                    selectedFabricTypes: [],
+                    selectedSurfaces: [],
+                    budgetRange: lastOrder.budgetRange,
+                    reorderFrom: lastOrder.orderId,
+                    isReorder: true,
+                    reorderMode: 'same',
+                  };
+                  localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
+                  navigate('/wizard');
+                }}
+              >
+                🔄 Reorder Same Design
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const reorderDraft = {
+                    step: 1, step2Phase: 'category' as const, step3Phase: 'feel' as const,
+                    orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
+                    gender: lastOrder.gender || "women",
+                    selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
+                    selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
+                    selectedOccasion: lastOrder.occasion || "",
+                    selectedFit: lastOrder.selectedFit || "",
+                    selectedNeckline: lastOrder.selectedNeckline || "",
+                    selectedSleeve: lastOrder.selectedSleeve || "",
+                    measurementType: lastOrder.measurementType || 'standard',
+                    budgetRange: lastOrder.budgetRange,
+                    reorderFrom: lastOrder.orderId,
+                    isReorder: true,
+                    reorderMode: 'changes',
+                  };
+                  localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
+                  navigate('/wizard');
+                }}
+              >
+                ✏️ Reorder with Changes
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* ══════ Order Again Section ══════ */}
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-xl font-serif font-bold text-foreground">Order Again</h2>
+          <p className="text-sm text-muted-foreground font-sans">Your measurements and design details are saved</p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <span className="text-2xl block mb-2">🔄</span>
+            <h3 className="font-sans font-semibold text-foreground text-sm">Same Design, New Colour</h3>
+            <p className="text-xs text-muted-foreground font-sans mt-1 mb-3">Skip to colour & fabric selection — everything else stays the same</p>
+            <Button variant="gold" size="sm" onClick={() => {
+              const reorderDraft = {
+                step: 3, step2Phase: 'fabric' as const, step3Phase: 'colour' as const,
+                orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
+                gender: lastOrder.gender || "women",
+                selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
+                selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
+                selectedOccasion: lastOrder.occasion || "",
+                selectedFit: lastOrder.selectedFit || "",
+                measurementType: 'saved',
+                budgetRange: lastOrder.budgetRange,
+                reorderFrom: lastOrder.orderId,
+                isReorder: true,
+                reorderMode: 'same',
+              };
+              localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
+              navigate('/wizard');
+            }}>Reorder Same Design →</Button>
+          </div>
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <span className="text-2xl block mb-2">✏️</span>
+            <h3 className="font-sans font-semibold text-foreground text-sm">Same Design, My Changes</h3>
+            <p className="text-xs text-muted-foreground font-sans mt-1 mb-3">Start with your last order pre-filled — change whatever you like</p>
+            <Button variant="outline" size="sm" onClick={() => {
+              const reorderDraft = {
+                step: 1, step2Phase: 'category' as const, step3Phase: 'feel' as const,
+                orderType: lastOrder.orderType === "Own Fabric" ? "own-fabric" : "new-order",
+                gender: lastOrder.gender || "women",
+                selectedCategory: lastOrder.selectedCategory || lastOrder.garment?.split(' · ')?.[1] || "",
+                selectedSubCategory: lastOrder.selectedSubCategory || lastOrder.garment?.split(' · ')?.[2] || "",
+                selectedOccasion: lastOrder.occasion || "",
+                selectedFit: lastOrder.selectedFit || "",
+                budgetRange: lastOrder.budgetRange,
+                reorderFrom: lastOrder.orderId,
+                isReorder: true,
+                reorderMode: 'changes',
+              };
+              localStorage.setItem('naapio_wizard_draft', JSON.stringify(reorderDraft));
+              navigate('/wizard');
+            }}>Reorder with Changes →</Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════ Saved Measurements ══════ */}
+      {(() => {
+        const savedMeasurements = localStorage.getItem("naapio_measurements");
+        if (!savedMeasurements) return null;
+        const parsed = JSON.parse(savedMeasurements);
+        return (
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">📏</span>
+              <div>
+                <h3 className="font-sans font-semibold text-foreground text-sm">Saved Measurements</h3>
+                <p className="text-xs text-muted-foreground font-sans">{parsed.garment} — saved {new Date(parsed.savedAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground font-sans mb-2">Auto-filled for your next order</p>
+            <details className="group">
+              <summary className="text-xs text-accent font-sans cursor-pointer hover:underline">View measurements →</summary>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {parsed.measurements && Object.entries(parsed.measurements).map(([key, val]) => (
+                  val ? (
+                    <div key={key} className="text-xs font-sans">
+                      <span className="text-muted-foreground">{key}:</span> <span className="text-foreground font-medium">{val as string}</span>
+                    </div>
+                  ) : null
+                ))}
+                {parsed.standardSize && <div className="text-xs font-sans"><span className="text-muted-foreground">Size:</span> <span className="text-foreground font-medium">{parsed.standardSize} ({parsed.sizeRegion})</span></div>}
+              </div>
+            </details>
+          </div>
+        );
+      })()}
 
       {/* ══════ Bid Panel ══════ */}
       {demoOrder.status === "Bids Received" && (
