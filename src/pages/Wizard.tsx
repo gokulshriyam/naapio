@@ -376,7 +376,25 @@ const Wizard = () => {
     if (saved) {
       try {
         const draft = JSON.parse(saved);
-        if (draft.step && draft.step > 1) {
+        if (draft.isReorder) {
+          // Auto-restore reorder drafts without asking
+          setIsReorder(true);
+          setReorderFrom(draft.reorderFrom || '');
+          setReorderMode(draft.reorderMode || 'same');
+          if (draft.step) setStep(draft.step);
+          if (draft.step2Phase) setStep2Phase(draft.step2Phase);
+          if (draft.step3Phase) setStep3Phase(draft.step3Phase);
+          if (draft.gender) setGender(draft.gender);
+          if (draft.selectedCategory) setSelectedCategory(draft.selectedCategory);
+          if (draft.selectedSubCategory) setSelectedSubCategory(draft.selectedSubCategory);
+          if (draft.selectedOccasion) setSelectedOccasion(draft.selectedOccasion);
+          if (draft.selectedFit) setSelectedFit(draft.selectedFit);
+          if (draft.selectedNeckline) setSelectedNeckline(draft.selectedNeckline);
+          if (draft.selectedSleeve) setSelectedSleeve(draft.selectedSleeve);
+          if (draft.measurementType) setMeasurementType(draft.measurementType);
+          if (draft.budgetRange) setBudgetRange(draft.budgetRange);
+          localStorage.removeItem("naapio_wizard_draft");
+        } else if (draft.step && draft.step > 1) {
           setDraftRestored(true);
           setRestoredDraft(draft);
         }
