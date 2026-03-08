@@ -1047,7 +1047,7 @@ Return a JSON object with ONLY these fields, no other text:
 
       const apiKey = "AIzaSyBTMDZOq0B2x7xEgVX6Sis-U80jgXohICg"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
