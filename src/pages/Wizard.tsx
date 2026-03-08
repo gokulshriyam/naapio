@@ -583,7 +583,7 @@ const Wizard = () => {
         !selectedFeel) {
       setSelectedFeel(photoAnalysis.detectedFeel);
       setPhotoFromBadgeShown(prev => new Set([...prev, 'feel']));
-      console.log('Pre-filled feel:', photoAnalysis.detectedFeel);
+      
     }
     
     // Pre-fill colour mood if detected and not already set
