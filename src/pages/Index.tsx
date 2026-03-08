@@ -132,7 +132,7 @@ const Index = () => {
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition-colors">{t('nav.howItWorks')}</a>
             <a href="/#categories" className="hover:text-foreground transition-colors">{t('nav.categories')}</a>
-            <a href="/for-tailors" className="hover:text-foreground transition-colors">{t('nav.forTailors')}</a>
+            <Link to="/for-tailors" className="hover:text-foreground transition-colors">{t('nav.forTailors')}</Link>
           </div>
           <div className="hidden md:flex items-center gap-2">
             <CitySelector />
