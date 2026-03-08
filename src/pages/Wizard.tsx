@@ -1873,6 +1873,22 @@ const Wizard = () => {
                     </div>
                   )}
 
+                  {/* GIFT ORDER SECTION */}
+                  {giftOrder && (
+                    <div className="p-5 bg-card rounded-xl border border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Gift Order</span>
+                        <button onClick={() => { setStep(0); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
+                      </div>
+                      <p className="text-sm text-foreground font-sans">For {recipientName} ({recipientRelation})</p>
+                      {recipientPhone ? (
+                        <p className="text-xs text-muted-foreground font-sans mt-1">Measurements will be requested from {recipientPhone}</p>
+                      ) : (
+                        <p className="text-xs text-amber-600 font-sans mt-1">⏱ Measurements to be provided — remind {recipientName}</p>
+                      )}
+                    </div>
+                  )}
+
                   {/* ORDER TYPE */}
                   <div className="p-5 bg-card rounded-xl border border-border">
                     <div className="flex items-center justify-between mb-2">
