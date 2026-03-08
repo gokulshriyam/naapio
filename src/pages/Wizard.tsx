@@ -105,13 +105,31 @@ const showSleeve = ["Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Kurti"
 const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
 const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
 
+const categoryImages: Record<string, string> = {
+  "Sherwani": "https://source.unsplash.com/featured/?indian+man+sherwani+groom&1010",
+  "Kurta": "https://source.unsplash.com/featured/?indian+man+kurta+ethnic&1011",
+  "Suit": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
+  "Blazer": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
+  "Bandhgala": "https://source.unsplash.com/featured/?bandhgala+jacket+men+indian&1013",
+  "Trousers": "https://source.unsplash.com/featured/?formal+trousers+men+tailored&1015",
+  "Indo-Western": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
+  "Lehenga": "https://source.unsplash.com/featured/?indian+lehenga+bridal+woman&1020",
+  "Saree Blouse": "https://source.unsplash.com/featured/?saree+blouse+indian+fashion&1026",
+  "Salwar Kameez": "https://source.unsplash.com/featured/?salwar+kameez+indian+woman&1022",
+  "Anarkali": "https://source.unsplash.com/featured/?anarkali+suit+indian+woman&1023",
+  "Kurti": "https://source.unsplash.com/featured/?kurti+indian+woman+ethnic&1024",
+  "Gown": "https://source.unsplash.com/featured/?indian+woman+ethnic+gown&1025",
+  "Co-ord Set": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
+  "Jacket": "https://source.unsplash.com/featured/?nehru+jacket+indian+men&1014",
+};
+
 const feelOptions = [
-  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400" },
-  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=400" },
-  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400" },
-  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400" },
-  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400" },
-  { label: "No Preference", desc: "Let the tailor recommend", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400" },
+  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://source.unsplash.com/featured/?chiffon+fabric+flowing+breeze&1030" },
+  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://source.unsplash.com/featured/?lehenga+structured+silhouette+formal&1031" },
+  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://source.unsplash.com/featured/?bridal+lehenga+heavy+embroidery+velvet&1032" },
+  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://source.unsplash.com/featured/?formal+blazer+suit+lapels+closeup&1033" },
+  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://source.unsplash.com/featured/?soft+draped+fabric+indian+ethnic&1034" },
+  { label: "No Preference", desc: "Let the tailor recommend", img: "https://source.unsplash.com/featured/?fabric+textile+assorted+colour&1035" },
 ];
 
 const fabricTypesByFeel: Record<string, string[]> = {
@@ -139,17 +157,17 @@ const colourMoodOptions = [
 
 const surfaceOptions = [
   { label: "Plain / No Embellishment", exclusive: true },
-  { label: "Heavy Embroidery", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300" },
-  { label: "Zardozi / Zari Work", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300" },
-  { label: "Mirror Work", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300" },
-  { label: "Sequence & Beadwork", img: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=300" },
-  { label: "Bandhani / Tie-Dye", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=300" },
-  { label: "Kalamkari / Block Print", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=300" },
-  { label: "Resham Thread Work", img: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300" },
-  { label: "Cutwork / Lace", img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300" },
-  { label: "Smocking / Pintucks", img: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300" },
-  { label: "Digital Print", img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4ae8?w=300" },
-  { label: "Appliqué", img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=300" },
+  { label: "Heavy Embroidery", img: "https://source.unsplash.com/featured/?heavy+embroidery+indian+fabric+closeup&1040" },
+  { label: "Zardozi / Zari Work", img: "https://source.unsplash.com/featured/?zari+zardozi+gold+embroidery+closeup&1041" },
+  { label: "Mirror Work", img: "https://source.unsplash.com/featured/?mirror+work+shisha+embroidery+india&1042" },
+  { label: "Sequence & Beadwork", img: "https://source.unsplash.com/featured/?sequins+beadwork+fabric+closeup&1043" },
+  { label: "Bandhani / Tie-Dye", img: "https://source.unsplash.com/featured/?bandhani+tie+dye+fabric+india&1044" },
+  { label: "Kalamkari / Block Print", img: "https://source.unsplash.com/featured/?kalamkari+block+print+fabric+india&1045" },
+  { label: "Resham Thread Work", img: "https://source.unsplash.com/featured/?resham+thread+embroidery+fabric&1046" },
+  { label: "Cutwork / Lace", img: "https://source.unsplash.com/featured/?cutwork+lace+fabric+detail&1047" },
+  { label: "Smocking / Pintucks", img: "https://source.unsplash.com/featured/?smocking+pintucks+fabric+texture&1048" },
+  { label: "Digital Print", img: "https://source.unsplash.com/featured/?digital+print+fabric+pattern&1049" },
+  { label: "Appliqué", img: "https://source.unsplash.com/featured/?applique+patchwork+fabric+indian&1050" },
   { label: "No Preference", img: null },
 ];
 
@@ -436,9 +454,12 @@ const Wizard = () => {
                       <button
                         key={cat}
                         onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
-                        className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                        className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                       >
-                        {cat}
+                        {categoryImages[cat] && (
+                          <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
+                        )}
+                        <span className="block p-3">{cat}</span>
                       </button>
                     ))}
                   </div>

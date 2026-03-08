@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Upload, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroBanner from "@/assets/hero-banner.jpg";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -11,7 +10,11 @@ const HeroSection = () => {
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       {/* Background image */}
       <div className="absolute inset-0">
-        <img src={heroBanner} alt="Luxury Indian fashion atelier" className="w-full h-full object-cover" />
+        <img
+          src="https://source.unsplash.com/featured/?indian+bridal+lehenga+ethnic+fashion&1001"
+          alt="Luxury Indian fashion atelier"
+          className="w-full h-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/40" />
       </div>
 
