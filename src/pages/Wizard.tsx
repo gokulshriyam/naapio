@@ -514,6 +514,8 @@ const Wizard = () => {
         orderType: isOwnFabric ? "Own Fabric" : "New Order",
         garment: `${gender === "women" ? "Women's" : "Men's"} · ${selectedCategory} · ${selectedSubCategory}`,
         occasion: selectedOccasion,
+        gender, selectedCategory, selectedSubCategory, selectedOccasion, selectedFit,
+        selectedNeckline, selectedSleeve, measurementType,
         budgetRange: `${formatINR(budgetRange[0])} – ${formatINR(budgetRange[1])}`,
         deliveryDate,
         rushOrder: isRushOrder,
@@ -523,6 +525,24 @@ const Wizard = () => {
         ownFabricType, ownFabricYards, ownFabricYardUnit, ownFabricWidth, ownFabricCondition,
         timestamp: new Date().toISOString()
       }));
+      // Save measurements for reorder
+      if (measurementType === 'custom' && Object.keys(measurements).some(k => measurements[k])) {
+        localStorage.setItem('naapio_measurements', JSON.stringify({
+          savedAt: new Date().toISOString(),
+          garment: selectedCategory,
+          measurements,
+          standardSize,
+          sizeRegion,
+        }));
+      } else if (measurementType === 'standard') {
+        localStorage.setItem('naapio_measurements', JSON.stringify({
+          savedAt: new Date().toISOString(),
+          garment: selectedCategory,
+          measurements: {},
+          standardSize,
+          sizeRegion,
+        }));
+      }
       localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);
