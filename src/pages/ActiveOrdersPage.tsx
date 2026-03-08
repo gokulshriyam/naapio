@@ -178,6 +178,7 @@ const ActiveOrdersPage = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [activeMilestone, setActiveMilestone] = useState(1);
+  const [disputeOpen, setDisputeOpen] = useState(false);
 
   // Data from localStorage
   const [activeOrder, setActiveOrder] = useState<any>(null);
