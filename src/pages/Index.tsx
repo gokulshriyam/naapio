@@ -174,10 +174,20 @@ const Index = () => {
               </>
             )}
           </div>
-          {/* Mobile hamburger */}
-          <button className="md:hidden p-2" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Mobile: avatar + hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            {isLoggedIn && (
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-sans font-bold text-xs"
+              >
+                {getInitials()}
+              </button>
+            )}
+            <button className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={() => { setMobileMenuOpen(!mobileMenuOpen); document.body.style.overflow = !mobileMenuOpen ? 'hidden' : ''; }}>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
