@@ -386,6 +386,23 @@ const Wizard = () => {
   const [visualiserError, setVisualiserError] = useState<string>("");
   const [visualiserDismissed, setVisualiserDismissed] = useState<boolean>(false);
 
+  // Inspiration Photo Analysis State (PART 1)
+  const [inspirationPhoto, setInspirationPhoto] = useState<File | null>(null);
+  const [photoAnalysis, setPhotoAnalysis] = useState<{
+    detectedGarment: string;
+    detectedColour: string;
+    detectedFeel: string;
+    detectedSurfaces: string[];
+    detectedOccasion: string;
+    confidence: 'high' | 'medium' | 'low';
+    analysisComplete: boolean;
+    analysisError: boolean;
+  } | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
+  const [inspirationExpanded, setInspirationExpanded] = useState<boolean>(false);
+  const [inspirationLightboxOpen, setInspirationLightboxOpen] = useState<boolean>(false);
+  const [photoFromBadgeShown, setPhotoFromBadgeShown] = useState<Set<string>>(new Set());
+
   const isBlouseCategory = selectedCategory === "Saree Blouse" || (selectedSubCategory || "").toLowerCase().includes("blouse");
 
   const hasEmbellishment = selectedSurfaces.length > 0 &&
@@ -911,6 +928,126 @@ const Wizard = () => {
     generateOutfitVisualisation(file);
   };
 
+  // ── Gemini Vision Analysis for Inspiration Photo ──
+  const analyseInspirationPhoto = async (photoFile: File) => {
+    setAnalysisLoading(true);
+    
+    try {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.readAsDataURL(photoFile);
+      });
+      
+      const prompt = `Analyse this Indian ethnic fashion garment image.
+    
+Return a JSON object with ONLY these fields, no other text:
+{
+  "detectedGarment": "one of: Saree Blouse, Kurti, Salwar Kameez, Anarkali, Lehenga, Gown, Kurta, Sherwani, Bandhgala, Suit, Chaniya Choli, Dupatta, or Other",
+  "detectedColour": "one of: Deep Reds, Jewel Tones, Pastels, Golds & Champagne, Ivory & Cream, Greens & Teals, Pinks & Mauves, Blues & Indigos, Blacks & Charcoals, Whites & Silvers, or Other",
+  "detectedFeel": "one of: Light & Airy, Structured, Rich & Heavy, Crisp & Sharp, Soft & Draped, or Unable to determine",
+  "detectedSurfaces": ["array of visible work from: Heavy Embroidery, Zardozi / Zari Work, Mirror Work, Sequence & Beadwork, Resham Thread Work, Kalamkari / Block Print, Bandhani / Tie-Dye, Cutwork / Lace, Smocking / Pintucks, Digital Print, Appliqué, Plain / No Embellishment"],
+  "detectedOccasion": "one of: Wedding / Baraat / Nikah, Reception / Cocktail, Engagement / Roka, Festival (Diwali / Eid / Navratri), Party / Night Out, Casual / Daily Wear, Formal Office / Corporate, or Unable to determine",
+  "confidence": "high if 3+ attributes clearly visible, medium if 2 attributes visible, low if image is unclear"
+}`;
+
+      const apiKey = "AIzaSyBDz4pIb90FuUS9AeLgzn6bnSqjMszizg0"; // TODO: move server-side before launch
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: photoFile.type || 'image/jpeg',
+                    data: base64
+                  }
+                },
+                { text: prompt }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 500,
+            }
+          })
+        }
+      );
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts
+        ?.filter((p: any) => p.text)
+        ?.map((p: any) => p.text)
+        ?.join('') || '';
+
+      // Strip markdown fences if present
+      const cleanText = rawText
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+
+      const analysis = JSON.parse(cleanText);
+      
+      setPhotoAnalysis({
+        ...analysis,
+        analysisComplete: true,
+        analysisError: false,
+      });
+    } catch (err) {
+      console.error('Photo analysis failed:', err);
+      setPhotoAnalysis({
+        detectedGarment: '',
+        detectedColour: '',
+        detectedFeel: '',
+        detectedSurfaces: [],
+        detectedOccasion: '',
+        confidence: 'low',
+        analysisComplete: true,
+        analysisError: true,
+      });
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  // Map detected garment to category
+  const mapDetectedToCategory = (detected: string): string | null => {
+    const map: Record<string, string> = {
+      'Saree Blouse': 'Saree Blouse',
+      'Kurti': 'Kurti',
+      'Salwar Kameez': 'Salwar Kameez',
+      'Anarkali': 'Anarkali',
+      'Lehenga': 'Lehenga',
+      'Gown': 'Gown',
+      'Kurta': 'Kurta',
+      'Sherwani': 'Sherwani',
+      'Bandhgala': 'Bandhgala',
+      'Chaniya Choli': 'Lehenga',
+      'Suit': 'Suit',
+    };
+    return map[detected] || null;
+  };
+
+  // Handle inspiration photo upload
+  const handleInspirationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Photo must be under 8 MB");
+      return;
+    }
+    setInspirationPhoto(file);
+    setUploaded(true);
+    analyseInspirationPhoto(file);
+  };
+
   const toggleFabric = (name: string) => {
     setSelectedFabrics((prev) =>
       prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name]
@@ -1188,6 +1325,147 @@ const Wizard = () => {
         </div>
       )}
 
+      {/* ═══ Inspiration Lightbox ═══ */}
+      {inspirationLightboxOpen && inspirationPhoto && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setInspirationLightboxOpen(false)}
+        >
+          <button 
+            className="absolute top-4 right-4 p-2 text-white hover:text-accent transition-colors"
+            onClick={() => setInspirationLightboxOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={URL.createObjectURL(inspirationPhoto)} 
+              alt="Inspiration fullscreen" 
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+            />
+            {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+              <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
+                  <span className="px-3 py-1.5 bg-card/90 rounded-full text-sm font-sans font-medium text-foreground">
+                    👗 {photoAnalysis.detectedGarment}
+                  </span>
+                )}
+                {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                  <span className="px-3 py-1.5 bg-card/90 rounded-full text-sm font-sans font-medium text-foreground">
+                    🎨 {photoAnalysis.detectedColour}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ PART 2: Persistent Inspiration Thumbnail (Steps 2 & 3) ═══ */}
+      {/* Mobile: Collapsible bar at top */}
+      {(step === 2 || step === 3) && inspirationPhoto && (
+        <div className="md:hidden">
+          {!inspirationExpanded ? (
+            <button
+              onClick={() => setInspirationExpanded(true)}
+              className="w-full bg-card border-b border-border px-4 py-2 flex items-center gap-3"
+            >
+              <img 
+                src={URL.createObjectURL(inspirationPhoto)} 
+                alt="Inspiration" 
+                className="w-10 h-10 rounded-lg object-cover border border-border"
+              />
+              <span className="flex-1 text-left font-sans text-sm font-medium text-foreground">Your Inspiration 📸</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </button>
+          ) : (
+            <motion.div 
+              initial={{ height: 0 }} 
+              animate={{ height: 'auto' }}
+              className="bg-card border-b border-border overflow-hidden"
+            >
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-sans text-sm font-semibold text-foreground">Your Inspiration</span>
+                  <button 
+                    onClick={() => setInspirationExpanded(false)}
+                    className="text-xs text-muted-foreground font-sans flex items-center gap-1"
+                  >
+                    Collapse <ChevronDown className="w-3 h-3 rotate-180" />
+                  </button>
+                </div>
+                <img 
+                  src={URL.createObjectURL(inspirationPhoto)} 
+                  alt="Inspiration" 
+                  className="w-full h-44 rounded-xl object-cover border border-border"
+                  onClick={() => setInspirationLightboxOpen(true)}
+                />
+                {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
+                      <span className="px-2 py-0.5 bg-accent/10 rounded-full text-xs font-sans text-foreground">
+                        {photoAnalysis.detectedGarment}
+                      </span>
+                    )}
+                    {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                      <span className="px-2 py-0.5 bg-accent/10 rounded-full text-xs font-sans text-foreground">
+                        {photoAnalysis.detectedColour}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Desktop: Fixed card in bottom-right */}
+      {(step === 2 || step === 3) && inspirationPhoto && (
+        <div className="hidden md:block fixed bottom-24 right-6 z-40 w-40">
+          <div className="bg-card rounded-xl border border-border shadow-lg overflow-hidden">
+            <div className="p-2">
+              <p className="text-xs font-sans font-semibold text-muted-foreground mb-2">Your Inspiration</p>
+              <div className="relative">
+                <img 
+                  src={URL.createObjectURL(inspirationPhoto)} 
+                  alt="Inspiration" 
+                  className="w-full h-28 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => setInspirationLightboxOpen(true)}
+                />
+                <button 
+                  onClick={() => setInspirationLightboxOpen(true)}
+                  className="absolute top-1.5 right-1.5 p-1 bg-card/90 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg>
+                </button>
+                {analysisLoading && (
+                  <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center">
+                    <motion.span 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                      className="text-sm"
+                    >
+                      ✨
+                    </motion.span>
+                  </div>
+                )}
+                {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && !analysisLoading && (
+                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-green-500 text-white rounded text-[9px] font-sans font-semibold">
+                    ✨ Analysed
+                  </span>
+                )}
+              </div>
+              {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+                <p className="text-[10px] text-muted-foreground font-sans mt-2 truncate">
+                  {[photoAnalysis.detectedGarment, photoAnalysis.detectedColour].filter(d => d && d !== 'Other').join(' · ')}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
           {/* STEP 0: Who are you ordering for? */}
@@ -1452,7 +1730,109 @@ const Wizard = () => {
               <div>
                 <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Upload Your Inspiration</h2>
                 <p className="text-muted-foreground font-sans mb-6">Share the design that inspires you</p>
-                {uploaded ? (
+                {uploaded && inspirationPhoto ? (
+                  <div className="space-y-4">
+                    <div className="relative rounded-2xl overflow-hidden border border-border">
+                      <img src={URL.createObjectURL(inspirationPhoto)} alt="Uploaded inspiration" className="w-full h-[400px] object-cover" />
+                      <button 
+                        onClick={() => { 
+                          setUploaded(false); 
+                          setInspirationPhoto(null); 
+                          setPhotoAnalysis(null); 
+                          setAnalysisLoading(false);
+                        }} 
+                        className="absolute top-3 right-3 p-2 bg-card rounded-full shadow-md hover:bg-muted transition-colors"
+                      >
+                        <X className="w-4 h-4 text-foreground" />
+                      </button>
+                      <div className="absolute top-3 left-3 px-3 py-1 bg-card/90 backdrop-blur-sm rounded-full text-xs font-sans font-medium text-foreground">
+                        {inspirationPhoto.name.slice(0, 20)}{inspirationPhoto.name.length > 20 ? '...' : ''}
+                      </div>
+                    </div>
+
+                    {/* Analysis Status */}
+                    {analysisLoading && (
+                      <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }}
+                        className="flex items-center gap-2 p-3 bg-accent/10 rounded-xl"
+                      >
+                        <motion.span 
+                          animate={{ scale: [1, 1.2, 1] }} 
+                          transition={{ repeat: Infinity, duration: 1.5 }}
+                          className="text-lg"
+                        >
+                          ✨
+                        </motion.span>
+                        <span className="text-sm font-sans text-foreground">Analysing your inspiration photo...</span>
+                      </motion.div>
+                    )}
+
+                    {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl"
+                      >
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-sans text-green-800">
+                          Photo analysed — we'll pre-select matching options as you go through the wizard.
+                        </span>
+                      </motion.div>
+                    )}
+
+                    {/* Photo Analysis Card */}
+                    {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                     (photoAnalysis.confidence === 'high' || photoAnalysis.confidence === 'medium') && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-amber-50 border border-amber-200 rounded-xl"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg">✨</span>
+                          <span className="font-sans font-semibold text-foreground text-sm">What we detected in your photo</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans mb-3">
+                          We'll pre-select these as you go — change anything you like.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {photoAnalysis.detectedGarment && photoAnalysis.detectedGarment !== 'Other' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              👗 {photoAnalysis.detectedGarment}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              🎨 {photoAnalysis.detectedColour}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedFeel && photoAnalysis.detectedFeel !== 'Unable to determine' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              🧵 {photoAnalysis.detectedFeel}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedSurfaces && photoAnalysis.detectedSurfaces.length > 0 && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              ✨ {photoAnalysis.detectedSurfaces[0]}
+                              {photoAnalysis.detectedSurfaces.length > 1 && ` +${photoAnalysis.detectedSurfaces.length - 1} more`}
+                            </span>
+                          )}
+                          {photoAnalysis.detectedOccasion && photoAnalysis.detectedOccasion !== 'Unable to determine' && (
+                            <span className="px-2.5 py-1 bg-card rounded-full text-xs font-sans font-medium text-foreground border border-border">
+                              📅 {photoAnalysis.detectedOccasion}
+                            </span>
+                          )}
+                        </div>
+                        {photoAnalysis.confidence === 'medium' && (
+                          <p className="text-xs text-amber-700 font-sans mt-3">
+                            Some attributes detected — verify as you go.
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                ) : uploaded ? (
                   <div className="relative rounded-2xl overflow-hidden border border-border">
                     <img src={redLehenga} alt="Uploaded inspiration" className="w-full h-[400px] object-cover" />
                     <button onClick={() => setUploaded(false)} className="absolute top-3 right-3 p-2 bg-card rounded-full shadow-md hover:bg-muted transition-colors">
@@ -1463,14 +1843,24 @@ const Wizard = () => {
                     </div>
                   </div>
                 ) : (
-                  <div
-                    onClick={() => setUploaded(true)}
-                    className="h-[400px] border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-colors bg-card"
-                  >
+                  <label className="h-[400px] border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-colors bg-card">
+                    <input 
+                      type="file" 
+                      accept="image/jpeg,image/png,image/webp" 
+                      className="hidden" 
+                      onChange={handleInspirationUpload}
+                    />
                     <Upload className="w-12 h-12 text-muted-foreground mb-4" />
                     <p className="font-sans font-medium text-foreground mb-1">Click to upload</p>
                     <p className="text-sm text-muted-foreground font-sans">or drag and drop your inspiration image</p>
-                  </div>
+                    <button 
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setUploaded(true); }}
+                      className="mt-4 text-xs text-accent font-sans hover:underline"
+                    >
+                      or use demo image →
+                    </button>
+                  </label>
                 )}
               </div>
               <div>
@@ -1562,20 +1952,51 @@ const Wizard = () => {
                     </motion.div>
                   )}
 
+                  {/* Photo pre-fill notice */}
+                  {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && photoAnalysis.detectedGarment && 
+                   mapDetectedToCategory(photoAnalysis.detectedGarment) && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                      <span className="text-sm">✨</span>
+                      <span className="text-xs font-sans text-amber-800">
+                        We detected <span className="font-semibold">{photoAnalysis.detectedGarment}</span> in your photo — it's pre-selected below.
+                      </span>
+                    </motion.div>
+                  )}
+
                   {/* Category Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
-                        className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden ${selectedCategory === cat ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
-                      >
-                        {categoryImages[cat] && (
-                          <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
-                        )}
-                        <span className="block p-3">{cat}</span>
-                      </button>
-                    ))}
+                    {categories.map((cat) => {
+                      const isDetected = photoAnalysis?.analysisComplete && 
+                        !photoAnalysis?.analysisError && 
+                        mapDetectedToCategory(photoAnalysis?.detectedGarment || '') === cat;
+                      const isSelected = selectedCategory === cat;
+                      
+                      // Auto pre-select detected category if nothing selected yet
+                      if (isDetected && !selectedCategory && !photoFromBadgeShown.has('category')) {
+                        setTimeout(() => {
+                          setSelectedCategory(cat);
+                          setPhotoFromBadgeShown(prev => new Set(prev).add('category'));
+                        }, 100);
+                      }
+                      
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
+                          className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                        >
+                          {categoryImages[cat] && (
+                            <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
+                          )}
+                          <span className="block p-3">{cat}</span>
+                          {isDetected && isSelected && (
+                            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                              ✨ From photo
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Subcategory Accordion */}
@@ -1622,17 +2043,48 @@ const Wizard = () => {
                   <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What's the occasion?</h2>
                   <p className="text-muted-foreground font-sans mb-6">This helps your tailor understand the formality, fabric weight, and embellishment level needed</p>
 
+                  {/* Photo pre-fill notice */}
+                  {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                   photoAnalysis.detectedOccasion && photoAnalysis.detectedOccasion !== 'Unable to determine' && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                      <span className="text-sm">✨</span>
+                      <span className="text-xs font-sans text-amber-800">
+                        Based on your photo, this looks like a <span className="font-semibold">{photoAnalysis.detectedOccasion}</span> outfit.
+                      </span>
+                    </motion.div>
+                  )}
+
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {occasions.map((occ) => (
-                      <button
-                        key={occ.label}
-                        onClick={() => setSelectedOccasion(occ.label)}
-                        className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${selectedOccasion === occ.label ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
-                      >
-                        <span className="text-2xl block mb-2">{occ.emoji}</span>
-                        <span className="leading-tight block">{occ.label}</span>
-                      </button>
-                    ))}
+                    {occasions.map((occ) => {
+                      const isDetected = photoAnalysis?.analysisComplete && 
+                        !photoAnalysis?.analysisError && 
+                        photoAnalysis.detectedOccasion === occ.label;
+                      const isSelected = selectedOccasion === occ.label;
+                      
+                      // Auto pre-select detected occasion if nothing selected yet
+                      if (isDetected && !selectedOccasion && !photoFromBadgeShown.has('occasion')) {
+                        setTimeout(() => {
+                          setSelectedOccasion(occ.label);
+                          setPhotoFromBadgeShown(prev => new Set(prev).add('occasion'));
+                        }, 100);
+                      }
+                      
+                      return (
+                        <button
+                          key={occ.label}
+                          onClick={() => setSelectedOccasion(occ.label)}
+                          className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
+                        >
+                          <span className="text-2xl block mb-2">{occ.emoji}</span>
+                          <span className="leading-tight block">{occ.label}</span>
+                          {isDetected && isSelected && (
+                            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                              ✨ From photo
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Garba warning */}
@@ -2269,27 +2721,59 @@ const Wizard = () => {
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">How do you want the fabric to feel?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Choose the quality that matches your vision</p>
+
+                      {/* Photo pre-fill notice */}
+                      {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                       photoAnalysis.detectedFeel && photoAnalysis.detectedFeel !== 'Unable to determine' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-sans text-amber-800">
+                            We detected <span className="font-semibold">{photoAnalysis.detectedFeel}</span> fabric in your photo.
+                          </span>
+                        </motion.div>
+                      )}
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {feelOptions.map((feel) => (
-                          <button
-                            key={feel.label}
-                            onClick={() => setSelectedFeel(feel.label)}
-                            className={`rounded-xl overflow-hidden text-left transition-all border-2 ${
-                              selectedFeel === feel.label
-                                ? "border-accent ring-2 ring-accent/30"
-                                : "border-border hover:border-accent/30"
-                            }`}
-                          >
-                            <img src={feel.img} alt={feel.label} className="w-full h-32 object-cover" />
-                            <div className="p-4">
-                              <p className="font-sans font-bold text-sm text-foreground mb-1 flex items-center gap-2">
-                                {selectedFeel === feel.label && <Check className="w-4 h-4 text-accent" />}
-                                {feel.label}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{feel.desc}</p>
-                            </div>
-                          </button>
-                        ))}
+                        {feelOptions.map((feel) => {
+                          const isDetected = photoAnalysis?.analysisComplete && 
+                            !photoAnalysis?.analysisError && 
+                            photoAnalysis.detectedFeel === feel.label;
+                          const isSelected = selectedFeel === feel.label;
+                          
+                          // Auto pre-select detected feel if nothing selected yet
+                          if (isDetected && !selectedFeel && !photoFromBadgeShown.has('feel')) {
+                            setTimeout(() => {
+                              setSelectedFeel(feel.label);
+                              setPhotoFromBadgeShown(prev => new Set(prev).add('feel'));
+                            }, 100);
+                          }
+                          
+                          return (
+                            <button
+                              key={feel.label}
+                              onClick={() => setSelectedFeel(feel.label)}
+                              className={`rounded-xl overflow-hidden text-left transition-all border-2 relative ${
+                                isSelected
+                                  ? "border-accent ring-2 ring-accent/30"
+                                  : "border-border hover:border-accent/30"
+                              }`}
+                            >
+                              <img src={feel.img} alt={feel.label} className="w-full h-32 object-cover" />
+                              <div className="p-4">
+                                <p className="font-sans font-bold text-sm text-foreground mb-1 flex items-center gap-2">
+                                  {isSelected && <Check className="w-4 h-4 text-accent" />}
+                                  {feel.label}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{feel.desc}</p>
+                              </div>
+                              {isDetected && isSelected && (
+                                <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                                  ✨ From photo
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -2337,28 +2821,59 @@ const Wizard = () => {
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">What colour are you drawn to?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Choose a mood — your tailor will suggest specific shades</p>
+                      {/* Photo pre-fill notice */}
+                      {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                       photoAnalysis.detectedColour && photoAnalysis.detectedColour !== 'Other' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-sans text-amber-800">
+                            We detected <span className="font-semibold">{photoAnalysis.detectedColour}</span> in your photo.
+                          </span>
+                        </motion.div>
+                      )}
+
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        {colourMoodOptions.map((cm) => (
-                          <button
-                            key={cm.label}
-                            onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
-                            className={`p-4 rounded-xl text-left font-sans text-sm transition-all border ${
-                              selectedColourMood === cm.label
-                                ? "border-accent bg-gold-light ring-2 ring-accent/30"
-                                : "border-border bg-card hover:border-accent/30"
-                            }`}
-                          >
-                            {cm.swatch ? (
-                              <div
-                                className="w-10 h-10 rounded-full mb-3 border border-border"
-                                style={{ backgroundColor: cm.swatch }}
-                              />
-                            ) : (
-                              <Upload className="w-10 h-10 text-muted-foreground mb-3" />
-                            )}
-                            <span className="leading-tight block font-medium">{cm.label}</span>
-                          </button>
-                        ))}
+                        {colourMoodOptions.map((cm) => {
+                          const isDetected = photoAnalysis?.analysisComplete && 
+                            !photoAnalysis?.analysisError && 
+                            photoAnalysis.detectedColour === cm.label;
+                          const isSelected = selectedColourMood === cm.label;
+                          
+                          // Auto pre-select detected colour if nothing selected yet
+                          if (isDetected && !selectedColourMood && !photoFromBadgeShown.has('colour')) {
+                            setTimeout(() => {
+                              setSelectedColourMood(cm.label);
+                              setPhotoFromBadgeShown(prev => new Set(prev).add('colour'));
+                            }, 100);
+                          }
+                          
+                          return (
+                            <button
+                              key={cm.label}
+                              onClick={() => setSelectedColourMood(selectedColourMood === cm.label ? "" : cm.label)}
+                              className={`p-4 rounded-xl text-left font-sans text-sm transition-all border relative ${
+                                isSelected
+                                  ? "border-accent bg-gold-light ring-2 ring-accent/30"
+                                  : "border-border bg-card hover:border-accent/30"
+                              }`}
+                            >
+                              {cm.swatch ? (
+                                <div
+                                  className="w-10 h-10 rounded-full mb-3 border border-border"
+                                  style={{ backgroundColor: cm.swatch }}
+                                />
+                              ) : (
+                                <Upload className="w-10 h-10 text-muted-foreground mb-3" />
+                              )}
+                              <span className="leading-tight block font-medium">{cm.label}</span>
+                              {isDetected && isSelected && (
+                                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                                  ✨ From photo
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
 
                       {/* Upload reference photo */}
@@ -2418,11 +2933,35 @@ const Wizard = () => {
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any embellishment or surface work?</h2>
                       <p className="text-muted-foreground font-sans mb-6">Select everything that interests you — your tailor will advise what works for your garment</p>
+
+                      {/* Photo pre-fill notice */}
+                      {photoAnalysis?.analysisComplete && !photoAnalysis?.analysisError && 
+                       photoAnalysis.detectedSurfaces && photoAnalysis.detectedSurfaces.length > 0 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-sans text-amber-800">
+                            We detected <span className="font-semibold">{photoAnalysis.detectedSurfaces.join(', ')}</span> in your photo.
+                          </span>
+                        </motion.div>
+                      )}
+
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         {surfaceOptions.map((sopt) => {
                           const isSelected = selectedSurfaces.includes(sopt.label);
                           const isExclusive = 'exclusive' in sopt && sopt.exclusive;
                           const plainSelected = selectedSurfaces.includes("Plain / No Embellishment");
+                          const isDetected = photoAnalysis?.analysisComplete && 
+                            !photoAnalysis?.analysisError && 
+                            photoAnalysis.detectedSurfaces?.includes(sopt.label);
+                          
+                          // Auto pre-select detected surfaces if nothing selected yet
+                          if (isDetected && selectedSurfaces.length === 0 && !photoFromBadgeShown.has('surfaces')) {
+                            setTimeout(() => {
+                              setSelectedSurfaces(photoAnalysis.detectedSurfaces || []);
+                              setPhotoFromBadgeShown(prev => new Set(prev).add('surfaces'));
+                            }, 100);
+                          }
+                          
                           return (
                             <button
                               key={sopt.label}
@@ -2438,7 +2977,7 @@ const Wizard = () => {
                                   });
                                 }
                               }}
-                              className={`rounded-xl overflow-hidden text-left transition-all border ${
+                              className={`rounded-xl overflow-hidden text-left transition-all border relative ${
                                 isSelected
                                   ? "border-accent ring-2 ring-accent/30"
                                   : "border-border hover:border-accent/30"
@@ -2459,6 +2998,11 @@ const Wizard = () => {
                                   {sopt.label}
                                 </p>
                               </div>
+                              {isDetected && isSelected && (
+                                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9px] font-sans font-semibold">
+                                  ✨ From photo
+                                </span>
+                              )}
                             </button>
                           );
                         })}
