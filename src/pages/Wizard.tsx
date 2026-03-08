@@ -239,7 +239,7 @@ const Wizard = () => {
   const [selectedSleeve, setSelectedSleeve] = useState("");
   const [selectedDupatta, setSelectedDupatta] = useState("");
   const [selectedLining, setSelectedLining] = useState("");
-  const [measurementType, setMeasurementType] = useState<"standard" | "custom" | "later">("standard");
+  const [measurementType, setMeasurementType] = useState<"standard" | "custom" | "later" | "saved">("standard");
   const [standardSize, setStandardSize] = useState("M");
   const [sizeRegion, setSizeRegion] = useState("UK");
   const [measurements, setMeasurements] = useState<Record<string, string>>({});
