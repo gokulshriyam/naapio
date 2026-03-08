@@ -545,25 +545,47 @@ const BiddingPage = () => {
       const raw = localStorage.getItem("naapio_last_order");
       if (raw) {
         const lo = JSON.parse(raw);
-        if (!orders.find((o) => o.id === lo.orderId)) {
+        const existingId = lo.id || lo.orderId;
+        const alreadyExists = orders.some(o => o.id === existingId);
+        
+        if (!alreadyExists) {
+          const postedTimestamp = lo.timestamp || lo.createdAt || lo.postedAt || Date.now();
+          const postedDate = new Date(postedTimestamp);
+          const bidDeadline = new Date(postedDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          
+          // Parse budget range properly
+          let budgetRange = { min: 5000, max: 20000 };
+          if (lo.budgetRange) {
+            if (typeof lo.budgetRange === "string") {
+              // Try to parse string format like "₹5K – ₹20K"
+              budgetRange = { min: 5000, max: 20000 };
+            } else if (Array.isArray(lo.budgetRange) && lo.budgetRange.length === 2) {
+              budgetRange = { min: lo.budgetRange[0], max: lo.budgetRange[1] };
+            } else if (typeof lo.budgetRange === "object" && lo.budgetRange.min !== undefined) {
+              budgetRange = lo.budgetRange;
+            }
+          }
+          
           orders.unshift({
-            id: lo.orderId || `NP-${Date.now()}`,
+            id: existingId || `NP-${Date.now()}`,
             orderType: lo.orderType || "New Order",
-            garment: lo.garment || `${lo.gender || "Women's"} · ${lo.selectedCategory || "Custom"} · ${lo.selectedSubCategory || ""}`,
+            garment: lo.garment || [lo.gender === "men" ? "Men's" : "Women's", lo.selectedCategory, lo.selectedSubCategory].filter(Boolean).join(' · ') || 'Custom Order',
             occasion: lo.occasion || lo.selectedOccasion || "",
-            budgetRange: lo.budgetRange ? (typeof lo.budgetRange === "string" ? { min: 5000, max: 20000 } : lo.budgetRange) : { min: 5000, max: 20000 },
+            budgetRange,
             deliveryDate: lo.deliveryDate || "",
-            postedAt: new Date(lo.timestamp || Date.now()),
-            bidDeadline: new Date((lo.timestamp || Date.now()) + 7 * 86400000),
+            postedAt: postedDate,
+            bidDeadline: bidDeadline,
             status: "awaiting_bids",
             bidsReceived: 0,
-            measurementsSubmitted: !!lo.measurementType && lo.measurementType !== "later",
-            rushOrder: !!lo.isRushOrder,
+            measurementsSubmitted: lo.measurementType ? lo.measurementType !== "later" : false,
+            rushOrder: lo.isRushOrder || lo.rushOrder || false,
             inspirationThumb: lo.inspirationPhoto || "",
           });
         }
       }
-    } catch {}
+    } catch (e) {
+      console.error('Failed to parse saved order:', e);
+    }
     return orders;
   });
 
