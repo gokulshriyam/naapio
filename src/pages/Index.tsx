@@ -190,12 +190,28 @@ const Index = () => {
             <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
             <a href="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</a>
             <div className="space-y-3 pt-3">
-              <Button variant="ghost" size="sm" onClick={() => { setLoginOpen(true); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
-                {t('nav.login')}
-              </Button>
-              <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
-                {t('nav.getStarted')}
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    My Orders
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { navigate('/dashboard/profile'); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    Profile
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => { handleLogout(); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px] text-destructive">
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => { setLoginOpen(true); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    {t('nav.login')}
+                  </Button>
+                  <Button variant="gold" size="sm" onClick={() => { navigate("/start"); setMobileMenuOpen(false); document.body.style.overflow = ''; }} className="w-full justify-center min-h-[48px]">
+                    {t('nav.getStarted')}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
