@@ -1019,7 +1019,7 @@ const Wizard = () => {
 
   // ── Gemini Vision Analysis for Inspiration Photo ──
   const analyseInspirationPhoto = async (photoFile: File) => {
-    console.log('=== analyseInspirationPhoto STARTED ===', photoFile?.name);
+    
     setAnalysisLoading(true);
     let rawText = ''; // Declare outside try for catch block access
     
