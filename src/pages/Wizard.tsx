@@ -682,8 +682,86 @@ const Wizard = () => {
         </div>
       </div>
 
+      {/* Gift order banner */}
+      {giftOrder && step > 0 && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-2">
+            <p className="font-sans text-xs text-amber-800">Ordering for {recipientName} 🎁</p>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-6 py-10 max-w-5xl">
         <AnimatePresence mode="wait">
+          {/* STEP 0: Who are you ordering for? */}
+          {step === 0 && (
+            <motion.div key="s0" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
+              <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Who are you ordering for?</h2>
+              <p className="text-muted-foreground font-sans mb-8">This helps us tailor the experience</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
+                <button
+                  onClick={() => { setOrderingFor('self'); setGiftOrder(false); }}
+                  className={`p-6 rounded-2xl text-left transition-all border-2 ${
+                    orderingFor === 'self' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
+                  }`}
+                >
+                  <span className="text-4xl block mb-3">👤</span>
+                  <p className="font-sans font-bold text-foreground mb-1 flex items-center gap-2">
+                    {orderingFor === 'self' && <Check className="w-4 h-4 text-accent" />}
+                    For Myself
+                  </p>
+                  <p className="text-xs text-muted-foreground font-sans">I'm ordering this outfit for myself</p>
+                </button>
+                <button
+                  onClick={() => { setOrderingFor('someone'); setGiftOrder(true); }}
+                  className={`p-6 rounded-2xl text-left transition-all border-2 ${
+                    orderingFor === 'someone' ? "border-accent bg-gold-light ring-2 ring-accent/30" : "border-border bg-card hover:border-accent/30"
+                  }`}
+                >
+                  <span className="text-4xl block mb-3">🎁</span>
+                  <p className="font-sans font-bold text-foreground mb-1 flex items-center gap-2">
+                    {orderingFor === 'someone' && <Check className="w-4 h-4 text-accent" />}
+                    For Someone Else
+                  </p>
+                  <p className="text-xs text-muted-foreground font-sans">Gift, surprise, or ordering on behalf of family</p>
+                </button>
+              </div>
+
+              {orderingFor === 'someone' && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 max-w-lg space-y-4">
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-1 block">Recipient's name</label>
+                    <Input value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="e.g. Priya, Amma, Akka" className="font-sans" />
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-2 block">Your relation to them</label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Wife / Partner", "Mother", "Daughter", "Sister", "Friend", "Other"].map((rel) => (
+                        <button
+                          key={rel}
+                          onClick={() => setRecipientRelation(rel)}
+                          className={`px-4 py-2 rounded-full font-sans text-sm border transition-all ${
+                            recipientRelation === rel ? "border-accent bg-accent text-accent-foreground font-medium" : "border-border bg-card text-foreground hover:border-accent/40"
+                          }`}
+                        >
+                          {rel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-medium text-foreground mb-1 block">Their phone number (for measurements)</label>
+                    <Input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="10-digit mobile" type="tel" className="font-sans" />
+                    <p className="text-xs text-muted-foreground font-sans mt-1">
+                      We'll WhatsApp them to submit their measurements directly. You won't need to collect measurements yourself.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
           {/* STEP 1: Inspiration Upload */}
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="grid grid-cols-1 md:grid-cols-2 gap-10">
