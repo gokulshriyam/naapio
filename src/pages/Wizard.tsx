@@ -702,6 +702,18 @@ const Wizard = () => {
       setPhotoFromBadgeShown(prev => new Set([...prev, 'surfaces']));
       
     }
+
+    // Pre-fill gender if detected and not already set
+    if (photoAnalysis.detectedGender && !gender) {
+      setGender(photoAnalysis.detectedGender as "men" | "women");
+    }
+
+    // Pre-fill subcategory if detected and category matches
+    if (photoAnalysis.detectedSubCategory && 
+        photoAnalysis.detectedSubCategory !== '' &&
+        !selectedSubCategory) {
+      setSelectedSubCategory(photoAnalysis.detectedSubCategory);
+    }
   }, [photoAnalysis]);
   // Dependency array intentionally excludes the selected* values
   // so pre-fill only fires once when analysis completes,
