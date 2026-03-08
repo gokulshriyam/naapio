@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { activeRequests, pastRequests } from "@/data/mockData";
 import redLehenga from "@/assets/red-lehenga.jpg";
 import {
@@ -105,6 +106,12 @@ const BiddingPage = () => {
   const [milestones, setMilestones] = useState<Milestone[]>(initialDemoOrder.milestones);
   const [changeNotes, setChangeNotes] = useState<Record<number, string>>({});
   const [confirmBid, setConfirmBid] = useState<typeof mockBids[0] | null>(null);
+  const [changeRequestSent, setChangeRequestSent] = useState<Record<number, boolean>>({});
+  const [changeSending, setChangeSending] = useState<Record<number, boolean>>({});
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -132,14 +139,25 @@ const BiddingPage = () => {
         if (m.id === id + 1) return { ...m, status: "awaiting_approval" as MilestoneStatus };
         return m;
       });
+      // Check if milestone 5 (Delivery) was just approved
+      const m5 = updated.find((m) => m.id === 5);
+      if (m5?.status === "approved") {
+        setTimeout(() => setOrderComplete(true), 1000);
+      }
       return updated;
     });
   };
 
   const handleRequestChanges = (id: number) => {
-    setMilestones((prev) =>
-      prev.map((m) => m.id === id ? { ...m, status: "changes_requested" as MilestoneStatus } : m)
-    );
+    if (!changeNotes[id]?.trim()) return;
+    setChangeSending((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setMilestones((prev) =>
+        prev.map((m) => m.id === id ? { ...m, status: "changes_requested" as MilestoneStatus } : m)
+      );
+      setChangeSending((prev) => ({ ...prev, [id]: false }));
+      setChangeRequestSent((prev) => ({ ...prev, [id]: true }));
+    }, 1000);
   };
 
   const handleConfirmTailor = () => {
@@ -161,6 +179,62 @@ const BiddingPage = () => {
         <Button variant="gold" onClick={() => navigate("/start")}>
           Start an Order →
         </Button>
+      </div>
+    );
+  }
+
+  if (orderComplete) {
+    return (
+      <div className="max-w-lg mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <span className="text-6xl mb-6 animate-pulse">🎉</span>
+        <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Your order is complete!</h2>
+        <p className="text-muted-foreground font-sans mb-6">Your garment has been delivered. We hope you love it.</p>
+        <p className="text-sm text-muted-foreground font-sans mb-8">Order {demoOrder.id}</p>
+
+        {!reviewSubmitted ? (
+          <div className="w-full space-y-4 mb-8">
+            <p className="font-sans font-semibold text-foreground text-sm">How was your experience?</p>
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={`text-3xl transition-transform hover:scale-110 ${star <= rating ? "text-accent" : "text-muted-foreground/30"}`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            {rating > 0 && (
+              <div className="space-y-3">
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Tell us what you loved (or what we can improve)..."
+                  className="w-full min-h-[100px] rounded-xl border border-border bg-card p-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <Button variant="gold" className="w-full" onClick={() => setReviewSubmitted(true)}>
+                  Submit Review
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-green-600 font-sans mb-8">Thank you! Your review helps other customers.</p>
+        )}
+
+        <div className="w-full space-y-3">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => toast.info("Tag us @naapio.in on Instagram!")}
+          >
+            Share your look 📸
+          </Button>
+          <Button variant="gold" size="hero" className="w-full" onClick={() => navigate("/start")}>
+            Start a New Order →
+          </Button>
+        </div>
       </div>
     );
   }
@@ -380,13 +454,23 @@ const BiddingPage = () => {
           <p className="text-sm text-muted-foreground font-sans">Your tailor uploads proof at each stage — you approve before work continues</p>
         </div>
 
-        {milestones.every((m) => m.status === "pending") && (
+        {(milestones.every((m) => m.status === "pending") || milestones.some((m) => m.status === "changes_requested")) && (
           <button
-            onClick={() =>
-              setMilestones((prev) =>
-                prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
-              )
-            }
+            onClick={() => {
+              // If any milestone has changes_requested, reset it to awaiting_approval
+              const crMilestone = milestones.find((m) => m.status === "changes_requested");
+              if (crMilestone) {
+                setMilestones((prev) =>
+                  prev.map((m) => m.id === crMilestone.id ? { ...m, status: "awaiting_approval" as MilestoneStatus } : m)
+                );
+                setChangeRequestSent((prev) => ({ ...prev, [crMilestone.id]: false }));
+                setChangeNotes((prev) => ({ ...prev, [crMilestone.id]: "" }));
+              } else {
+                setMilestones((prev) =>
+                  prev.map((m) => m.id === 1 && m.status === "pending" ? { ...m, status: "awaiting_approval" } : m)
+                );
+              }
+            }}
             className="text-[11px] text-muted-foreground/60 font-sans hover:text-muted-foreground transition-colors"
           >
             Simulate tailor activity →
@@ -440,7 +524,14 @@ const BiddingPage = () => {
                   )}
 
                   {m.status === "changes_requested" && (
-                    <p className="text-xs text-destructive font-sans mt-1">Changes requested — awaiting tailor update</p>
+                    changeRequestSent[m.id] ? (
+                      <div className="mt-2">
+                        <p className="text-xs text-green-600 font-sans">✓ Change request sent</p>
+                        <p className="text-xs text-muted-foreground font-sans mt-0.5">Your tailor will upload an updated version shortly.</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-destructive font-sans mt-1">Changes requested — awaiting tailor update</p>
+                    )
                   )}
 
                   {m.status === "awaiting_approval" && (
@@ -479,10 +570,10 @@ const BiddingPage = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={!changeNotes[m.id]?.trim()}
+                          disabled={!changeNotes[m.id]?.trim() || changeSending[m.id]}
                           onClick={() => handleRequestChanges(m.id)}
                         >
-                          <Send className="w-3.5 h-3.5" />
+                          {changeSending[m.id] ? "Sending..." : <Send className="w-3.5 h-3.5" />}
                         </Button>
                       </div>
                     </div>

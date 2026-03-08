@@ -258,6 +258,9 @@ const Wizard = () => {
   const [loading, setLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [restoredDraft, setRestoredDraft] = useState<any>(null);
+  const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
 
   // Outfit Visualiser state
   const [selfiePhoto, setSelfiePhoto] = useState<File | null>(null);
@@ -287,6 +290,40 @@ const Wizard = () => {
     const min = getMinDeliveryDate();
     setDeliveryDate(min.toISOString().split("T")[0]);
   }, [selectedCategory]);
+
+  // Restore draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("naapio_wizard_draft");
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.step && draft.step > 1) {
+          setDraftRestored(true);
+          setRestoredDraft(draft);
+        }
+      } catch (e) {
+        localStorage.removeItem("naapio_wizard_draft");
+      }
+    }
+  }, []);
+
+  // Save draft on step changes
+  useEffect(() => {
+    if (step > 1) {
+      const draft = {
+        step, step2Phase, step3Phase, orderType, gender,
+        selectedCategory, selectedSubCategory, selectedOccasion,
+        selectedFit, selectedNeckline, selectedSleeve, selectedDupatta,
+        selectedLining, measurementType, standardSize, sizeRegion,
+        selectedFeel, selectedFabricTypes, selectedColourMood, colourNote,
+        selectedSurfaces, selectedBlend, selectedBrand, fabricBudgetBand,
+        embellishmentBudget, budgetRange, deliveryDate, flexibleDate, description,
+      };
+      localStorage.setItem("naapio_wizard_draft", JSON.stringify(draft));
+    }
+  }, [step, step2Phase, step3Phase, gender, selectedCategory,
+      selectedOccasion, selectedFit, measurementType,
+      selectedFeel, selectedColourMood, budgetRange]);
 
 
   const canProceed = () => {
@@ -335,6 +372,7 @@ const Wizard = () => {
         deliveryDate,
         timestamp: new Date().toISOString()
       }));
+      localStorage.removeItem("naapio_wizard_draft");
       setOrderSuccess(true);
       window.scrollTo(0, 0);
     }, 2000);
@@ -478,6 +516,69 @@ const Wizard = () => {
 
   return (
     <div className="min-h-screen bg-secondary">
+      {/* Draft Resume Banner */}
+      {draftRestored && restoredDraft && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p className="font-sans text-sm text-amber-800">
+              You have an unfinished order — want to continue where you left off?
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="gold"
+                onClick={() => {
+                  const d = restoredDraft;
+                  if (d.step) setStep(d.step);
+                  if (d.step2Phase) setStep2Phase(d.step2Phase);
+                  if (d.step3Phase) setStep3Phase(d.step3Phase);
+                  if (d.gender) setGender(d.gender);
+                  if (d.selectedCategory) setSelectedCategory(d.selectedCategory);
+                  if (d.selectedSubCategory) setSelectedSubCategory(d.selectedSubCategory);
+                  if (d.selectedOccasion) setSelectedOccasion(d.selectedOccasion);
+                  if (d.selectedFit) setSelectedFit(d.selectedFit);
+                  if (d.selectedNeckline) setSelectedNeckline(d.selectedNeckline);
+                  if (d.selectedSleeve) setSelectedSleeve(d.selectedSleeve);
+                  if (d.selectedDupatta) setSelectedDupatta(d.selectedDupatta);
+                  if (d.selectedLining) setSelectedLining(d.selectedLining);
+                  if (d.measurementType) setMeasurementType(d.measurementType);
+                  if (d.standardSize) setStandardSize(d.standardSize);
+                  if (d.sizeRegion) setSizeRegion(d.sizeRegion);
+                  if (d.selectedFeel) setSelectedFeel(d.selectedFeel);
+                  if (d.selectedFabricTypes) setSelectedFabricTypes(d.selectedFabricTypes);
+                  if (d.selectedColourMood) setSelectedColourMood(d.selectedColourMood);
+                  if (d.colourNote) setColourNote(d.colourNote);
+                  if (d.selectedSurfaces) setSelectedSurfaces(d.selectedSurfaces);
+                  if (d.selectedBlend) setSelectedBlend(d.selectedBlend);
+                  if (d.selectedBrand) setSelectedBrand(d.selectedBrand);
+                  if (d.fabricBudgetBand) setFabricBudgetBand(d.fabricBudgetBand);
+                  if (d.embellishmentBudget) setEmbellishmentBudget(d.embellishmentBudget);
+                  if (d.budgetRange) setBudgetRange(d.budgetRange);
+                  if (d.deliveryDate) setDeliveryDate(d.deliveryDate);
+                  if (d.flexibleDate !== undefined) setFlexibleDate(d.flexibleDate);
+                  if (d.description) setDescription(d.description);
+                  setDraftRestored(false);
+                  setRestoredDraft(null);
+                }}
+              >
+                Resume →
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  localStorage.removeItem("naapio_wizard_draft");
+                  setDraftRestored(false);
+                  setRestoredDraft(null);
+                }}
+              >
+                Start Fresh
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div className="sticky top-0 z-50 bg-card border-b border-border">
         <div className="container mx-auto px-6 py-4">
@@ -831,6 +932,45 @@ const Wizard = () => {
 
               {/* SUB-PHASE: MEASUREMENTS — existing UI preserved exactly */}
               {step2Phase === "measurements" && (
+                <div>
+                  {/* Measurement Guide */}
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setMeasureGuideOpen(!measureGuideOpen)}
+                      className="font-sans text-sm font-medium text-accent hover:underline"
+                    >
+                      📏 How to take your measurements {measureGuideOpen ? "↑" : "→"}
+                    </button>
+                    {measureGuideOpen && (
+                      <div className="mt-3 p-5 bg-card rounded-xl border border-border">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                          {[
+                            { title: "Bust / Chest", tip: "Measure around the fullest part of your chest, keeping the tape parallel to the floor." },
+                            { title: "Waist", tip: "Measure around your natural waist — the narrowest part of your torso, usually 2–3 inches above your navel." },
+                            { title: "Hips", tip: "Measure around the fullest part of your hips and seat, about 7–9 inches below your natural waist." },
+                            { title: "Height", tip: "Stand straight without shoes. Measure from the top of your head to the floor." },
+                            { title: "Shoulder Width", tip: "Measure from the edge of one shoulder to the other across your back." },
+                            { title: "Sleeve Length", tip: "From the shoulder edge, down the outside of your arm to your wrist with arm slightly bent." },
+                          ].map((item) => (
+                            <div key={item.title}>
+                              <p className="font-sans text-sm font-semibold text-foreground">{item.title}</p>
+                              <p className="font-sans text-xs text-muted-foreground mt-0.5">{item.tip}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-sans mb-3">
+                          📌 Tip: Ask someone to help measure you — self-measurements are often inaccurate. Your tailor will confirm all measurements at Milestone 1 before cutting any fabric.
+                        </p>
+                        <button
+                          onClick={() => setMeasureGuideOpen(false)}
+                          className="text-xs text-accent font-sans hover:underline"
+                        >
+                          Got it — close guide ↑
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Measurements</h2>
@@ -919,6 +1059,7 @@ const Wizard = () => {
                       </div>
                     </div>
                   </div>
+                </div>
                 </div>
               )}
 
