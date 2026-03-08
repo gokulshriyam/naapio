@@ -814,6 +814,19 @@ const Wizard = () => {
 
   return (
     <div className="min-h-screen bg-secondary">
+      {/* Exit Warning Modal */}
+      {showExitWarning && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-lg font-serif font-bold text-foreground mb-2">Leave this order?</h3>
+            <p className="text-sm text-muted-foreground font-sans mb-6">Your progress will be saved as a draft — you can continue later.</p>
+            <div className="flex gap-3">
+              <Button variant="gold" className="flex-1" onClick={() => setShowExitWarning(false)}>Stay & Continue</Button>
+              <Button variant="outline" className="flex-1" onClick={() => { setShowExitWarning(false); navigate('/'); }}>Leave</Button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Draft Resume Banner */}
       {draftRestored && restoredDraft && (
         <div className="bg-amber-50 border-b border-amber-200">
