@@ -3946,13 +3946,13 @@ Important rules:
                                 if (val[1] - val[0] >= 2000) setBudgetRange(val);
                               }}
                               min={1000}
-                              max={200000}
+                              max={500000}
                               step={budgetRange[0] < 10000 ? 500 : budgetRange[0] < 50000 ? 1000 : 5000}
                               className="w-full"
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground font-sans mt-1">
                               <span>₹1K</span>
-                              <span>₹2L</span>
+                              <span>₹5L</span>
                             </div>
                           </div>
 
