@@ -266,6 +266,24 @@ const extractArrayField = (text: string, field: string): string[] => {
     .filter(Boolean);
 };
 
+// Map detected garment to category (moved outside component for useEffect access)
+const mapDetectedToCategory = (detected: string): string | null => {
+  const map: Record<string, string> = {
+    'Saree Blouse': 'Saree Blouse',
+    'Kurti': 'Kurti',
+    'Salwar Kameez': 'Salwar Kameez',
+    'Anarkali': 'Anarkali',
+    'Lehenga': 'Lehenga',
+    'Gown': 'Gown',
+    'Kurta': 'Kurta',
+    'Sherwani': 'Sherwani',
+    'Bandhgala': 'Bandhgala',
+    'Chaniya Choli': 'Lehenga',
+    'Suit': 'Suit',
+  };
+  return map[detected] || null;
+};
+
 const Wizard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
