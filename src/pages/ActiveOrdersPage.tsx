@@ -252,7 +252,14 @@ const MEASUREMENT_CONFIG: Record<string, GarmentMeasurementConfig> = {
 const resolveGarmentConfig = (category: string, subCategory: string): GarmentMeasurementConfig => {
   if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
   if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
-  return MEASUREMENT_CONFIG['Kurti'];
+  return gender === 'men' ? MEASUREMENT_CONFIG['Kurta'] : MEASUREMENT_CONFIG['Kurti'];
+};
+
+// Gender param version for external callers
+const resolveGarmentConfigWithGender = (category: string, subCategory: string, gender: string): GarmentMeasurementConfig => {
+  if (subCategory && MEASUREMENT_CONFIG[subCategory]) return MEASUREMENT_CONFIG[subCategory];
+  if (category && MEASUREMENT_CONFIG[category]) return MEASUREMENT_CONFIG[category];
+  return gender === 'men' ? MEASUREMENT_CONFIG['Kurta'] : MEASUREMENT_CONFIG['Kurti'];
 };
 
 // ═══════════════════════════════════════
