@@ -2181,8 +2181,28 @@ const Wizard = () => {
                     </div>
                   )}
 
+                  {/* Advanced Fabric Preferences Toggle */}
+                  {step3Phase === "surface" && (
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setShowAdvancedFabric(!showAdvancedFabric)}
+                        className="w-full p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-all flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span>⚙️</span>
+                          <div className="text-left">
+                            <p className="font-sans text-sm font-medium text-foreground">Advanced preferences (optional)</p>
+                            <p className="font-sans text-xs text-muted-foreground">Fabric blend, brand, embellishment budget</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-accent font-sans">{showAdvancedFabric ? "Hide ↑" : "Show →"}</span>
+                      </button>
+                      <p className="text-xs text-muted-foreground font-sans mt-2">💡 Most customers skip this — your tailor will suggest the best options based on your budget.</p>
+                    </div>
+                  )}
+
                   {/* STEP 3e: FABRIC BLEND */}
-                  {step3Phase === "blend" && (
+                  {step3Phase === "blend" && showAdvancedFabric && (
                     <div>
                       <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Any preference on fabric composition?</h2>
                       <p className="text-muted-foreground font-sans mb-6">This helps your tailor source the right quality</p>
