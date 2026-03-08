@@ -107,8 +107,7 @@ const AlterationFlow = () => {
   const [showBackWarning, setShowBackWarning] = useState(false);
 
   // Step A4
-  const [alterationBudgetMin, setAlterationBudgetMin] = useState("");
-  const [alterationBudgetMax, setAlterationBudgetMax] = useState("");
+  const [alterationBudgetRange, setAlterationBudgetRange] = useState([1000, 5000]);
   const [alterationDeliveryDate, setAlterationDeliveryDate] = useState("");
   const [alterationFlexibleDate, setAlterationFlexibleDate] = useState(false);
 
