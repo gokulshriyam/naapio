@@ -18,7 +18,7 @@ const tier1Cities = [
 ];
 
 interface CitySelectorProps {
-  variant?: "header" | "mobile";
+  variant?: "header" | "mobile" | "hero";
 }
 
 const CitySelector = ({ variant = "header" }: CitySelectorProps) => {
