@@ -386,6 +386,9 @@ const ActiveOrdersPage = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [m5MarkedDelivered, setM5MarkedDelivered] = useState(false);
   const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
 
   // ── Chat state ──
   const [chatOpen, setChatOpen] = useState(false);
@@ -1313,8 +1316,6 @@ const ActiveOrdersPage = () => {
                 {/* Phase: AWB Tracking */}
                 {m5Phase === 'awb' && (
                   <div className="mt-4 space-y-5">
-                    <h3 className="font-serif font-bold text-lg text-foreground mb-4">Dispatch Details</h3>
-
                     {(() => {
                       const m5Mock = {
                         courierService: 'DTDC',
@@ -1322,50 +1323,144 @@ const ActiveOrdersPage = () => {
                         dispatchPhotoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
                         dispatchedAt: '8 March 2026',
                       };
-                      return (
-                        <>
-                          <div>
-                            <Label className="text-xs font-sans text-muted-foreground">Courier Service</Label>
-                            <p className="text-sm font-sans text-foreground mt-1">{m5Mock.courierService}</p>
-                          </div>
 
-                          <div>
-                            <Label className="text-xs font-sans text-muted-foreground">AWB / Tracking Number</Label>
-                            <div className="mt-1">
-                              <span className="bg-muted rounded-lg px-3 py-1 font-mono text-sm text-foreground">{m5Mock.awbNumber}</span>
+                      const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent ⭐'];
+
+                      // STAGE A — Before delivery confirmed
+                      if (!deliveryConfirmed) {
+                        return (
+                          <>
+                            <h3 className="font-serif font-bold text-lg text-foreground mb-4">Dispatch Details</h3>
+                            <div>
+                              <Label className="text-xs font-sans text-muted-foreground">Courier Service</Label>
+                              <p className="text-sm font-sans text-foreground mt-1">{m5Mock.courierService}</p>
                             </div>
-                          </div>
-
-                          <div>
-                            <Label className="text-xs font-sans text-muted-foreground">Dispatched On</Label>
-                            <p className="text-sm font-sans text-foreground mt-1">{m5Mock.dispatchedAt}</p>
-                          </div>
-
-                          <div>
-                            <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
-                            <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm rounded-xl object-cover mt-2" alt="Dispatch proof" />
-                          </div>
-
-                          <div className="border-t border-border pt-4">
-                            {!deliveryConfirmed ? (
-                              <div className="space-y-3">
-                                <p className="text-sm font-sans text-muted-foreground">Once you've received your order, please confirm delivery below to release payment to your artisan.</p>
-                                <Button variant="gold" className="w-full" onClick={() => setDeliveryConfirmed(true)}>
-                                  ✓ Mark as Delivered
-                                </Button>
+                            <div>
+                              <Label className="text-xs font-sans text-muted-foreground">AWB / Tracking Number</Label>
+                              <div className="mt-1">
+                                <span className="bg-muted rounded-lg px-3 py-1 font-mono text-sm text-foreground">{m5Mock.awbNumber}</span>
                               </div>
-                            ) : (
-                              <div className="space-y-3">
-                                <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-                                  <p className="font-sans font-medium text-success text-sm">✅ Order marked as delivered — Escrow release in progress</p>
-                                </div>
-                                <div className="p-4 rounded-xl bg-muted border border-border">
-                                  <p className="font-sans text-sm text-muted-foreground">Order Complete 🎉 — You can rate your artisan from your order history.</p>
-                                </div>
-                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-xs font-sans text-muted-foreground">Dispatched On</Label>
+                              <p className="text-sm font-sans text-foreground mt-1">{m5Mock.dispatchedAt}</p>
+                            </div>
+                            <div>
+                              <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
+                              <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm rounded-xl object-cover mt-2" alt="Dispatch proof" />
+                            </div>
+                            <div className="border-t border-border pt-4">
+                              <p className="text-sm font-sans text-muted-foreground mb-3">Once you've received your order, please confirm delivery below to release payment to your artisan.</p>
+                              <Button variant="gold" className="w-full" onClick={() => setDeliveryConfirmed(true)}>
+                                ✓ Mark as Delivered
+                              </Button>
+                            </div>
+                          </>
+                        );
+                      }
+
+                      // STAGE B — After delivery confirmed, before review submitted
+                      if (deliveryConfirmed && !reviewSubmitted) {
+                        return (
+                          <>
+                            <div className="p-4 rounded-xl bg-success/10 border border-success/20 mb-4">
+                              <p className="font-sans font-medium text-success text-sm">✅ Delivery confirmed! Please take a moment to rate your artisan.</p>
+                            </div>
+
+                            <h3 className="font-serif font-bold text-lg text-foreground mb-4">Rate Your Experience</h3>
+
+                            {/* Star rating row */}
+                            <div className="flex gap-2 mb-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-8 h-8 cursor-pointer transition-colors ${
+                                    star <= reviewRating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-muted-foreground/40'
+                                  }`}
+                                  onClick={() => setReviewRating(star)}
+                                />
+                              ))}
+                            </div>
+                            {reviewRating > 0 && (
+                              <p className="text-sm font-sans text-muted-foreground mb-4">{ratingLabels[reviewRating]}</p>
                             )}
+
+                            {/* Textarea for review */}
+                            <textarea
+                              placeholder="Share your experience — quality, fit, communication, delivery..."
+                              rows={3}
+                              className="w-full rounded-xl border border-border p-3 text-sm font-sans resize-none focus:outline-none focus:ring-2 focus:ring-[#B8860B] bg-background text-foreground mb-4"
+                              value={reviewComment}
+                              onChange={(e) => setReviewComment(e.target.value)}
+                            />
+
+                            {/* Submit button */}
+                            <Button
+                              variant="gold"
+                              className="w-full"
+                              disabled={reviewRating === 0}
+                              onClick={() => {
+                                setReviewSubmitted(true);
+                                toast.success('Review submitted! Thank you.');
+                              }}
+                            >
+                              Submit Review & Close Order
+                            </Button>
+
+                            {/* Skip link */}
+                            <button
+                              onClick={() => setReviewSubmitted(true)}
+                              className="text-xs text-muted-foreground underline w-full text-center mt-2"
+                            >
+                              Skip — close order without review
+                            </button>
+                          </>
+                        );
+                      }
+
+                      // STAGE C — After review submitted
+                      return (
+                        <div className="text-center space-y-4">
+                          {/* Checkmark circle */}
+                          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
+                            <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
                           </div>
-                        </>
+
+                          {/* Heading */}
+                          <h3 className="font-serif font-bold text-xl text-foreground">Order Closed 🎉</h3>
+
+                          {/* Subtext */}
+                          <p className="text-sm text-muted-foreground font-sans">
+                            Your artisan has been paid. We hope you love your new garment.
+                          </p>
+
+                          {/* Show rating if submitted */}
+                          {reviewRating > 0 && (
+                            <div className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2">
+                              <span className="text-sm font-sans text-foreground">You rated:</span>
+                              <span className="text-[#B8860B]">
+                                {'★'.repeat(reviewRating)}{'☆'.repeat(5 - reviewRating)}
+                              </span>
+                              <span className="text-sm font-sans text-muted-foreground">({ratingLabels[reviewRating].replace(' ⭐', '')})</span>
+                            </div>
+                          )}
+
+                          {/* Action buttons */}
+                          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                            <button
+                              className="flex-1 py-2.5 rounded-xl border border-[#B8860B] text-[#B8860B] font-sans font-semibold text-sm hover:bg-[#B8860B]/10 transition-colors"
+                              onClick={() => navigate('/wizard')}
+                            >
+                              Reorder Same Style
+                            </button>
+                            <button
+                              className="flex-1 py-2.5 rounded-xl bg-[#1E3A5F] text-white font-sans font-semibold text-sm hover:bg-[#162e4d] transition-colors"
+                              onClick={() => navigate('/dashboard')}
+                            >
+                              Back to Dashboard
+                            </button>
+                          </div>
+                        </div>
                       );
                     })()}
                   </div>
