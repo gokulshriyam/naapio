@@ -543,11 +543,6 @@ const ForTailorsPage = () => {
                       <SelectItem value="kids-coming-soon" disabled>Kids' Wear (Launching Soon)</SelectItem>
                     </SelectGroup>
                   </SelectContent>
-                          );
-                        })}
-                      </React.Fragment>
-                    ))}
-                  </SelectContent>
                 </Select>
               </div>
 
