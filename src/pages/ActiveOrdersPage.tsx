@@ -386,9 +386,16 @@ const ActiveOrdersPage = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [m5MarkedDelivered, setM5MarkedDelivered] = useState(false);
   const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [reviewRating, setReviewRating] = useState(0);
+  const [aspectRatings, setAspectRatings] = useState({
+    stitchQuality: 0,
+    fitAccuracy: 0,
+    fabricAccuracy: 0,
+    communication: 0,
+    onTimeDelivery: 0,
+  });
   const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const allAspectsRated = Object.values(aspectRatings).every(v => v > 0);
 
   // ── Chat state ──
   const [chatOpen, setChatOpen] = useState(false);
