@@ -385,6 +385,7 @@ const ActiveOrdersPage = () => {
   const [review, setReview] = useState({ quality: 0, communication: 0, timeliness: 0, value: 0, comment: '' });
   const [orderComplete, setOrderComplete] = useState(false);
   const [m5MarkedDelivered, setM5MarkedDelivered] = useState(false);
+  const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
 
   // ── Chat state ──
   const [chatOpen, setChatOpen] = useState(false);
@@ -1314,75 +1315,59 @@ const ActiveOrdersPage = () => {
                   <div className="mt-4 space-y-5">
                     <h3 className="font-serif font-bold text-lg text-foreground mb-4">Dispatch Details</h3>
 
-                    {/* Courier Service */}
-                    {activeOrder?.m5Data?.courierService && (
-                      <div>
-                        <Label className="text-xs font-sans text-muted-foreground">Courier Service</Label>
-                        <p className="text-sm font-sans text-foreground mt-1">{activeOrder.m5Data.courierService}</p>
-                      </div>
-                    )}
+                    {(() => {
+                      const m5Mock = {
+                        courierService: 'DTDC',
+                        awbNumber: 'DTDC2026098XY',
+                        dispatchPhotoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+                        dispatchedAt: '8 March 2026',
+                      };
+                      return (
+                        <>
+                          <div>
+                            <Label className="text-xs font-sans text-muted-foreground">Courier Service</Label>
+                            <p className="text-sm font-sans text-foreground mt-1">{m5Mock.courierService}</p>
+                          </div>
 
-                    {/* AWB Number */}
-                    {activeOrder?.m5Data?.awbNumber && (
-                      <div>
-                        <Label className="text-xs font-sans text-muted-foreground">AWB / Tracking Number</Label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="bg-muted rounded px-2 py-0.5 font-mono text-sm text-foreground">{activeOrder.m5Data.awbNumber}</span>
-                          <Button size="icon" variant="outline" className="h-7 w-7 shrink-0" onClick={() => {
-                            navigator.clipboard.writeText(activeOrder.m5Data.awbNumber);
-                            toast.success('AWB copied to clipboard');
-                          }}>
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                          <div>
+                            <Label className="text-xs font-sans text-muted-foreground">AWB / Tracking Number</Label>
+                            <div className="mt-1">
+                              <span className="bg-muted rounded-lg px-3 py-1 font-mono text-sm text-foreground">{m5Mock.awbNumber}</span>
+                            </div>
+                          </div>
 
-                    {/* Dispatch Photo */}
-                    {activeOrder?.m5Data?.dispatchPhotoUrl && (
-                      <div>
-                        <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
-                        <img 
-                          src={activeOrder.m5Data.dispatchPhotoUrl} 
-                          alt="Dispatch proof" 
-                          className="w-full max-w-sm rounded-xl object-cover mt-1" 
-                        />
-                      </div>
-                    )}
+                          <div>
+                            <Label className="text-xs font-sans text-muted-foreground">Dispatched On</Label>
+                            <p className="text-sm font-sans text-foreground mt-1">{m5Mock.dispatchedAt}</p>
+                          </div>
 
-                    {/* Dispatched On */}
-                    {activeOrder?.m5Data?.dispatchedAt && (
-                      <div>
-                        <Label className="text-xs font-sans text-muted-foreground">Dispatched On</Label>
-                        <p className="text-sm font-sans text-foreground mt-1">
-                          {new Date(activeOrder.m5Data.dispatchedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </p>
-                      </div>
-                    )}
+                          <div>
+                            <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
+                            <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm rounded-xl object-cover mt-2" alt="Dispatch proof" />
+                          </div>
 
-                    <div className="border-t border-border pt-4 mt-6">
-                      {!m5MarkedDelivered ? (
-                        <Button variant="gold" className="w-full" onClick={() => {
-                          setM5MarkedDelivered(true);
-                          // Update localStorage
-                          try {
-                            const order = JSON.parse(localStorage.getItem('naapio_active_order') || '{}');
-                            if (order.m5Data) {
-                              order.m5Data.markedDelivered = true;
-                              localStorage.setItem('naapio_active_order', JSON.stringify(order));
-                              setActiveOrder(order);
-                            }
-                          } catch {}
-                          toast.success('Order marked as delivered! Escrow will be released to the artisan.');
-                        }}>
-                          ✓ Mark as Delivered
-                        </Button>
-                      ) : (
-                        <div className="p-4 rounded-xl bg-success-light border border-success/20">
-                          <p className="font-sans font-medium text-success text-sm">✅ You've marked this order as delivered. Escrow release is in progress.</p>
-                        </div>
-                      )}
-                    </div>
+                          <div className="border-t border-border pt-4">
+                            {!deliveryConfirmed ? (
+                              <div className="space-y-3">
+                                <p className="text-sm font-sans text-muted-foreground">Once you've received your order, please confirm delivery below to release payment to your artisan.</p>
+                                <Button variant="gold" className="w-full" onClick={() => setDeliveryConfirmed(true)}>
+                                  ✓ Mark as Delivered
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <div className="p-4 rounded-xl bg-success/10 border border-success/20">
+                                  <p className="font-sans font-medium text-success text-sm">✅ Order marked as delivered — Escrow release in progress</p>
+                                </div>
+                                <div className="p-4 rounded-xl bg-muted border border-border">
+                                  <p className="font-sans text-sm text-muted-foreground">Order Complete 🎉 — You can rate your artisan from your order history.</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
