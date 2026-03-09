@@ -1309,41 +1309,76 @@ const ActiveOrdersPage = () => {
                 {/* Phase: AWB Tracking */}
                 {m5Phase === 'awb' && (
                   <div className="mt-4 space-y-5">
-                    <h3 className="font-sans font-semibold text-lg text-foreground">Your Order is On Its Way! 📦</h3>
+                    <h3 className="font-serif font-bold text-lg text-foreground mb-4">Dispatch Details</h3>
 
-                    <div className="p-4 rounded-xl bg-success-light border border-success/20">
-                      <p className="font-sans font-medium text-foreground text-sm">{artisanRealName} has shipped your {garmentLabel}.</p>
-                    </div>
-
-                    <div>
-                      <Label className="text-xs font-sans text-muted-foreground">Tracking Number (AWB)</Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Input value={awbNumber} readOnly className="bg-muted font-mono text-sm flex-1" />
-                        <Button size="icon" variant="outline" className="shrink-0" onClick={() => {
-                          navigator.clipboard.writeText(awbNumber);
-                          toast.success('AWB copied to clipboard');
-                        }}>
-                          <Copy className="w-4 h-4" />
-                        </Button>
+                    {/* Courier Service */}
+                    {activeOrder?.m5Data?.courierService && (
+                      <div>
+                        <Label className="text-xs font-sans text-muted-foreground">Courier Service</Label>
+                        <p className="text-sm font-sans text-foreground mt-1">{activeOrder.m5Data.courierService}</p>
                       </div>
-                    </div>
+                    )}
 
-                    <a href="#" target="_blank" className="text-sm font-sans text-accent hover:underline flex items-center gap-1">
-                      Track on courier website → <ExternalLink className="w-3 h-3" />
-                    </a>
-                    {/* TODO: ARTISAN_PORTAL — AWB number from vendor portal */}
+                    {/* AWB Number */}
+                    {activeOrder?.m5Data?.awbNumber && (
+                      <div>
+                        <Label className="text-xs font-sans text-muted-foreground">AWB / Tracking Number</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="bg-muted rounded px-2 py-0.5 font-mono text-sm text-foreground">{activeOrder.m5Data.awbNumber}</span>
+                          <Button size="icon" variant="outline" className="h-7 w-7 shrink-0" onClick={() => {
+                            navigator.clipboard.writeText(activeOrder.m5Data.awbNumber);
+                            toast.success('AWB copied to clipboard');
+                          }}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
-                    <p className="text-sm font-sans text-muted-foreground">
-                      Estimated delivery: {new Date(Date.now() + 3 * 86400000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </p>
+                    {/* Dispatch Photo */}
+                    {activeOrder?.m5Data?.dispatchPhotoUrl && (
+                      <div>
+                        <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
+                        <img 
+                          src={activeOrder.m5Data.dispatchPhotoUrl} 
+                          alt="Dispatch proof" 
+                          className="w-full max-w-sm rounded-xl object-cover mt-1" 
+                        />
+                      </div>
+                    )}
 
-                    <div className="border-t border-border pt-4">
-                      <Button variant="outline-gold" onClick={() => {
-                        setM5Phase('review');
-                        toast.success("Great! Let us know how it went.");
-                      }}>
-                        Mark as Delivered
-                      </Button>
+                    {/* Dispatched On */}
+                    {activeOrder?.m5Data?.dispatchedAt && (
+                      <div>
+                        <Label className="text-xs font-sans text-muted-foreground">Dispatched On</Label>
+                        <p className="text-sm font-sans text-foreground mt-1">
+                          {new Date(activeOrder.m5Data.dispatchedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="border-t border-border pt-4 mt-6">
+                      {!m5MarkedDelivered ? (
+                        <Button variant="gold" className="w-full" onClick={() => {
+                          setM5MarkedDelivered(true);
+                          // Update localStorage
+                          try {
+                            const order = JSON.parse(localStorage.getItem('naapio_active_order') || '{}');
+                            if (order.m5Data) {
+                              order.m5Data.markedDelivered = true;
+                              localStorage.setItem('naapio_active_order', JSON.stringify(order));
+                              setActiveOrder(order);
+                            }
+                          } catch {}
+                          toast.success('Order marked as delivered! Escrow will be released to the artisan.');
+                        }}>
+                          ✓ Mark as Delivered
+                        </Button>
+                      ) : (
+                        <div className="p-4 rounded-xl bg-success-light border border-success/20">
+                          <p className="font-sans font-medium text-success text-sm">✅ You've marked this order as delivered. Escrow release is in progress.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

@@ -747,6 +747,13 @@ const BiddingPage = () => {
       netPayable: acceptBid.bidAmount - 499,
       deliveryDays: acceptBid.deliveryDays,
       acceptedAt: new Date().toISOString(),
+      m5Data: {
+        awbNumber: 'DTDC2026098XY',
+        courierService: 'DTDC',
+        dispatchPhotoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+        dispatchedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+        markedDelivered: false,
+      },
     };
     // Single-order compat
     localStorage.setItem('naapio_active_order', JSON.stringify(orderEntry));
