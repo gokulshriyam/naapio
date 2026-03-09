@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -22,6 +22,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -42,7 +43,7 @@ const benefits = [
     icon: IndianRupee,
     title: "Earn More, Guaranteed",
     description:
-      "Earn ₹60,000/month on just 5 orders. That's 3× the average tailor street income of ₹20,000. Every rupee is held in escrow and released to you on time — no chasing customers for payment.",
+      "Top artisans on Naapio earn significantly more than traditional tailoring — on your own terms, on your own schedule. Every rupee is held in escrow and released to you on time, automatically. No chasing customers for payment.",
   },
   {
     icon: Package,
@@ -121,13 +122,37 @@ const tierData = [
   },
 ];
 
-const specialisations = [
-  "Bridal Wear",
-  "Salwar / Kameez",
-  "Saree Blouse",
-  "Formals",
-  "Kids Wear",
-  "Other",
+const specialisationCategories = [
+  {
+    label: "Women's Garments",
+    items: [
+      "Saree Blouse",
+      "Lehenga & Bridal Lehenga",
+      "Salwar Kameez & Anarkali",
+      "Kurti & Co-ord Sets",
+      "Gown & Evening Wear",
+      "Saree Draping & Nauvari",
+      "Chaniya Choli",
+    ],
+  },
+  {
+    label: "Men's Garments",
+    items: [
+      "Sherwani & Bandhgala",
+      "Kurta & Nehru Jacket",
+      "Suit, Blazer & Formal Shirt",
+      "Trousers & Formal Wear",
+      "Veshti / Dhoti / Mundu",
+    ],
+  },
+  {
+    label: "Alterations & Repairs",
+    items: ["Alterations (All Types)"],
+  },
+  {
+    label: "Kids (Coming Soon)",
+    items: [{ value: "Kids' Wear (Launching Soon)", disabled: true }],
+  },
 ];
 
 const ForTailorsPage = () => {
@@ -490,10 +515,22 @@ const ForTailorsPage = () => {
                     <SelectValue placeholder="Select your specialisation" />
                   </SelectTrigger>
                   <SelectContent>
-                    {specialisations.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
+                    {specialisationCategories.map((cat) => (
+                      <React.Fragment key={cat.label}>
+                        <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mt-2">
+                          {cat.label}
+                        </SelectLabel>
+                        {cat.items.map((item) => {
+                          const isObj = typeof item === "object";
+                          const value = isObj ? item.value : item;
+                          const disabled = isObj ? item.disabled : false;
+                          return (
+                            <SelectItem key={value} value={value} disabled={disabled} className={disabled ? "opacity-50" : ""}>
+                              {value}
+                            </SelectItem>
+                          );
+                        })}
+                      </React.Fragment>
                     ))}
                   </SelectContent>
                 </Select>

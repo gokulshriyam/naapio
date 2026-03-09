@@ -236,7 +236,7 @@ export const faqItems = [
   },
   {
     q: "Is my payment protected?",
-    a: "Absolutely. All payments are held in escrow and released to the vendor only when you approve each milestone. If you're not satisfied, our dispute resolution team steps in.",
+    a: "Absolutely. All payments are held in escrow and released to the artisan only when you approve each milestone. If you're not satisfied, our dispute resolution team steps in.",
   },
   {
     q: "How are tailors verified?",
@@ -256,7 +256,7 @@ export const faqItems = [
   },
   {
     q: "Can I get my existing clothes altered?",
-    a: "Yes — select 'Alteration / Repair' when you start. Upload photos of your garment, describe what needs to change, and tailors will bid on your brief. Simple alterations take 3 days; major rework takes 7 days. The ₹499 posting fee applies and is deducted from your final payment.",
+    a: "Yes — select 'Alteration / Repair' when you start your order. Upload photos of your garment, describe what needs to change, and artisans will bid on your brief.",
   },
   {
     q: "Can I get embroidery or artwork added to my jacket or kurta?",
@@ -272,7 +272,7 @@ export const faqItems = [
   },
   {
     q: "I'm a tailor. How do I start receiving orders?",
-    a: "Visit our Artisan page, submit your details for verification. Once approved (typically 2 business days), you'll see open customer briefs in your city and can start placing bids.",
+    a: "Visit our Artisan page, submit your details for verification. Once approved, you'll see open customer briefs in your city and can start placing bids immediately.",
   },
   {
     q: "When do I get paid as an artisan?",

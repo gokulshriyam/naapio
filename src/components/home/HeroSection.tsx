@@ -63,9 +63,9 @@ const HeroSection = () => {
             </button>
 
             {/* City & Language selectors */}
-            <div className="flex items-center gap-4 mt-6">
-              <CitySelector />
-              <LanguageSelector />
+            <div className="flex items-center gap-3 mt-4">
+              <CitySelector variant="hero" />
+              <LanguageSelector variant="hero" />
             </div>
           </motion.div>
 
