@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import mensFashion from "@/assets/mens-fashion.jpg";
 import womensFashion from "@/assets/womens-fashion.jpg";
+import catLehenga from "@/assets/categories/cat-lehenga.jpg";
+import catSalwarKameez from "@/assets/categories/cat-salwar-kameez.jpg";
+import catSareeBlouse from "@/assets/categories/cat-saree-blouse.jpg";
+import catKurti from "@/assets/categories/cat-kurti.jpg";
+import catSherwani from "@/assets/categories/cat-sherwani.jpg";
+import catKurta from "@/assets/categories/cat-kurta.jpg";
 
 const categories = [
   {
@@ -17,6 +23,15 @@ const categories = [
     image: womensFashion,
     gender: "Women",
   },
+];
+
+const garmentCategories = [
+  { label: "Lehenga", image: catLehenga, gender: "Women", category: "Lehenga" },
+  { label: "Salwar Kameez", image: catSalwarKameez, gender: "Women", category: "Salwar Kameez" },
+  { label: "Saree Blouse", image: catSareeBlouse, gender: "Women", category: "Saree Blouse" },
+  { label: "Kurti", image: catKurti, gender: "Women", category: "Kurti" },
+  { label: "Sherwani", image: catSherwani, gender: "Men", category: "Sherwani" },
+  { label: "Kurta", image: catKurta, gender: "Men", category: "Kurta" },
 ];
 
 const occasions = [
@@ -90,6 +105,58 @@ const CategoryPreview = () => {
                 </div>
               </div>
             </motion.div>
+          ))}
+        </div>
+
+        {/* Individual garment category cards */}
+        <div className="flex items-center gap-4 max-w-5xl mx-auto mb-10">
+          <div className="flex-1 h-px bg-border" />
+          <p className="text-sm font-sans font-semibold text-muted-foreground uppercase tracking-wider">
+            Popular garments
+          </p>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto mb-16">
+          {garmentCategories.map((gc, i) => (
+            <motion.button
+              key={gc.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              onClick={() => {
+                localStorage.setItem('naapio_prefill', JSON.stringify({
+                  gender: gc.gender,
+                  category: gc.category,
+                  orderType: 'New Order',
+                }));
+                navigate('/start');
+              }}
+              className="group relative overflow-hidden rounded-xl cursor-pointer"
+            >
+              <img
+                src={gc.image}
+                alt={`${gc.label} category`}
+                className="w-full h-56 object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
+                loading={i < 2 ? undefined : "lazy"}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML(
+                    'afterbegin',
+                    '<div class="w-full h-56 bg-muted rounded-xl"></div>'
+                  );
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-xl" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h3 className="font-serif font-bold text-white text-base">{gc.label}</h3>
+                <div className="flex items-center gap-1 text-white/80 font-sans text-xs mt-1 group-hover:gap-2 transition-all">
+                  <span>Explore</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
+            </motion.button>
           ))}
         </div>
 
