@@ -338,6 +338,13 @@ export const mockVendorActiveOrders = [
     budgetMax: 60000,
     isRushOrder: false,
     inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
+    m5Data: {
+      awbNumber: 'DTDC2026098XY',
+      courierService: 'DTDC',
+      dispatchPhotoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+      dispatchedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+      markedDelivered: false,
+    },
   },
 ];
 
