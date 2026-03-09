@@ -236,7 +236,7 @@ export const faqItems = [
   },
   {
     q: "Is my payment protected?",
-    a: "Absolutely. All payments are held in escrow and released to the vendor only when you approve each milestone. If you're not satisfied, our dispute resolution team steps in.",
+    a: "Absolutely. All payments are held in escrow and released to the artisan only when you approve each milestone. If you're not satisfied, our dispute resolution team steps in.",
   },
   {
     q: "How are tailors verified?",
