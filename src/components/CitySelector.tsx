@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MapPin, Check } from "lucide-react";
+import { MapPin, Check, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCity } from "@/context/CityContext";
