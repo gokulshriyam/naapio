@@ -3,6 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useCity } from "@/context/CityContext";
+import startNewOrder from "@/assets/start-new-order.jpg";
+import startAlteration from "@/assets/start-alteration.jpg";
+import startOwnFabric from "@/assets/start-own-fabric.jpg";
+import startCustomise from "@/assets/start-customise.jpg";
 
 const StartPage = () => {
   const navigate = useNavigate();
@@ -30,7 +34,8 @@ const StartPage = () => {
       description: t('start.newOrderDesc'),
       color: "bg-blue-50 border-blue-200 hover:border-blue-400",
       route: "/wizard",
-      img: "https://source.unsplash.com/featured/?indian+woman+ethnic+fashion+fabric&1002",
+      img: startNewOrder,
+      alt: "New bespoke order — designer draping fabric on mannequin",
     },
     {
       emoji: "✂️",
@@ -38,7 +43,8 @@ const StartPage = () => {
       description: t('start.alterationDesc'),
       color: "bg-orange-50 border-orange-200 hover:border-orange-400",
       route: "/alteration",
-      img: "https://source.unsplash.com/featured/?tailor+sewing+mannequin+workshop&1003",
+      img: startAlteration,
+      alt: "Alteration and repair — tailor working on sewing machine",
     },
     {
       emoji: "🧵",
@@ -46,7 +52,8 @@ const StartPage = () => {
       description: t('start.ownFabricDesc'),
       color: "bg-green-50 border-green-200 hover:border-green-400",
       route: "/wizard?type=own-fabric",
-      img: "https://source.unsplash.com/featured/?fabric+bolt+textile+store&1004",
+      img: startOwnFabric,
+      alt: "Own fabric — cutting fabric with scissors and measuring tape",
     },
     {
       emoji: "🎨",
@@ -54,7 +61,8 @@ const StartPage = () => {
       description: t('start.customiseDesc'),
       color: "bg-purple-50 border-purple-200 hover:border-purple-400",
       route: "/customise",
-      img: "https://source.unsplash.com/featured/?embroidery+jacket+closeup+detail&1005",
+      img: startCustomise,
+      alt: "Customise a design — hand-painted jacket customisation",
     },
   ];
 
@@ -79,7 +87,7 @@ const StartPage = () => {
       </div>
 
       <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl transition-opacity ${!isCitySelected ? "opacity-50 pointer-events-none" : ""}`}>
-        {orderTypes.map((type) => (
+        {orderTypes.map((type, i) => (
           <button
             key={type.title}
             onClick={() => {
@@ -91,8 +99,16 @@ const StartPage = () => {
           >
             <img
               src={type.img}
-              alt={type.title}
-              className="w-full h-36 object-cover"
+              alt={type.alt}
+              className="w-full h-48 object-cover rounded-t-xl"
+              loading={i === 0 ? undefined : "lazy"}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML(
+                  'afterbegin',
+                  '<div class="w-full h-48 bg-muted rounded-t-xl"></div>'
+                );
+              }}
             />
             <div className="p-6 pt-4">
               <div className="text-3xl mb-3">{type.emoji}</div>
