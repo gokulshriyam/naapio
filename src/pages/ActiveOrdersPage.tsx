@@ -1331,7 +1331,15 @@ const ActiveOrdersPage = () => {
                         dispatchedAt: '8 March 2026',
                       };
 
-                      const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent ⭐'];
+                      const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+                      const reviewAspects = [
+                        { key: 'stitchQuality',   label: 'Stitch Quality',    description: 'How well the garment was stitched and finished' },
+                        { key: 'fitAccuracy',     label: 'Fit & Measurements', description: 'How accurately your measurements were followed' },
+                        { key: 'fabricAccuracy',  label: 'Fabric as Agreed',  description: 'Did the artisan source the fabric you approved at M2?' },
+                        { key: 'communication',   label: 'Communication',     description: 'How responsive and clear the artisan was throughout' },
+                        { key: 'onTimeDelivery',  label: 'On-Time Delivery',  description: 'Was the garment dispatched within the agreed timeline?' },
+                      ];
 
                       // STAGE A — Before delivery confirmed
                       if (!deliveryConfirmed) {
@@ -1369,59 +1377,83 @@ const ActiveOrdersPage = () => {
                       // STAGE B — After delivery confirmed, before review submitted
                       if (deliveryConfirmed && !reviewSubmitted) {
                         return (
-                          <>
-                            <div className="p-4 rounded-xl bg-success/10 border border-success/20 mb-4">
-                              <p className="font-sans font-medium text-success text-sm">✅ Delivery confirmed! Please take a moment to rate your artisan.</p>
+                          <div className="space-y-6">
+                            {/* Confirmation banner */}
+                            <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
+                              <span className="text-green-600 text-lg">✅</span>
+                              <div>
+                                <p className="text-sm font-sans font-semibold text-green-800">Delivery confirmed!</p>
+                                <p className="text-xs font-sans text-green-700 mt-0.5">Please rate your artisan to close the order. All 5 ratings are required.</p>
+                              </div>
                             </div>
 
-                            <h3 className="font-serif font-bold text-lg text-foreground mb-4">Rate Your Experience</h3>
+                            {/* Section heading */}
+                            <h3 className="font-serif font-bold text-lg text-foreground">Rate Your Experience</h3>
 
-                            {/* Star rating row */}
-                            <div className="flex gap-2 mb-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-8 h-8 cursor-pointer transition-colors ${
-                                    star <= reviewRating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-muted-foreground/40'
-                                  }`}
-                                  onClick={() => setReviewRating(star)}
-                                />
-                              ))}
+                            {/* 5 aspect rows */}
+                            {reviewAspects.map(aspect => (
+                              <div key={aspect.key} className="space-y-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="text-sm font-sans font-semibold text-foreground">{aspect.label}</p>
+                                    <p className="text-xs font-sans text-muted-foreground">{aspect.description}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    {[1,2,3,4,5].map(star => (
+                                      <button
+                                        key={star}
+                                        onClick={() => setAspectRatings(prev => ({ ...prev, [aspect.key]: star }))}
+                                        className="focus:outline-none"
+                                      >
+                                        <Star
+                                          className="w-6 h-6 transition-colors"
+                                          fill={star <= (aspectRatings as any)[aspect.key] ? '#B8860B' : 'transparent'}
+                                          stroke={star <= (aspectRatings as any)[aspect.key] ? '#B8860B' : '#9CA3AF'}
+                                        />
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                {(aspectRatings as any)[aspect.key] > 0 && (
+                                  <p className="text-xs font-sans text-right pr-1" style={{color:'#B8860B'}}>
+                                    {ratingLabels[(aspectRatings as any)[aspect.key]]}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+
+                            {/* Comment textarea */}
+                            <div>
+                              <p className="text-sm font-sans font-semibold text-foreground mb-1">Your Review <span className="text-muted-foreground font-normal">(optional)</span></p>
+                              <textarea
+                                rows={3}
+                                placeholder="Share your experience — quality, fit, communication, delivery..."
+                                value={reviewComment}
+                                onChange={e => setReviewComment(e.target.value)}
+                                className="w-full rounded-xl border border-border p-3 text-sm font-sans resize-none focus:outline-none focus:ring-2 focus:ring-[#B8860B] bg-background text-foreground"
+                              />
                             </div>
-                            {reviewRating > 0 && (
-                              <p className="text-sm font-sans text-muted-foreground mb-4">{ratingLabels[reviewRating]}</p>
-                            )}
 
-                            {/* Textarea for review */}
-                            <textarea
-                              placeholder="Share your experience — quality, fit, communication, delivery..."
-                              rows={3}
-                              className="w-full rounded-xl border border-border p-3 text-sm font-sans resize-none focus:outline-none focus:ring-2 focus:ring-[#B8860B] bg-background text-foreground mb-4"
-                              value={reviewComment}
-                              onChange={(e) => setReviewComment(e.target.value)}
-                            />
-
-                            {/* Submit button */}
-                            <Button
-                              variant="gold"
-                              className="w-full"
-                              disabled={reviewRating === 0}
+                            {/* Submit button — disabled until all 5 aspects rated */}
+                            <button
+                              disabled={!allAspectsRated}
                               onClick={() => {
                                 setReviewSubmitted(true);
                                 toast.success('Review submitted! Thank you.');
                               }}
+                              className={`w-full py-3 rounded-xl font-sans font-semibold text-sm transition-colors ${
+                                allAspectsRated
+                                  ? 'bg-[#B8860B] text-white hover:bg-[#9a720a] cursor-pointer'
+                                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+                              }`}
                             >
-                              Submit Review & Close Order
-                            </Button>
-
-                            {/* Skip link */}
-                            <button
-                              onClick={() => setReviewSubmitted(true)}
-                              className="text-xs text-muted-foreground underline w-full text-center mt-2"
-                            >
-                              Skip — close order without review
+                              Submit Review &amp; Close Order
                             </button>
-                          </>
+
+                            {!allAspectsRated && (
+                              <p className="text-xs text-center font-sans text-muted-foreground">Rate all 5 aspects above to submit</p>
+                            )}
+                          </div>
                         );
                       }
 
@@ -1441,16 +1473,28 @@ const ActiveOrdersPage = () => {
                             Your artisan has been paid. We hope you love your new garment.
                           </p>
 
-                          {/* Show rating if submitted */}
-                          {reviewRating > 0 && (
-                            <div className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2">
-                              <span className="text-sm font-sans text-foreground">You rated:</span>
-                              <span className="text-[#B8860B]">
-                                {'★'.repeat(reviewRating)}{'☆'.repeat(5 - reviewRating)}
-                              </span>
-                              <span className="text-sm font-sans text-muted-foreground">({ratingLabels[reviewRating].replace(' ⭐', '')})</span>
-                            </div>
-                          )}
+                          {/* Aspect ratings summary */}
+                          <div className="w-full rounded-xl bg-muted/40 border border-border p-4 space-y-2 text-left">
+                            <p className="text-xs font-sans font-semibold text-muted-foreground uppercase tracking-wider mb-2">Your Ratings</p>
+                            {reviewAspects.map(aspect => (
+                              <div key={aspect.key} className="flex items-center justify-between">
+                                <p className="text-xs font-sans text-foreground">{aspect.label}</p>
+                                <div className="flex items-center gap-0.5">
+                                  {[1,2,3,4,5].map(star => (
+                                    <Star
+                                      key={star}
+                                      className="w-3.5 h-3.5"
+                                      fill={star <= (aspectRatings as any)[aspect.key] ? '#B8860B' : 'transparent'}
+                                      stroke={star <= (aspectRatings as any)[aspect.key] ? '#B8860B' : '#9CA3AF'}
+                                    />
+                                  ))}
+                                  <span className="text-xs font-sans text-muted-foreground ml-1">
+                                    {ratingLabels[(aspectRatings as any)[aspect.key]]}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
 
                           {/* Action buttons */}
                           <div className="flex flex-col sm:flex-row gap-3 pt-2">
