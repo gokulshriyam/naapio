@@ -79,18 +79,23 @@ const CitySelector = ({ variant = "header" }: CitySelectorProps) => {
     );
   }
 
+  const triggerClass = variant === "hero"
+    ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/40 bg-white/10 text-white text-sm font-sans hover:bg-white/20 cursor-pointer transition-colors"
+    : `flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-sans transition-colors ${
+        selectedCity
+          ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          : "text-accent animate-pulse hover:bg-muted/50"
+      }`;
+
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-sans transition-colors ${
-          selectedCity
-            ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            : "text-accent animate-pulse hover:bg-muted/50"
-        }`}
+        className={triggerClass}
       >
         <MapPin className="w-4 h-4" />
         <span className="text-xs font-medium">{selectedCity || "Select City"}</span>
+        {variant === "hero" && <ChevronDown className="w-3 h-3" />}
       </button>
 
       {open && (

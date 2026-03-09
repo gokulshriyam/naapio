@@ -514,10 +514,22 @@ const ForTailorsPage = () => {
                     <SelectValue placeholder="Select your specialisation" />
                   </SelectTrigger>
                   <SelectContent>
-                    {specialisations.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
+                    {specialisationCategories.map((cat) => (
+                      <React.Fragment key={cat.label}>
+                        <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mt-2">
+                          {cat.label}
+                        </SelectLabel>
+                        {cat.items.map((item) => {
+                          const isObj = typeof item === "object";
+                          const value = isObj ? item.value : item;
+                          const disabled = isObj ? item.disabled : false;
+                          return (
+                            <SelectItem key={value} value={value} disabled={disabled} className={disabled ? "opacity-50" : ""}>
+                              {value}
+                            </SelectItem>
+                          );
+                        })}
+                      </React.Fragment>
                     ))}
                   </SelectContent>
                 </Select>

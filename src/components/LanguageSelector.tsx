@@ -66,14 +66,19 @@ const LanguageSelector = ({ variant = "header" }: LanguageSelectorProps) => {
     );
   }
 
+  const triggerClass = variant === "hero"
+    ? "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/40 bg-white/10 text-white text-sm font-sans hover:bg-white/20 cursor-pointer transition-colors"
+    : "flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-sans text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors";
+
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-sans text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+        className={triggerClass}
       >
         <Globe className="w-4 h-4" />
         <span className="uppercase text-xs font-medium">{current.code}</span>
+        {variant === "hero" && <ChevronDown className="w-3 h-3" />}
       </button>
 
       {open && (
