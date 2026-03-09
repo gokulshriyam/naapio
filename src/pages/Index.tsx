@@ -293,6 +293,12 @@ const Index = () => {
               </div>
             )}
 
+            {/* City & Language selectors — xl+ only */}
+            <div className="hidden xl:flex items-center gap-2">
+              <CitySelector />
+              <LanguageSelector />
+            </div>
+
             {/* Login/CTA buttons when not logged in */}
             {!isLoggedIn && !isVendorLoggedInState && (
               <div className="flex items-center gap-1 flex-shrink-0 flex-nowrap">
