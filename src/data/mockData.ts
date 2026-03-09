@@ -272,7 +272,7 @@ export const faqItems = [
   },
   {
     q: "I'm a tailor. How do I start receiving orders?",
-    a: "Visit our Artisan page, submit your details for verification. Once approved (typically 2 business days), you'll see open customer briefs in your city and can start placing bids.",
+    a: "Visit our Artisan page, submit your details for verification. Once approved, you'll see open customer briefs in your city and can start placing bids immediately.",
   },
   {
     q: "When do I get paid as an artisan?",

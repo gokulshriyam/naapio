@@ -63,9 +63,20 @@ const HeroSection = () => {
             </button>
 
             {/* City & Language selectors */}
-            <div className="flex items-center gap-4 mt-6">
-              <CitySelector />
-              <LanguageSelector />
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                onClick={() => {
+                  // Trigger CitySelector's dropdown by rendering it
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/40 bg-white/10 text-white text-sm font-sans hover:bg-white/20 cursor-pointer transition-colors"
+              >
+                <CitySelector variant="hero" />
+              </button>
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/40 bg-white/10 text-white text-sm font-sans hover:bg-white/20 cursor-pointer transition-colors"
+              >
+                <LanguageSelector variant="hero" />
+              </button>
             </div>
           </motion.div>
 

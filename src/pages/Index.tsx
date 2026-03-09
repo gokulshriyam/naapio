@@ -424,14 +424,12 @@ const Index = () => {
             <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
               Start My Bespoke Order →
             </Button>
-            <Button
-              variant="outline"
-              size="hero"
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+            <button
+              className="bg-white text-[hsl(var(--primary))] font-sans font-semibold px-6 py-2.5 rounded-full hover:bg-white/90 transition-colors"
               onClick={() => navigate("/for-tailors")}
             >
               Join as Artisan
-            </Button>
+            </button>
           </div>
         </div>
       </section>

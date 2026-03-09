@@ -60,7 +60,7 @@ const VendorShowcase = () => {
             <span className="text-4xl block mb-4">✂️</span>
             <h3 className="text-xl font-serif font-bold text-foreground mb-3">For Master Artisans</h3>
             <p className="text-sm font-sans text-muted-foreground mb-6 leading-relaxed">
-              Earn ₹60,000/month on 5 orders. No client hunting, no payment chasing. Naapio brings verified customers with confirmed budgets directly to you.
+              No client hunting, no payment chasing. Naapio brings verified customers with confirmed budgets directly to you.
             </p>
             <ul className="space-y-3 mb-8">
               {[

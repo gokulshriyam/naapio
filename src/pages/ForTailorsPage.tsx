@@ -42,7 +42,7 @@ const benefits = [
     icon: IndianRupee,
     title: "Earn More, Guaranteed",
     description:
-      "Earn ₹60,000/month on just 5 orders. That's 3× the average tailor street income of ₹20,000. Every rupee is held in escrow and released to you on time — no chasing customers for payment.",
+      "Top artisans on Naapio earn significantly more than traditional tailoring — on your own terms, on your own schedule. Every rupee is held in escrow and released to you on time, automatically. No chasing customers for payment.",
   },
   {
     icon: Package,
