@@ -100,7 +100,7 @@ const StartPage = () => {
             <img
               src={type.img}
               alt={type.alt}
-              className="w-full h-48 object-cover rounded-t-xl"
+              className={`w-full h-48 object-cover rounded-t-xl ${i === 0 ? 'object-top' : ''}`}
               loading={i === 0 ? undefined : "lazy"}
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
