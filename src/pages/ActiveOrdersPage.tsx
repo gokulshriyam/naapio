@@ -270,7 +270,12 @@ const ActiveOrdersPage = () => {
 
       // Single-order compat
       const raw = localStorage.getItem('naapio_active_order');
-      if (raw) setActiveOrder(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setActiveOrder(parsed);
+        // Restore m5 delivered state
+        if (parsed?.m5Data?.markedDelivered) setM5MarkedDelivered(true);
+      }
       const raw2 = localStorage.getItem('naapio_last_order');
       if (raw2) setLastOrder(JSON.parse(raw2));
 
@@ -279,6 +284,7 @@ const ActiveOrdersPage = () => {
         const mostRecent = orders[orders.length - 1];
         setSelectedOrderId(mostRecent.orderId);
         setActiveOrder(mostRecent);
+        if (mostRecent?.m5Data?.markedDelivered) setM5MarkedDelivered(true);
       }
     } catch {}
     setTimeout(() => setLoading(false), 300);
