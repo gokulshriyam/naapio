@@ -256,7 +256,7 @@ export const faqItems = [
   },
   {
     q: "Can I get my existing clothes altered?",
-    a: "Yes — select 'Alteration / Repair' when you start. Upload photos of your garment, describe what needs to change, and tailors will bid on your brief. Simple alterations take 3 days; major rework takes 7 days. The ₹499 posting fee applies and is deducted from your final payment.",
+    a: "Yes — select 'Alteration / Repair' when you start your order. Upload photos of your garment, describe what needs to change, and artisans will bid on your brief.",
   },
   {
     q: "Can I get embroidery or artwork added to my jacket or kurta?",
