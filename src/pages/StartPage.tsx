@@ -3,10 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useCity } from "@/context/CityContext";
-import startNewOrder from "@/assets/start-new-order.jpg";
-import startAlteration from "@/assets/start-alteration.jpg";
-import startOwnFabric from "@/assets/start-own-fabric.jpg";
-import startCustomise from "@/assets/start-customise.jpg";
+import startNewOrder from "@/assets/categories/start-new-order.jpg";
+import startAlteration from "@/assets/categories/start-alteration.jpg";
+import startOwnFabric from "@/assets/categories/start-own-fabric.jpg";
+import startCustomise from "@/assets/categories/start-customise.jpg";
 
 const StartPage = () => {
   const navigate = useNavigate();
