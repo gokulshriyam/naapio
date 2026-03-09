@@ -515,19 +515,33 @@ const ForTailorsPage = () => {
                     <SelectValue placeholder="Select your specialisation" />
                   </SelectTrigger>
                   <SelectContent>
-                    {specialisationCategories.map((cat) => (
-                      <React.Fragment key={cat.label}>
-                        <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mt-2">
-                          {cat.label}
-                        </SelectLabel>
-                        {cat.items.map((item) => {
-                          const isObj = typeof item === "object";
-                          const value = isObj ? item.value : item;
-                          const disabled = isObj ? item.disabled : false;
-                          return (
-                            <SelectItem key={value} value={value} disabled={disabled} className={disabled ? "opacity-50" : ""}>
-                              {value}
-                            </SelectItem>
+                    <SelectGroup>
+                      <SelectLabel>Women's Garments</SelectLabel>
+                      <SelectItem value="saree-blouse">Saree Blouse</SelectItem>
+                      <SelectItem value="lehenga-bridal">Lehenga &amp; Bridal Lehenga</SelectItem>
+                      <SelectItem value="salwar-anarkali">Salwar Kameez &amp; Anarkali</SelectItem>
+                      <SelectItem value="kurti-coord">Kurti &amp; Co-ord Sets</SelectItem>
+                      <SelectItem value="gown-evening">Gown &amp; Evening Wear</SelectItem>
+                      <SelectItem value="saree-nauvari">Saree Draping &amp; Nauvari</SelectItem>
+                      <SelectItem value="chaniya-choli">Chaniya Choli</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Men's Garments</SelectLabel>
+                      <SelectItem value="sherwani-bandhgala">Sherwani &amp; Bandhgala</SelectItem>
+                      <SelectItem value="kurta-nehru">Kurta &amp; Nehru Jacket</SelectItem>
+                      <SelectItem value="suit-blazer">Suit, Blazer &amp; Formal Shirt</SelectItem>
+                      <SelectItem value="trousers-formal">Trousers &amp; Formal Wear</SelectItem>
+                      <SelectItem value="veshti-dhoti">Veshti / Dhoti / Mundu</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Alterations &amp; Repairs</SelectLabel>
+                      <SelectItem value="alterations">Alterations (All Types)</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Kids</SelectLabel>
+                      <SelectItem value="kids-coming-soon" disabled>Kids' Wear (Launching Soon)</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
                           );
                         })}
                       </React.Fragment>
