@@ -1173,9 +1173,6 @@ const ActiveOrdersPage = () => {
                   })}
                 </div>
 
-                <div className="p-4 rounded-xl bg-muted mb-4">
-                  <p className="text-sm font-sans text-foreground">🗓️ Estimated delivery: {deliveryDate}</p>
-                </div>
 
                 <p className="text-sm font-sans text-muted-foreground italic text-center">"{stitchQuotes[stitchStage]}"</p>
 
