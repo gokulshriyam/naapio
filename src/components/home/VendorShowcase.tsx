@@ -31,7 +31,7 @@ const VendorShowcase = () => {
             <span className="text-4xl block mb-4">👗</span>
             <h3 className="text-xl font-serif font-bold text-foreground mb-3">For Fashion Lovers</h3>
             <p className="text-sm font-sans text-muted-foreground mb-6 leading-relaxed">
-              Post a brief in 4 minutes. Get bids from 5–10 skilled artisans within 7 days. Your payment stays in escrow until you're happy.
+              Post a brief in 4 minutes. Get bids from 50+ skilled artisans within 7 days. Your payment stays in escrow until you're happy.
             </p>
             <ul className="space-y-3 mb-8">
               {[
