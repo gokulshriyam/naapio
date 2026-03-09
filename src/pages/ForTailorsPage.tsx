@@ -121,13 +121,37 @@ const tierData = [
   },
 ];
 
-const specialisations = [
-  "Bridal Wear",
-  "Salwar / Kameez",
-  "Saree Blouse",
-  "Formals",
-  "Kids Wear",
-  "Other",
+const specialisationCategories = [
+  {
+    label: "Women's Garments",
+    items: [
+      "Saree Blouse",
+      "Lehenga & Bridal Lehenga",
+      "Salwar Kameez & Anarkali",
+      "Kurti & Co-ord Sets",
+      "Gown & Evening Wear",
+      "Saree Draping & Nauvari",
+      "Chaniya Choli",
+    ],
+  },
+  {
+    label: "Men's Garments",
+    items: [
+      "Sherwani & Bandhgala",
+      "Kurta & Nehru Jacket",
+      "Suit, Blazer & Formal Shirt",
+      "Trousers & Formal Wear",
+      "Veshti / Dhoti / Mundu",
+    ],
+  },
+  {
+    label: "Alterations & Repairs",
+    items: ["Alterations (All Types)"],
+  },
+  {
+    label: "Kids (Coming Soon)",
+    items: [{ value: "Kids' Wear (Launching Soon)", disabled: true }],
+  },
 ];
 
 const ForTailorsPage = () => {
