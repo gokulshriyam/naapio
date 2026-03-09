@@ -378,6 +378,7 @@ const ActiveOrdersPage = () => {
   });
   const [review, setReview] = useState({ quality: 0, communication: 0, timeliness: 0, value: 0, comment: '' });
   const [orderComplete, setOrderComplete] = useState(false);
+  const [m5MarkedDelivered, setM5MarkedDelivered] = useState(false);
 
   // ── Chat state ──
   const [chatOpen, setChatOpen] = useState(false);
