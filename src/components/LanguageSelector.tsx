@@ -16,7 +16,7 @@ const languages = [
 ];
 
 interface LanguageSelectorProps {
-  variant?: "header" | "mobile";
+  variant?: "header" | "mobile" | "hero";
 }
 
 const LanguageSelector = ({ variant = "header" }: LanguageSelectorProps) => {
