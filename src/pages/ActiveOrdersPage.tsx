@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import m2Fabric1 from '@/assets/m2-fabric-1.jpg';
 import m2Fabric2 from '@/assets/m2-fabric-2.jpg';
 import m2Fabric3 from '@/assets/m2-fabric-3.jpg';
+import dispatchProof from '@/assets/dispatch-proof.jpg';
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -1330,7 +1331,7 @@ const ActiveOrdersPage = () => {
                       const m5Mock = {
                         courierService: 'DTDC',
                         awbNumber: 'DTDC2026098XY',
-                        dispatchPhotoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+                        dispatchPhotoUrl: dispatchProof,
                         dispatchedAt: '8 March 2026',
                       };
 
@@ -1365,7 +1366,7 @@ const ActiveOrdersPage = () => {
                             </div>
                             <div>
                               <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
-                              <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm rounded-xl object-cover mt-2" alt="Dispatch proof" />
+                              <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm h-48 object-cover object-center rounded-xl" style={{ display: 'block', width: '100%' }} alt="Dispatch proof" />
                             </div>
                             <div className="border-t border-border pt-4">
                               <p className="text-sm font-sans text-muted-foreground mb-3">Once you've received your order, please confirm delivery below to release payment to your artisan.</p>
