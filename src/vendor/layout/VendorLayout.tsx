@@ -4,6 +4,7 @@ import { Inbox, Tag, Package, Wallet, User, LogOut, ArrowLeftRight, Star } from 
 import { cn } from "@/lib/utils";
 import { mockVendor } from "../data/vendorMockData";
 import VendorNotificationBell from "../components/VendorNotificationBell";
+import vendorAvatar from "@/assets/vendor-avatar.jpg";
 
 const navItems = [
   { label: 'Leads', icon: Inbox, path: '/vendor' },
