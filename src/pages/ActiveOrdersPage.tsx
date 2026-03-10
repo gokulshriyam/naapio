@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import m2Fabric1 from '@/assets/m2-fabric-1.jpg';
+import m2Fabric2 from '@/assets/m2-fabric-2.jpg';
+import m2Fabric3 from '@/assets/m2-fabric-3.jpg';
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -115,19 +118,19 @@ const fabricOptions = [
   {
     id: 'F1', name: 'Royal Silk — Deep Crimson', type: 'Pure Silk', weight: 'Heavy (180 GSM)',
     drape: 'Excellent', priceTag: 'Premium',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
+    image: m2Fabric1,
     note: 'Best match for your colour preference. Premium drape for the occasion.',
   },
   {
     id: 'F2', name: 'Georgette — Jewel Burgundy', type: 'Georgette', weight: 'Medium (120 GSM)',
     drape: 'Good', priceTag: 'Mid-range',
-    image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=300&h=200&fit=crop',
+    image: m2Fabric2,
     note: 'Lighter option, good for embroidery. Comfortable for long events.',
   },
   {
     id: 'F3', name: 'Velvet — Midnight Ruby', type: 'Velvet', weight: 'Heavy (220 GSM)',
     drape: 'Structured', priceTag: 'Luxury',
-    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=200&fit=crop',
+    image: m2Fabric3,
     note: 'Luxurious texture. Ideal for rich embellishment work.',
   },
 ];
@@ -1099,7 +1102,7 @@ const ActiveOrdersPage = () => {
                         setSelectedFabrics(n);
                       }}>
                         <div className="h-40 overflow-hidden relative">
-                          <img src={fab.image} alt={fab.name} className="w-full h-full object-cover" />
+                          <img src={fab.image} alt={fab.name} className="w-full h-40 object-cover object-center rounded-xl" style={{ display: 'block', width: '100%' }} />
                           {sel && <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center"><Check className="w-4 h-4 text-accent-foreground" /></div>}
                         </div>
                         <div className="p-3">
