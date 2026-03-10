@@ -1366,7 +1366,7 @@ const ActiveOrdersPage = () => {
                             </div>
                             <div>
                               <Label className="text-xs font-sans text-muted-foreground">Dispatch Photo</Label>
-                              <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm rounded-xl object-cover mt-2" alt="Dispatch proof" />
+                              <img src={m5Mock.dispatchPhotoUrl} className="w-full max-w-sm h-48 object-cover object-center rounded-xl" style={{ display: 'block', width: '100%' }} alt="Dispatch proof" />
                             </div>
                             <div className="border-t border-border pt-4">
                               <p className="text-sm font-sans text-muted-foreground mb-3">Once you've received your order, please confirm delivery below to release payment to your artisan.</p>
