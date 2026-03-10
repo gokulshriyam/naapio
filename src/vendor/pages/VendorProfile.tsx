@@ -67,7 +67,7 @@ const VendorProfile = () => {
   const handleAddPortfolio = () => {
     // Demo: add a placeholder
     const newId = `p-${Date.now()}`;
-    setPortfolio(prev => [...prev, { id: newId, url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop', caption: '' }]);
+    setPortfolio(prev => [...prev, { id: newId, url: vendorAvatar, caption: '' }]);
     toast.success('Photo added to portfolio');
     // TODO: API_INTEGRATION_POINT — upload to S3, sync portfolio to vendor profile
   };
