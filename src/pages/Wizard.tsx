@@ -207,11 +207,11 @@ const colourMoodOptions = [
 ];
 
 const surfaceOptions = [
-  { label: "Plain / No Embellishment", exclusive: true },
-  { label: "Heavy Embroidery", img: "https://source.unsplash.com/featured/?heavy+embroidery+indian+fabric+closeup&1040" },
-  { label: "Zardozi / Zari Work", img: "https://source.unsplash.com/featured/?zari+zardozi+gold+embroidery+closeup&1041" },
-  { label: "Mirror Work", img: "https://source.unsplash.com/featured/?mirror+work+shisha+embroidery+india&1042" },
-  { label: "Sequence & Beadwork", img: "https://source.unsplash.com/featured/?sequins+beadwork+fabric+closeup&1043" },
+  { label: "Plain / No Embellishment", exclusive: true, img: wizSurfPlain },
+  { label: "Heavy Embroidery", img: wizSurfEmbroidery },
+  { label: "Zardozi / Zari Work", img: wizSurfZardozi },
+  { label: "Mirror Work", img: wizSurfMirror },
+  { label: "Sequence & Beadwork", img: wizSurfSequin },
   { label: "Bandhani / Tie-Dye", img: "https://source.unsplash.com/featured/?bandhani+tie+dye+fabric+india&1044" },
   { label: "Kalamkari / Block Print", img: "https://source.unsplash.com/featured/?kalamkari+block+print+fabric+india&1045" },
   { label: "Resham Thread Work", img: "https://source.unsplash.com/featured/?resham+thread+embroidery+fabric&1046" },
