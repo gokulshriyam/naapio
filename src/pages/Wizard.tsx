@@ -27,6 +27,14 @@ import wizGown from "@/assets/wiz-gown.jpg";
 import wizKurti from "@/assets/wiz-kurti.jpg";
 import wizCoordSet from "@/assets/wiz-coord-set.jpg";
 import wizJacket from "@/assets/wiz-jacket.jpg";
+import wizSherwani from '@/assets/wiz-sherwani.jpg';
+import wizKurta from '@/assets/wiz-kurta.jpg';
+import wizBandhgala from '@/assets/wiz-bandhgala.jpg';
+import wizSuitBlazer from '@/assets/wiz-suit-blazer.jpg';
+import wizTrousers from '@/assets/wiz-trousers.jpg';
+import wizIndoWestern from '@/assets/wiz-indo-western.jpg';
+import wizFeelLight from '@/assets/wiz-feel-light.jpg';
+import wizFeelStructured from '@/assets/wiz-feel-structured.jpg';
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
@@ -141,13 +149,13 @@ const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
 const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
 
 const categoryImages: Record<string, string> = {
-  "Sherwani": "https://source.unsplash.com/featured/?indian+man+sherwani+groom&1010",
-  "Kurta": "https://source.unsplash.com/featured/?indian+man+kurta+ethnic&1011",
-  "Suit": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
-  "Blazer": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
-  "Bandhgala": "https://source.unsplash.com/featured/?bandhgala+jacket+men+indian&1013",
-  "Trousers": "https://source.unsplash.com/featured/?formal+trousers+men+tailored&1015",
-  "Indo-Western": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
+  "Sherwani": wizSherwani,
+  "Kurta": wizKurta,
+  "Suit": wizSuitBlazer,
+  "Blazer": wizSuitBlazer,
+  "Bandhgala": wizBandhgala,
+  "Trousers": wizTrousers,
+  "Indo-Western": wizIndoWestern,
   "Lehenga": wizLehenga,
   "Saree Blouse": wizSareeBlouse,
   "Salwar Kameez": wizSalwarKameez,
@@ -159,8 +167,8 @@ const categoryImages: Record<string, string> = {
 };
 
 const feelOptions = [
-  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://source.unsplash.com/featured/?chiffon+fabric+flowing+breeze&1030" },
-  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://source.unsplash.com/featured/?lehenga+structured+silhouette+formal&1031" },
+  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: wizFeelLight },
+  { label: "Structured", desc: "Holds its shape, clean silhouette", img: wizFeelStructured },
   { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://source.unsplash.com/featured/?bridal+lehenga+heavy+embroidery+velvet&1032" },
   { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://source.unsplash.com/featured/?formal+blazer+suit+lapels+closeup&1033" },
   { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://source.unsplash.com/featured/?soft+draped+fabric+indian+ethnic&1034" },
