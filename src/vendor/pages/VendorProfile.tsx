@@ -19,9 +19,9 @@ const ALL_SPECIALITIES = [
 ];
 
 const DEMO_PORTFOLIO = [
-  { id: 'p1', url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=300&h=300&fit=crop', caption: 'Bridal lehenga with mirror work' },
-  { id: 'p2', url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300&h=300&fit=crop', caption: 'Embroidered saree blouse' },
-  { id: 'p3', url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300&h=300&fit=crop', caption: 'Navy sherwani formal collection' },
+  { id: 'p1', url: bidThumb1, caption: 'Bridal lehenga with mirror work' },
+  { id: 'p2', url: bidThumb2, caption: 'Embroidered saree blouse' },
+  { id: 'p3', url: vendorAvatar, caption: 'Navy sherwani formal collection' },
 ];
 
 const VendorProfile = () => {
