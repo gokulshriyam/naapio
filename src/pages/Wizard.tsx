@@ -177,10 +177,10 @@ const categoryImages: Record<string, string> = {
 const feelOptions = [
   { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: wizFeelLight },
   { label: "Structured", desc: "Holds its shape, clean silhouette", img: wizFeelStructured },
-  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://source.unsplash.com/featured/?bridal+lehenga+heavy+embroidery+velvet&1032" },
-  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://source.unsplash.com/featured/?formal+blazer+suit+lapels+closeup&1033" },
-  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://source.unsplash.com/featured/?soft+draped+fabric+indian+ethnic&1034" },
-  { label: "No Preference", desc: "Let the tailor recommend", img: "https://source.unsplash.com/featured/?fabric+textile+assorted+colour&1035" },
+  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: wizFeelRich },
+  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: wizFeelCrisp },
+  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: wizFeelSoft },
+  { label: "No Preference", desc: "Let the tailor recommend", img: null },
 ];
 
 const fabricTypesByFeel: Record<string, string[]> = {
