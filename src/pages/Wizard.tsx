@@ -31,6 +31,7 @@ import wizSherwani from '@/assets/wiz-sherwani.jpg';
 import wizKurta from '@/assets/wiz-kurta.jpg';
 import wizBandhgala from '@/assets/wiz-bandhgala.jpg';
 import wizSuitBlazer from '@/assets/wiz-suit-blazer.jpg';
+import wizBlazer from '@/assets/wiz-blazer.jpg';
 import wizTrousers from '@/assets/wiz-trousers.jpg';
 import wizIndoWestern from '@/assets/wiz-indo-western.jpg';
 import wizFeelLight from '@/assets/wiz-feel-light.jpg';
