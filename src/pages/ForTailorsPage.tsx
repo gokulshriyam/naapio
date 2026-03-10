@@ -298,8 +298,11 @@ const ForTailorsPage = () => {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="bg-card rounded-2xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow"
+                className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border hover:shadow-md transition-shadow"
               >
+                {i === 0 && <img src={artisanSewing} alt="Artisan sewing" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
+                {i === 1 && <img src={artisanFabric} alt="Artisan with fabric" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
+                <div className="p-8">
                 <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
                   <b.icon className="w-7 h-7 text-accent" />
                 </div>
