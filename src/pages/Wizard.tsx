@@ -169,7 +169,7 @@ const categoryImages: Record<string, string> = {
   "Sherwani": wizSherwani,
   "Kurta": wizKurta,
   "Suit": wizSuitBlazer,
-  "Blazer": wizSuitBlazer,
+  "Blazer": wizBlazer,
   "Bandhgala": wizBandhgala,
   "Trousers": wizTrousers,
   "Indo-Western": wizIndoWestern,

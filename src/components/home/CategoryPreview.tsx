@@ -123,7 +123,7 @@ const CategoryPreview = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-6xl mx-auto mb-16">
           {garmentCategories.map((gc, i) => (
             <motion.button
               key={gc.label}
