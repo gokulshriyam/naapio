@@ -146,7 +146,8 @@ const CategoryPreview = () => {
               <img
                 src={gc.image}
                 alt={`${gc.label} category`}
-                className="w-full h-56 object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-56 object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-500"
+                style={{ display: 'block', width: '100%' }}
                 loading={i < 2 ? undefined : "lazy"}
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';

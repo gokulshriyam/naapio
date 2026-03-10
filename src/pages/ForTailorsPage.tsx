@@ -234,7 +234,7 @@ const ForTailorsPage = () => {
               "repeating-linear-gradient(120deg, hsl(var(--accent)) 0px, transparent 1px, transparent 60px)",
           }}
         />
-        <div className="container mx-auto px-6 text-center relative z-10">
+        <div className="container mx-auto px-6 text-center relative" style={{ zIndex: 1 }}>
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
             <span className="inline-flex items-center gap-2 text-accent font-sans font-medium tracking-wide uppercase text-sm mb-6">
               <Scissors className="w-4 h-4" /> For Master Tailors & Artisans
