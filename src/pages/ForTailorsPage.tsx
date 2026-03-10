@@ -312,6 +312,7 @@ const ForTailorsPage = () => {
                 <p className="text-muted-foreground font-sans leading-relaxed">
                   {b.description}
                 </p>
+                </div>
               </motion.div>
             ))}
           </div>
