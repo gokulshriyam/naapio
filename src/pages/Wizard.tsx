@@ -35,6 +35,14 @@ import wizTrousers from '@/assets/wiz-trousers.jpg';
 import wizIndoWestern from '@/assets/wiz-indo-western.jpg';
 import wizFeelLight from '@/assets/wiz-feel-light.jpg';
 import wizFeelStructured from '@/assets/wiz-feel-structured.jpg';
+import wizFeelRich from '@/assets/wiz-feel-rich.jpg';
+import wizFeelCrisp from '@/assets/wiz-feel-crisp.jpg';
+import wizFeelSoft from '@/assets/wiz-feel-soft.jpg';
+import wizSurfPlain from '@/assets/wiz-surf-plain.jpg';
+import wizSurfEmbroidery from '@/assets/wiz-surf-embroidery.jpg';
+import wizSurfZardozi from '@/assets/wiz-surf-zardozi.jpg';
+import wizSurfMirror from '@/assets/wiz-surf-mirror.jpg';
+import wizSurfSequin from '@/assets/wiz-surf-sequin.jpg';
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
@@ -169,10 +177,10 @@ const categoryImages: Record<string, string> = {
 const feelOptions = [
   { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: wizFeelLight },
   { label: "Structured", desc: "Holds its shape, clean silhouette", img: wizFeelStructured },
-  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://source.unsplash.com/featured/?bridal+lehenga+heavy+embroidery+velvet&1032" },
-  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://source.unsplash.com/featured/?formal+blazer+suit+lapels+closeup&1033" },
-  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://source.unsplash.com/featured/?soft+draped+fabric+indian+ethnic&1034" },
-  { label: "No Preference", desc: "Let the tailor recommend", img: "https://source.unsplash.com/featured/?fabric+textile+assorted+colour&1035" },
+  { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: wizFeelRich },
+  { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: wizFeelCrisp },
+  { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: wizFeelSoft },
+  { label: "No Preference", desc: "Let the tailor recommend", img: null },
 ];
 
 const fabricTypesByFeel: Record<string, string[]> = {
@@ -199,11 +207,11 @@ const colourMoodOptions = [
 ];
 
 const surfaceOptions = [
-  { label: "Plain / No Embellishment", exclusive: true },
-  { label: "Heavy Embroidery", img: "https://source.unsplash.com/featured/?heavy+embroidery+indian+fabric+closeup&1040" },
-  { label: "Zardozi / Zari Work", img: "https://source.unsplash.com/featured/?zari+zardozi+gold+embroidery+closeup&1041" },
-  { label: "Mirror Work", img: "https://source.unsplash.com/featured/?mirror+work+shisha+embroidery+india&1042" },
-  { label: "Sequence & Beadwork", img: "https://source.unsplash.com/featured/?sequins+beadwork+fabric+closeup&1043" },
+  { label: "Plain / No Embellishment", exclusive: true, img: wizSurfPlain },
+  { label: "Heavy Embroidery", img: wizSurfEmbroidery },
+  { label: "Zardozi / Zari Work", img: wizSurfZardozi },
+  { label: "Mirror Work", img: wizSurfMirror },
+  { label: "Sequence & Beadwork", img: wizSurfSequin },
   { label: "Bandhani / Tie-Dye", img: "https://source.unsplash.com/featured/?bandhani+tie+dye+fabric+india&1044" },
   { label: "Kalamkari / Block Print", img: "https://source.unsplash.com/featured/?kalamkari+block+print+fabric+india&1045" },
   { label: "Resham Thread Work", img: "https://source.unsplash.com/featured/?resham+thread+embroidery+fabric&1046" },
@@ -3625,7 +3633,7 @@ Important rules:
                               } ${plainSelected && !isExclusive ? "opacity-40 pointer-events-none" : ""}`}
                             >
                               {'img' in sopt && sopt.img ? (
-                                <img src={sopt.img} alt={sopt.label} className="w-full h-24 object-cover" />
+                                <img src={sopt.img} alt={sopt.label} className="w-full h-20 object-cover object-center rounded-t-lg" />
                               ) : (
                                 <div className="w-full h-24 bg-muted flex items-center justify-center">
                                   <span className="text-muted-foreground font-sans text-xs">
