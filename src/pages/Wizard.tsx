@@ -3633,7 +3633,7 @@ Important rules:
                               } ${plainSelected && !isExclusive ? "opacity-40 pointer-events-none" : ""}`}
                             >
                               {'img' in sopt && sopt.img ? (
-                                <img src={sopt.img} alt={sopt.label} className="w-full h-24 object-cover" />
+                                <img src={sopt.img} alt={sopt.label} className="w-full h-20 object-cover object-center rounded-t-lg" />
                               ) : (
                                 <div className="w-full h-24 bg-muted flex items-center justify-center">
                                   <span className="text-muted-foreground font-sans text-xs">
