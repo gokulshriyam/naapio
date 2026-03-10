@@ -3393,7 +3393,7 @@ Important rules:
                                   : "border-border hover:border-accent/30"
                               }`}
                             >
-                              <img src={feel.img} alt={feel.label} className="w-full h-32 object-cover" />
+                              <img src={feel.img} alt={feel.label} className="w-full h-20 object-cover object-center rounded-t-lg" style={{ display: 'block', width: '100%' }} />
                               <div className="p-4">
                                 <p className="font-sans font-bold text-sm text-foreground mb-1 flex items-center gap-2">
                                   {isSelected && <Check className="w-4 h-4 text-accent" />}
