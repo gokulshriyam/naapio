@@ -27,6 +27,14 @@ import wizGown from "@/assets/wiz-gown.jpg";
 import wizKurti from "@/assets/wiz-kurti.jpg";
 import wizCoordSet from "@/assets/wiz-coord-set.jpg";
 import wizJacket from "@/assets/wiz-jacket.jpg";
+import wizSherwani from '@/assets/wiz-sherwani.jpg';
+import wizKurta from '@/assets/wiz-kurta.jpg';
+import wizBandhgala from '@/assets/wiz-bandhgala.jpg';
+import wizSuitBlazer from '@/assets/wiz-suit-blazer.jpg';
+import wizTrousers from '@/assets/wiz-trousers.jpg';
+import wizIndoWestern from '@/assets/wiz-indo-western.jpg';
+import wizFeelLight from '@/assets/wiz-feel-light.jpg';
+import wizFeelStructured from '@/assets/wiz-feel-structured.jpg';
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
