@@ -112,16 +112,11 @@ const ProfilePage = () => {
             <div className="flex justify-between"><span className="text-muted-foreground">City</span><span className="text-foreground">{customer.city}</span></div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-border grid grid-cols-3 gap-3 text-center">
+          <div className="mt-6 pt-4 border-t border-border grid grid-cols-2 gap-3 text-center">
             <div>
               <div className="flex items-center justify-center gap-1 mb-1"><ShoppingBag className="w-3.5 h-3.5 text-accent" /></div>
               <p className="text-lg font-serif font-bold text-foreground">{orderCount}</p>
               <p className="text-[10px] text-muted-foreground font-sans">Orders</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-1 mb-1"><CreditCard className="w-3.5 h-3.5 text-accent" /></div>
-              <p className="text-lg font-serif font-bold text-foreground">₹{(customer.totalSpent / 1000).toFixed(0)}k</p>
-              <p className="text-[10px] text-muted-foreground font-sans">Spent</p>
             </div>
             <div>
               <div className="flex items-center justify-center gap-1 mb-1"><Star className="w-3.5 h-3.5 text-accent" /></div>
