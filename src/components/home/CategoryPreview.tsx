@@ -36,10 +36,8 @@ const garmentCategories = [
   { label: "Kurti", image: catKurti, gender: "Women", category: "Kurti" },
   { label: "Sherwani", image: catSherwani, gender: "Men", category: "Sherwani" },
   { label: "Kurta", image: catKurta, gender: "Men", category: "Kurta" },
-  { label: "Anarkali", image: catAnarkali, gender: "Women", category: "Anarkali" },
-  { label: "Gown", image: catGown, gender: "Women", category: "Gown" },
   { label: "Bandhgala", image: catBandhgala, gender: "Men", category: "Bandhgala" },
-  { label: "Suit & Blazer", image: catSuitBlazer, gender: "Men", category: "Suit" },
+  { label: "Suit", image: catSuitBlazer, gender: "Men", category: "Suit" },
 ];
 
 const occasions = [
