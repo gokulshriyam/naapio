@@ -188,7 +188,7 @@ const feelOptions = [
   { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: wizFeelRich },
   { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: wizFeelCrisp },
   { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: wizFeelSoft },
-  { label: "No Preference", desc: "Let the tailor recommend", img: null },
+  { label: "No Preference", desc: "Let the tailor recommend", img: wizFeelNoPref },
 ];
 
 const fabricTypesByFeel: Record<string, string[]> = {
