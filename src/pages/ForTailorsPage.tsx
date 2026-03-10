@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import SiteFooter from "@/components/home/SiteFooter";
+import forTailorsHero from "@/assets/for-tailors-hero.jpg";
+import artisanSewing from "@/assets/artisan-sewing.jpg";
+import artisanFabric from "@/assets/artisan-fabric.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -222,14 +225,17 @@ const ForTailorsPage = () => {
 
       {/* ======== HERO ======== */}
       <section className="relative pt-32 pb-24 overflow-hidden">
+        <img src={forTailorsHero} alt="Artisan workspace" className="absolute inset-0 w-full h-full object-cover object-top" style={{ display: 'block', width: '100%', zIndex: 0 }} />
+        <div className="absolute inset-0 bg-background/80" style={{ zIndex: 0 }} />
         {/* decorative thread motif */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
           style={{
+            zIndex: 0,
             backgroundImage:
               "repeating-linear-gradient(120deg, hsl(var(--accent)) 0px, transparent 1px, transparent 60px)",
           }}
         />
-        <div className="container mx-auto px-6 text-center relative z-10">
+        <div className="container mx-auto px-6 text-center relative" style={{ zIndex: 1 }}>
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
             <span className="inline-flex items-center gap-2 text-accent font-sans font-medium tracking-wide uppercase text-sm mb-6">
               <Scissors className="w-4 h-4" /> For Master Tailors & Artisans
@@ -292,8 +298,11 @@ const ForTailorsPage = () => {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="bg-card rounded-2xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow"
+                className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border hover:shadow-md transition-shadow"
               >
+                {i === 0 && <img src={artisanSewing} alt="Artisan sewing" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
+                {i === 1 && <img src={artisanFabric} alt="Artisan with fabric" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
+                <div className="p-8">
                 <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
                   <b.icon className="w-7 h-7 text-accent" />
                 </div>
@@ -303,6 +312,7 @@ const ForTailorsPage = () => {
                 <p className="text-muted-foreground font-sans leading-relaxed">
                   {b.description}
                 </p>
+                </div>
               </motion.div>
             ))}
           </div>

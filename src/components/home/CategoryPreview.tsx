@@ -9,6 +9,10 @@ import catSareeBlouse from "@/assets/categories/cat-saree-blouse.jpg";
 import catKurti from "@/assets/categories/cat-kurti.jpg";
 import catSherwani from "@/assets/categories/cat-sherwani.jpg";
 import catKurta from "@/assets/categories/cat-kurta.jpg";
+import catAnarkali from "@/assets/categories/cat-anarkali.jpg";
+import catGown from "@/assets/categories/cat-gown.jpg";
+import catBandhgala from "@/assets/categories/cat-bandhgala.jpg";
+import catSuitBlazer from "@/assets/categories/cat-suit-blazer.jpg";
 
 const categories = [
   {
@@ -32,6 +36,10 @@ const garmentCategories = [
   { label: "Kurti", image: catKurti, gender: "Women", category: "Kurti" },
   { label: "Sherwani", image: catSherwani, gender: "Men", category: "Sherwani" },
   { label: "Kurta", image: catKurta, gender: "Men", category: "Kurta" },
+  { label: "Anarkali", image: catAnarkali, gender: "Women", category: "Anarkali" },
+  { label: "Gown", image: catGown, gender: "Women", category: "Gown" },
+  { label: "Bandhgala", image: catBandhgala, gender: "Men", category: "Bandhgala" },
+  { label: "Suit & Blazer", image: catSuitBlazer, gender: "Men", category: "Suit" },
 ];
 
 const occasions = [
@@ -117,7 +125,7 @@ const CategoryPreview = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-16">
           {garmentCategories.map((gc, i) => (
             <motion.button
               key={gc.label}
@@ -138,7 +146,8 @@ const CategoryPreview = () => {
               <img
                 src={gc.image}
                 alt={`${gc.label} category`}
-                className="w-full h-56 object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-56 object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-500"
+                style={{ display: 'block', width: '100%' }}
                 loading={i < 2 ? undefined : "lazy"}
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
