@@ -10,6 +10,7 @@ import { Star, MapPin, Award, TrendingUp, Clock, ShieldCheck, CheckCircle, Penci
 import { cn } from "@/lib/utils";
 import { mockVendor, mockVendorReviews } from "../data/vendorMockData";
 import { toast } from "sonner";
+import vendorAvatar from "@/assets/vendor-avatar.jpg";
 
 const ALL_SPECIALITIES = [
   'Bridal Lehenga', 'Saree Blouse', 'Anarkali', 'Salwar Kameez', 'Sherwani',
