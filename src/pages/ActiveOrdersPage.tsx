@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import m2Fabric1 from '@/assets/m2-fabric-1.jpg';
+import m2Fabric2 from '@/assets/m2-fabric-2.jpg';
+import m2Fabric3 from '@/assets/m2-fabric-3.jpg';
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
