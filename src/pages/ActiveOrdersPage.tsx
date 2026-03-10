@@ -1102,7 +1102,7 @@ const ActiveOrdersPage = () => {
                         setSelectedFabrics(n);
                       }}>
                         <div className="h-40 overflow-hidden relative">
-                          <img src={fab.image} alt={fab.name} className="w-full h-full object-cover" />
+                          <img src={fab.image} alt={fab.name} className="w-full h-40 object-cover object-center rounded-xl" style={{ display: 'block', width: '100%' }} />
                           {sel && <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center"><Check className="w-4 h-4 text-accent-foreground" /></div>}
                         </div>
                         <div className="p-3">
