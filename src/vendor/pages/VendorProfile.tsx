@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { mockVendor, mockVendorReviews } from "../data/vendorMockData";
 import { toast } from "sonner";
 import vendorAvatar from "@/assets/vendor-avatar.jpg";
+import bidThumb1 from "@/assets/bid-thumb-1.jpg";
+import bidThumb2 from "@/assets/bid-thumb-2.jpg";
 
 const ALL_SPECIALITIES = [
   'Bridal Lehenga', 'Saree Blouse', 'Anarkali', 'Salwar Kameez', 'Sherwani',
