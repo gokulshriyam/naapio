@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import SiteFooter from "@/components/home/SiteFooter";
+import forTailorsHero from "@/assets/for-tailors-hero.jpg";
+import artisanSewing from "@/assets/artisan-sewing.jpg";
+import artisanFabric from "@/assets/artisan-fabric.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
