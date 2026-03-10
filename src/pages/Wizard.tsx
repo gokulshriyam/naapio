@@ -43,6 +43,14 @@ import wizSurfEmbroidery from '@/assets/wiz-surf-embroidery.jpg';
 import wizSurfZardozi from '@/assets/wiz-surf-zardozi.jpg';
 import wizSurfMirror from '@/assets/wiz-surf-mirror.jpg';
 import wizSurfSequin from '@/assets/wiz-surf-sequin.jpg';
+import wizFeelNoPref from '@/assets/wiz-feel-no-pref.jpg';
+import wizSurfBandhani from '@/assets/wiz-surf-bandhani.jpg';
+import wizSurfKalamkari from '@/assets/wiz-surf-kalamkari.jpg';
+import wizSurfResham from '@/assets/wiz-surf-resham.jpg';
+import wizSurfCutwork from '@/assets/wiz-surf-cutwork.jpg';
+import wizSurfSmocking from '@/assets/wiz-surf-smocking.jpg';
+import wizSurfDigital from '@/assets/wiz-surf-digital.jpg';
+import wizSurfApplique from '@/assets/wiz-surf-applique.jpg';
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
@@ -180,7 +188,7 @@ const feelOptions = [
   { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: wizFeelRich },
   { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: wizFeelCrisp },
   { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: wizFeelSoft },
-  { label: "No Preference", desc: "Let the tailor recommend", img: null },
+  { label: "No Preference", desc: "Let the tailor recommend", img: wizFeelNoPref },
 ];
 
 const fabricTypesByFeel: Record<string, string[]> = {
@@ -212,13 +220,13 @@ const surfaceOptions = [
   { label: "Zardozi / Zari Work", img: wizSurfZardozi },
   { label: "Mirror Work", img: wizSurfMirror },
   { label: "Sequence & Beadwork", img: wizSurfSequin },
-  { label: "Bandhani / Tie-Dye", img: "https://source.unsplash.com/featured/?bandhani+tie+dye+fabric+india&1044" },
-  { label: "Kalamkari / Block Print", img: "https://source.unsplash.com/featured/?kalamkari+block+print+fabric+india&1045" },
-  { label: "Resham Thread Work", img: "https://source.unsplash.com/featured/?resham+thread+embroidery+fabric&1046" },
-  { label: "Cutwork / Lace", img: "https://source.unsplash.com/featured/?cutwork+lace+fabric+detail&1047" },
-  { label: "Smocking / Pintucks", img: "https://source.unsplash.com/featured/?smocking+pintucks+fabric+texture&1048" },
-  { label: "Digital Print", img: "https://source.unsplash.com/featured/?digital+print+fabric+pattern&1049" },
-  { label: "Appliqué", img: "https://source.unsplash.com/featured/?applique+patchwork+fabric+indian&1050" },
+  { label: "Bandhani / Tie-Dye", img: wizSurfBandhani },
+  { label: "Kalamkari / Block Print", img: wizSurfKalamkari },
+  { label: "Resham Thread Work", img: wizSurfResham },
+  { label: "Cutwork / Lace", img: wizSurfCutwork },
+  { label: "Smocking / Pintucks", img: wizSurfSmocking },
+  { label: "Digital Print", img: wizSurfDigital },
+  { label: "Appliqué", img: wizSurfApplique },
   { label: "No Preference", img: null },
 ];
 
