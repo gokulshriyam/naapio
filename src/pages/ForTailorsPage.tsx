@@ -225,8 +225,10 @@ const ForTailorsPage = () => {
 
       {/* ======== HERO ======== */}
       <section className="relative pt-32 pb-24 overflow-hidden">
+        <img src={forTailorsHero} alt="Artisan workspace" className="absolute inset-0 w-full h-full object-cover object-top" style={{ display: 'block', width: '100%', zIndex: 0 }} />
+        <div className="absolute inset-0 bg-background/80" style={{ zIndex: 0 }} />
         {/* decorative thread motif */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        <div className="absolute inset-0 pointer-events-none opacity-[0.04]" style={{ zIndex: 0 }}
           style={{
             backgroundImage:
               "repeating-linear-gradient(120deg, hsl(var(--accent)) 0px, transparent 1px, transparent 60px)",
