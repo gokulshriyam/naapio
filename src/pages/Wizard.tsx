@@ -141,13 +141,13 @@ const showDupatta = ["Lehenga", "Salwar Kameez", "Anarkali"];
 const showLining = ["Saree Blouse", "Gown", "Sherwani", "Suit", "Bandhgala", "Lehenga", "Jacket"];
 
 const categoryImages: Record<string, string> = {
-  "Sherwani": "https://source.unsplash.com/featured/?indian+man+sherwani+groom&1010",
-  "Kurta": "https://source.unsplash.com/featured/?indian+man+kurta+ethnic&1011",
-  "Suit": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
-  "Blazer": "https://source.unsplash.com/featured/?indian+man+formal+suit&1012",
-  "Bandhgala": "https://source.unsplash.com/featured/?bandhgala+jacket+men+indian&1013",
-  "Trousers": "https://source.unsplash.com/featured/?formal+trousers+men+tailored&1015",
-  "Indo-Western": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
+  "Sherwani": wizSherwani,
+  "Kurta": wizKurta,
+  "Suit": wizSuitBlazer,
+  "Blazer": wizSuitBlazer,
+  "Bandhgala": wizBandhgala,
+  "Trousers": wizTrousers,
+  "Indo-Western": wizIndoWestern,
   "Lehenga": wizLehenga,
   "Saree Blouse": wizSareeBlouse,
   "Salwar Kameez": wizSalwarKameez,
