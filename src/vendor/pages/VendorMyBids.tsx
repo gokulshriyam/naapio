@@ -421,7 +421,7 @@ const VendorMyBids = () => {
                   {/* Thumbnail */}
                   {thumbSrc ? (
                     <button onClick={() => setZoomImage(thumbSrc)} className="flex-shrink-0">
-                      <img src={thumbSrc} alt="" className="w-16 h-16 rounded-lg object-cover object-top" />
+                      <img src={thumbSrc} alt="" className="w-14 h-14 object-cover object-center rounded-lg flex-shrink-0" />
                     </button>
                   ) : (
                     <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-2xl flex-shrink-0">

@@ -89,9 +89,7 @@ const VendorProfile = () => {
       <div className="bg-card border border-border rounded-2xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row items-start gap-4">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center font-serif font-bold text-3xl flex-shrink-0">
-            {mockVendor.realName.charAt(0)}
-          </div>
+          <img src={vendorAvatar} alt="Priya Designs Studio" className="w-20 h-20 rounded-full object-cover object-top flex-shrink-0" />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

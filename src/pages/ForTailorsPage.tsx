@@ -303,6 +303,7 @@ const ForTailorsPage = () => {
               >
                 {i === 0 && <img src={artisanSewing} alt="Artisan sewing" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
                 {i === 1 && <img src={artisanFabric} alt="Artisan with fabric" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
+                {i === 2 && <img src={tailorReputation} alt="Grow Your Reputation" className="w-full h-44 object-cover object-center rounded-t-xl" />}
                 <div className="p-8">
                 <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
                   <b.icon className="w-7 h-7 text-accent" />
