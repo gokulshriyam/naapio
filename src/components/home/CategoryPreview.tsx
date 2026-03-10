@@ -9,6 +9,10 @@ import catSareeBlouse from "@/assets/categories/cat-saree-blouse.jpg";
 import catKurti from "@/assets/categories/cat-kurti.jpg";
 import catSherwani from "@/assets/categories/cat-sherwani.jpg";
 import catKurta from "@/assets/categories/cat-kurta.jpg";
+import catAnarkali from "@/assets/categories/cat-anarkali.jpg";
+import catGown from "@/assets/categories/cat-gown.jpg";
+import catBandhgala from "@/assets/categories/cat-bandhgala.jpg";
+import catSuitBlazer from "@/assets/categories/cat-suit-blazer.jpg";
 
 const categories = [
   {
