@@ -148,14 +148,14 @@ const categoryImages: Record<string, string> = {
   "Bandhgala": "https://source.unsplash.com/featured/?bandhgala+jacket+men+indian&1013",
   "Trousers": "https://source.unsplash.com/featured/?formal+trousers+men+tailored&1015",
   "Indo-Western": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
-  "Lehenga": "https://source.unsplash.com/featured/?indian+lehenga+bridal+woman&1020",
-  "Saree Blouse": "https://source.unsplash.com/featured/?saree+blouse+indian+fashion&1026",
-  "Salwar Kameez": "https://source.unsplash.com/featured/?salwar+kameez+indian+woman&1022",
-  "Anarkali": "https://source.unsplash.com/featured/?anarkali+suit+indian+woman&1023",
-  "Kurti": "https://source.unsplash.com/featured/?kurti+indian+woman+ethnic&1024",
-  "Gown": "https://source.unsplash.com/featured/?indian+woman+ethnic+gown&1025",
-  "Co-ord Set": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
-  "Jacket": "https://source.unsplash.com/featured/?nehru+jacket+indian+men&1014",
+  "Lehenga": wizLehenga,
+  "Saree Blouse": wizSareeBlouse,
+  "Salwar Kameez": wizSalwarKameez,
+  "Anarkali": wizAnarkali,
+  "Kurti": wizKurti,
+  "Gown": wizGown,
+  "Co-ord Set": wizCoordSet,
+  "Jacket": wizJacket,
 };
 
 const feelOptions = [
