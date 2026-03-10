@@ -19,6 +19,14 @@ import { menCategories, womenCategories } from "@/data/mockData";
 import { MEASUREMENT_CONFIG, resolveGarmentMeasurementConfig, HEIGHT_FIELD, type GarmentMeasurementConfig, type MeasurementField } from "@/data/measurementConfig";
 import { fabricOptionsWithImages } from "@/data/fabricData";
 import redLehenga from "@/assets/red-lehenga.jpg";
+import wizLehenga from "@/assets/wiz-lehenga.jpg";
+import wizSalwarKameez from "@/assets/wiz-salwar-kameez.jpg";
+import wizSareeBlouse from "@/assets/wiz-saree-blouse.jpg";
+import wizAnarkali from "@/assets/wiz-anarkali.jpg";
+import wizGown from "@/assets/wiz-gown.jpg";
+import wizKurti from "@/assets/wiz-kurti.jpg";
+import wizCoordSet from "@/assets/wiz-coord-set.jpg";
+import wizJacket from "@/assets/wiz-jacket.jpg";
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
