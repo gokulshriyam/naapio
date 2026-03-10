@@ -2440,7 +2440,7 @@ Important rules:
                           className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                         >
                           {categoryImages[cat] && (
-                            <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
+                            <img src={categoryImages[cat]} alt={cat} className="w-full h-28 object-cover object-top rounded-t-xl" style={{ display: 'block', width: '100%' }} />
                           )}
                           <span className="block p-3">{cat}</span>
                           {showPhotoIndicator && (
