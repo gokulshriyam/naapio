@@ -19,6 +19,14 @@ import { menCategories, womenCategories } from "@/data/mockData";
 import { MEASUREMENT_CONFIG, resolveGarmentMeasurementConfig, HEIGHT_FIELD, type GarmentMeasurementConfig, type MeasurementField } from "@/data/measurementConfig";
 import { fabricOptionsWithImages } from "@/data/fabricData";
 import redLehenga from "@/assets/red-lehenga.jpg";
+import wizLehenga from "@/assets/wiz-lehenga.jpg";
+import wizSalwarKameez from "@/assets/wiz-salwar-kameez.jpg";
+import wizSareeBlouse from "@/assets/wiz-saree-blouse.jpg";
+import wizAnarkali from "@/assets/wiz-anarkali.jpg";
+import wizGown from "@/assets/wiz-gown.jpg";
+import wizKurti from "@/assets/wiz-kurti.jpg";
+import wizCoordSet from "@/assets/wiz-coord-set.jpg";
+import wizJacket from "@/assets/wiz-jacket.jpg";
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
@@ -140,14 +148,14 @@ const categoryImages: Record<string, string> = {
   "Bandhgala": "https://source.unsplash.com/featured/?bandhgala+jacket+men+indian&1013",
   "Trousers": "https://source.unsplash.com/featured/?formal+trousers+men+tailored&1015",
   "Indo-Western": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
-  "Lehenga": "https://source.unsplash.com/featured/?indian+lehenga+bridal+woman&1020",
-  "Saree Blouse": "https://source.unsplash.com/featured/?saree+blouse+indian+fashion&1026",
-  "Salwar Kameez": "https://source.unsplash.com/featured/?salwar+kameez+indian+woman&1022",
-  "Anarkali": "https://source.unsplash.com/featured/?anarkali+suit+indian+woman&1023",
-  "Kurti": "https://source.unsplash.com/featured/?kurti+indian+woman+ethnic&1024",
-  "Gown": "https://source.unsplash.com/featured/?indian+woman+ethnic+gown&1025",
-  "Co-ord Set": "https://source.unsplash.com/featured/?indo+western+fusion+fashion&1029",
-  "Jacket": "https://source.unsplash.com/featured/?nehru+jacket+indian+men&1014",
+  "Lehenga": wizLehenga,
+  "Saree Blouse": wizSareeBlouse,
+  "Salwar Kameez": wizSalwarKameez,
+  "Anarkali": wizAnarkali,
+  "Kurti": wizKurti,
+  "Gown": wizGown,
+  "Co-ord Set": wizCoordSet,
+  "Jacket": wizJacket,
 };
 
 const feelOptions = [
@@ -2432,7 +2440,7 @@ Important rules:
                           className={`rounded-xl text-left font-sans text-sm transition-all border overflow-hidden relative ${isSelected ? "border-accent bg-gold-light text-foreground font-semibold ring-2 ring-accent/30" : "border-border bg-card text-foreground hover:border-accent/30"}`}
                         >
                           {categoryImages[cat] && (
-                            <img src={categoryImages[cat]} alt={cat} className="w-full h-20 object-cover" />
+                            <img src={categoryImages[cat]} alt={cat} className="w-full h-28 object-cover object-top rounded-t-xl" style={{ display: 'block', width: '100%' }} />
                           )}
                           <span className="block p-3">{cat}</span>
                           {showPhotoIndicator && (
