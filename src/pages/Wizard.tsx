@@ -159,8 +159,8 @@ const categoryImages: Record<string, string> = {
 };
 
 const feelOptions = [
-  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: "https://source.unsplash.com/featured/?chiffon+fabric+flowing+breeze&1030" },
-  { label: "Structured", desc: "Holds its shape, clean silhouette", img: "https://source.unsplash.com/featured/?lehenga+structured+silhouette+formal&1031" },
+  { label: "Light & Airy", desc: "Flowing, breathable, moves with you", img: wizFeelLight },
+  { label: "Structured", desc: "Holds its shape, clean silhouette", img: wizFeelStructured },
   { label: "Rich & Heavy", desc: "Luxurious weight, bridal-grade", img: "https://source.unsplash.com/featured/?bridal+lehenga+heavy+embroidery+velvet&1032" },
   { label: "Crisp & Sharp", desc: "Formal, pressed, tailored look", img: "https://source.unsplash.com/featured/?formal+blazer+suit+lapels+closeup&1033" },
   { label: "Soft & Draped", desc: "Gentle drape, comfortable all day", img: "https://source.unsplash.com/featured/?soft+draped+fabric+indian+ethnic&1034" },
