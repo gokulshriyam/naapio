@@ -1,3 +1,12 @@
+import leadThumb1 from '@/assets/lead-thumb-1.jpg';
+import leadThumb2 from '@/assets/lead-thumb-2.jpg';
+import leadThumb3 from '@/assets/lead-thumb-3.jpg';
+import leadThumb4 from '@/assets/lead-thumb-4.jpg';
+import leadThumb5 from '@/assets/lead-thumb-5.jpg';
+import bidThumb1 from '@/assets/bid-thumb-1.jpg';
+import bidThumb2 from '@/assets/bid-thumb-2.jpg';
+import orderBriefThumb from '@/assets/order-brief-thumb.jpg';
+
 export const mockVendor = {
   alias: 'Artisan Gold-7',
   realName: 'Priya Designs Studio',
@@ -69,7 +78,7 @@ export const mockLeads: Lead[] = [
     bidMin: 8500,
     bidMax: 11800,
     myBidRank: null,
-    inspirationThumb: '',
+    inspirationThumb: leadThumb1,
     brief: 'Heavily embroidered Salwar Kameez in deep green. Festive occasion. Prefer georgette or silk fabric. Reference image attached.',
     customerFirstName: 'Priya',
     fabricFeel: 'Light & Flowy',
@@ -81,7 +90,7 @@ export const mockLeads: Lead[] = [
     dupattaOption: '3-piece same fabric',
     liningOption: 'Partially Lined',
     additionalNotes: 'Prefer georgette fabric. Please keep embroidery subtle on sleeves.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=300&fit=crop',
+    inspirationPhoto: leadThumb1,
   },
   {
     id: 'NP-2026-00198',
@@ -100,7 +109,7 @@ export const mockLeads: Lead[] = [
     bidMin: 44000,
     bidMax: 59000,
     myBidRank: null,
-    inspirationThumb: '',
+    inspirationThumb: leadThumb2,
     brief: 'Bridal lehenga — full 3-piece set. Wants heavy embroidery, mirror work. Deep red preferred.',
     customerFirstName: 'Riya',
     fabricFeel: 'Rich & Heavy',
@@ -112,7 +121,7 @@ export const mockLeads: Lead[] = [
     dupattaOption: '3-piece same fabric',
     liningOption: 'Fully Lined',
     additionalNotes: 'Please ensure the mirror work is on the dupatta border as shown in reference.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
+    inspirationPhoto: leadThumb2,
   },
   {
     id: 'NP-2026-00201',
@@ -131,11 +140,11 @@ export const mockLeads: Lead[] = [
     bidMin: 2200,
     bidMax: 4800,
     myBidRank: null,
-    inspirationThumb: '',
+    inspirationThumb: leadThumb3,
     brief: 'Sherwani needs sleeve shortening and waist taking in. Rush — event in 5 days.',
     customerFirstName: 'Arjun',
     additionalNotes: 'Sleeve shortening by 2 inches and waist taking in by 1.5 inches. Rush order.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=300&fit=crop',
+    inspirationPhoto: leadThumb3,
   },
   {
     id: 'NP-2026-00155',
@@ -154,7 +163,7 @@ export const mockLeads: Lead[] = [
     bidMin: 3200,
     bidMax: 5800,
     myBidRank: null,
-    inspirationThumb: '',
+    inspirationThumb: leadThumb4,
     brief: 'Backless blouse for silk saree. Deep V back, halter neck. Intricate hand embroidery.',
     customerFirstName: 'Meera',
     fabricFeel: 'Structured & Crisp',
@@ -165,7 +174,7 @@ export const mockLeads: Lead[] = [
     selectedSleeve: 'Sleeveless',
     liningOption: 'Fully Lined',
     additionalNotes: 'Deep V-back with intricate hand embroidery. Must match the silk saree shade.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&h=300&fit=crop',
+    inspirationPhoto: leadThumb4,
   },
   {
     id: 'NP-2026-00167',
@@ -184,14 +193,14 @@ export const mockLeads: Lead[] = [
     bidMin: 12500,
     bidMax: 17500,
     myBidRank: null,
-    inspirationThumb: '',
+    inspirationThumb: leadThumb5,
     brief: 'Double-breasted bandhgala in navy blue. Formal office use. Premium fabric, clean finish.',
     customerFirstName: 'Rohan',
     fabricFeel: 'Structured & Crisp',
     colourMood: 'Navy / Dark Blues',
     selectedFit: 'Tailored / Slim',
     additionalNotes: 'Double-breasted style. Premium wool-blend fabric preferred. Clean minimalist finish.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+    inspirationPhoto: leadThumb5,
   },
 ];
 
@@ -253,7 +262,7 @@ export const mockMyBids: MyBid[] = [
     bidRangeMax: 32000,
     status: 'active',
     message: 'I specialise in heavily embroidered lehengas. Can match reference exactly.',
-    inspirationThumb: '',
+    inspirationThumb: bidThumb1,
     outbidAlert: false,
     occasion: 'Wedding / Baraat',
     fabricFeel: 'Rich & Heavy',
@@ -265,7 +274,7 @@ export const mockMyBids: MyBid[] = [
     dupattaOption: '3-piece same fabric',
     liningOption: 'Fully Lined',
     additionalNotes: 'Please ensure the mirror work is on the dupatta border as shown in reference.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
+    inspirationPhoto: bidThumb1,
     isRushOrder: false,
   },
   {
@@ -288,7 +297,7 @@ export const mockMyBids: MyBid[] = [
     bidRangeMax: 13500,
     status: 'expired',
     message: '',
-    inspirationThumb: '',
+    inspirationThumb: bidThumb2,
     outbidAlert: false,
     occasion: 'Festival / Puja',
     fabricFeel: 'Light & Flowy',
@@ -296,7 +305,7 @@ export const mockMyBids: MyBid[] = [
     selectedSurfaces: ['Thread Embroidery'],
     selectedFit: 'Flared / A-Line',
     additionalNotes: 'Prefer soft pastel colour with minimal embroidery. Comfortable for all-day wear.',
-    inspirationPhoto: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=300&fit=crop',
+    inspirationPhoto: bidThumb2,
     isRushOrder: false,
   },
 ];
@@ -315,7 +324,7 @@ export const mockVendorActiveOrders = [
     deliveryDate: '2026-04-18',
     acceptedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     currentMilestone: 2,
-    inspirationThumb: '',
+    inspirationThumb: orderBriefThumb,
     measurements: {
       'Bust': '36', 'Under-bust': '32', 'Waist': '28', 'Hip': '38',
       'Shoulder width': '14', 'Skirt length (waist to floor)': '42',
@@ -337,11 +346,11 @@ export const mockVendorActiveOrders = [
     budgetMin: 45000,
     budgetMax: 60000,
     isRushOrder: false,
-    inspirationPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&h=300&fit=crop',
+    inspirationPhoto: orderBriefThumb,
     m5Data: {
       awbNumber: 'DTDC2026098XY',
       courierService: 'DTDC',
-      dispatchPhotoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+      dispatchPhotoUrl: orderBriefThumb,
       dispatchedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
       markedDelivered: false,
     },

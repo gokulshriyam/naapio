@@ -4,6 +4,7 @@ import { Inbox, Tag, Package, Wallet, User, LogOut, ArrowLeftRight, Star } from 
 import { cn } from "@/lib/utils";
 import { mockVendor } from "../data/vendorMockData";
 import VendorNotificationBell from "../components/VendorNotificationBell";
+import vendorAvatar from "@/assets/vendor-avatar.jpg";
 
 const navItems = [
   { label: 'Leads', icon: Inbox, path: '/vendor' },
@@ -61,9 +62,7 @@ const VendorLayout = () => {
         {/* Vendor avatar + stats */}
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center font-serif font-bold text-sm">
-              {initials}
-            </div>
+            <img src={vendorAvatar} alt="Priya Designs Studio" className="w-10 h-10 rounded-full object-cover object-top flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="font-sans font-semibold text-sm text-foreground truncate">{vendorDisplayName}</p>
               <span className="text-[10px] font-sans font-semibold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">

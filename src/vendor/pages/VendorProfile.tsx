@@ -10,6 +10,9 @@ import { Star, MapPin, Award, TrendingUp, Clock, ShieldCheck, CheckCircle, Penci
 import { cn } from "@/lib/utils";
 import { mockVendor, mockVendorReviews } from "../data/vendorMockData";
 import { toast } from "sonner";
+import vendorAvatar from "@/assets/vendor-avatar.jpg";
+import bidThumb1 from "@/assets/bid-thumb-1.jpg";
+import bidThumb2 from "@/assets/bid-thumb-2.jpg";
 
 const ALL_SPECIALITIES = [
   'Bridal Lehenga', 'Saree Blouse', 'Anarkali', 'Salwar Kameez', 'Sherwani',
@@ -18,9 +21,9 @@ const ALL_SPECIALITIES = [
 ];
 
 const DEMO_PORTFOLIO = [
-  { id: 'p1', url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=300&h=300&fit=crop', caption: 'Bridal lehenga with mirror work' },
-  { id: 'p2', url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300&h=300&fit=crop', caption: 'Embroidered saree blouse' },
-  { id: 'p3', url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300&h=300&fit=crop', caption: 'Navy sherwani formal collection' },
+  { id: 'p1', url: bidThumb1, caption: 'Bridal lehenga with mirror work' },
+  { id: 'p2', url: bidThumb2, caption: 'Embroidered saree blouse' },
+  { id: 'p3', url: vendorAvatar, caption: 'Navy sherwani formal collection' },
 ];
 
 const VendorProfile = () => {
@@ -64,7 +67,7 @@ const VendorProfile = () => {
   const handleAddPortfolio = () => {
     // Demo: add a placeholder
     const newId = `p-${Date.now()}`;
-    setPortfolio(prev => [...prev, { id: newId, url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop', caption: '' }]);
+    setPortfolio(prev => [...prev, { id: newId, url: vendorAvatar, caption: '' }]);
     toast.success('Photo added to portfolio');
     // TODO: API_INTEGRATION_POINT — upload to S3, sync portfolio to vendor profile
   };
@@ -88,9 +91,7 @@ const VendorProfile = () => {
       <div className="bg-card border border-border rounded-2xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row items-start gap-4">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center font-serif font-bold text-3xl flex-shrink-0">
-            {mockVendor.realName.charAt(0)}
-          </div>
+          <img src={vendorAvatar} alt="Priya Designs Studio" className="w-20 h-20 rounded-full object-cover object-top flex-shrink-0" />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
