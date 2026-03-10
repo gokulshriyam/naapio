@@ -35,6 +35,14 @@ import wizTrousers from '@/assets/wiz-trousers.jpg';
 import wizIndoWestern from '@/assets/wiz-indo-western.jpg';
 import wizFeelLight from '@/assets/wiz-feel-light.jpg';
 import wizFeelStructured from '@/assets/wiz-feel-structured.jpg';
+import wizFeelRich from '@/assets/wiz-feel-rich.jpg';
+import wizFeelCrisp from '@/assets/wiz-feel-crisp.jpg';
+import wizFeelSoft from '@/assets/wiz-feel-soft.jpg';
+import wizSurfPlain from '@/assets/wiz-surf-plain.jpg';
+import wizSurfEmbroidery from '@/assets/wiz-surf-embroidery.jpg';
+import wizSurfZardozi from '@/assets/wiz-surf-zardozi.jpg';
+import wizSurfMirror from '@/assets/wiz-surf-mirror.jpg';
+import wizSurfSequin from '@/assets/wiz-surf-sequin.jpg';
 
 const categoryBudgetRanges: Record<string, { min: number; max: number; label: string }> = {
   "Lehenga": { min: 30000, max: 100000, label: "👗 Lehenga" },
