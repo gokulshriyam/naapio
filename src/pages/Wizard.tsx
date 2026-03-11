@@ -1296,30 +1296,31 @@ const Wizard = () => {
       const prompt = buildOutfitPrompt();
       const apiKey = "AIzaSyDvR1w3vOBckt3DieJzgkW2fnFJR2PAIJg"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
           body: JSON.stringify({
             contents: [
               {
                 parts: [
+                  { text: prompt },
                   {
                     inline_data: {
                       mime_type: file.type || 'image/jpeg',
-                      data: base64
-                    }
+                      data: base64,
+                    },
                   },
-                  {
-                    text: prompt
-                  }
-                ]
-              }
+                ],
+              },
             ],
             generationConfig: {
-              responseModalities: ["TEXT", "IMAGE"]
-            }
-          })
+              responseModalities: ["IMAGE"],
+            },
+          }),
         }
       );
       if (!response.ok) {
@@ -1328,17 +1329,16 @@ const Wizard = () => {
       }
       const data = await response.json();
       const imagePart = data?.candidates?.[0]?.content?.parts?.find(
-        (part: any) => part.inlineData?.mimeType?.startsWith('image/')
+        (part: any) => part.inlineData?.data
       );
-      if (imagePart?.inlineData?.data) {
-        setGeneratedOutfitImage(
-          `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`
-        );
-      } else {
-        throw new Error(`No image in response. Raw: ${JSON.stringify(data).slice(0, 300)}`);
+      if (!imagePart) {
+        throw new Error('No image returned from Gemini. Try again.');
       }
+      const base64Image = imagePart.inlineData.data;
+      const mimeType = imagePart.inlineData.mimeType || 'image/png';
+      setGeneratedOutfitImage(`data:${mimeType};base64,${base64Image}`);
     } catch (error) {
-      console.error('Gemini error:', error instanceof Error ? error.message : String(error));
+      console.error('Gemini image error:', error instanceof Error ? error.message : String(error));
       setVisualiserError(
         error instanceof Error ? error.message : 'Image generation failed. Please try again.'
       );
