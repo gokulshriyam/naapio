@@ -1318,7 +1318,7 @@ const Wizard = () => {
               },
             ],
             generationConfig: {
-              responseModalities: ["IMAGE"],
+              responseModalities: ["TEXT", "IMAGE"],
             },
           }),
         }
