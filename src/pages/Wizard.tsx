@@ -1296,7 +1296,7 @@ const Wizard = () => {
       const prompt = buildOutfitPrompt();
       const apiKey = "AIzaSyDvR1w3vOBckt3DieJzgkW2fnFJR2PAIJg"; // TODO: move server-side before launch
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
         {
           method: 'POST',
           headers: {
