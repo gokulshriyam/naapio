@@ -1401,7 +1401,7 @@ Important rules:
 - For non-garment images, return confidence: low and empty strings
 - detectedSurfaces must be an array even if empty: []`;
 
-      const apiKey = "AIzaSyAm_EQ6hw4d6eJa3o4hH3mHn4JAikLsaKA"; // TODO: move server-side before launch
+      const apiKey = "AIzaSyArpsMbhMBrJBNzbjQ-Aai4boR5fJOs2v8"; // TODO: move server-side before launch
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
