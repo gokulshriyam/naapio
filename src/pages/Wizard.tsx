@@ -1322,6 +1322,10 @@ const Wizard = () => {
           })
         }
       );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gemini API error ${response.status}: ${errorText}`);
+      }
       const data = await response.json();
       const imagePart = data?.candidates?.[0]?.content?.parts?.find(
         (part: any) => part.inlineData?.mimeType?.startsWith('image/')
@@ -1333,10 +1337,10 @@ const Wizard = () => {
       } else {
         throw new Error(`No image in response. Raw: ${JSON.stringify(data).slice(0, 300)}`);
       }
-    } catch (err: any) {
-      console.error('Gemini error:', err);
+    } catch (error) {
+      console.error('Gemini error:', error instanceof Error ? error.message : String(error));
       setVisualiserError(
-        `Error: ${err?.message || JSON.stringify(err)}`
+        error instanceof Error ? error.message : 'Image generation failed. Please try again.'
       );
     } finally {
       setVisualiserLoading(false);
