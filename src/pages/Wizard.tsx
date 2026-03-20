@@ -1,6 +1,7 @@
 // TODO: I18N_NEEDED — extract all hardcoded strings to en.json
 // and replace with t() calls. Wizard strings not yet translated.
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info, CalendarIcon, Lock, ChevronDown } from "lucide-react";
@@ -1294,40 +1295,18 @@ const Wizard = () => {
     try {
       const base64 = await fileToBase64(file);
       const prompt = buildOutfitPrompt();
-      const apiKey = "AIzaSyDvR1w3vOBckt3DieJzgkW2fnFJR2PAIJg"; // TODO: move server-side before launch
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey,
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: prompt },
-                  {
-                    inline_data: {
-                      mime_type: file.type || 'image/jpeg',
-                      data: base64,
-                    },
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              responseModalities: ["TEXT", "IMAGE"],
-            },
-          }),
-        }
-      );
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Gemini API error ${response.status}: ${errorText}`);
+      const response = await supabase.functions.invoke('gemini-proxy', {
+        body: {
+          callType: 'visualise',
+          prompt,
+          imageBase64: base64,
+          mimeType: file.type || 'image/jpeg',
+        },
+      });
+      if (response.error) {
+        throw new Error(response.error.message || 'Edge function error');
       }
-      const data = await response.json();
+      const data = response.data;
       const imagePart = data?.candidates?.[0]?.content?.parts?.find(
         (part: any) => part.inlineData?.data
       );
@@ -1405,33 +1384,18 @@ Important rules:
 - For non-garment images, return confidence: low and empty strings
 - detectedSurfaces must be an array even if empty: []`;
 
-      const apiKey = "AIzaSyDvR1w3vOBckt3DieJzgkW2fnFJR2PAIJg"; // TODO: move server-side before launch
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                {
-                  inline_data: {
-                    mime_type: photoFile.type || 'image/jpeg',
-                    data: base64
-                  }
-                },
-                { text: prompt }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 1024,
-            }
-          })
-        }
-      );
-
-      const data = await response.json();
+      const response = await supabase.functions.invoke('gemini-proxy', {
+        body: {
+          callType: 'analyse',
+          prompt,
+          imageBase64: base64,
+          mimeType: photoFile.type || 'image/jpeg',
+        },
+      });
+      if (response.error) {
+        throw new Error(response.error.message || 'Edge function error');
+      }
+      const data = response.data;
 
 
       // Try multiple possible response paths
