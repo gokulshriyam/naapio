@@ -1384,33 +1384,18 @@ Important rules:
 - For non-garment images, return confidence: low and empty strings
 - detectedSurfaces must be an array even if empty: []`;
 
-      const apiKey = "AIzaSyDvR1w3vOBckt3DieJzgkW2fnFJR2PAIJg"; // TODO: move server-side before launch
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                {
-                  inline_data: {
-                    mime_type: photoFile.type || 'image/jpeg',
-                    data: base64
-                  }
-                },
-                { text: prompt }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 1024,
-            }
-          })
-        }
-      );
-
-      const data = await response.json();
+      const response = await supabase.functions.invoke('gemini-proxy', {
+        body: {
+          callType: 'analyse',
+          prompt,
+          imageBase64: base64,
+          mimeType: photoFile.type || 'image/jpeg',
+        },
+      });
+      if (response.error) {
+        throw new Error(response.error.message || 'Edge function error');
+      }
+      const data = response.data;
 
 
       // Try multiple possible response paths
