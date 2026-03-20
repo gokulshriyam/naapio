@@ -1,6 +1,7 @@
 // TODO: I18N_NEEDED — extract all hardcoded strings to en.json
 // and replace with t() calls. Wizard strings not yet translated.
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, HelpCircle, Lightbulb, Info, CalendarIcon, Lock, ChevronDown } from "lucide-react";
