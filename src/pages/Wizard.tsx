@@ -1294,40 +1294,18 @@ const Wizard = () => {
     try {
       const base64 = await fileToBase64(file);
       const prompt = buildOutfitPrompt();
-      const apiKey = "AIzaSyDvR1w3vOBckt3DieJzgkW2fnFJR2PAIJg"; // TODO: move server-side before launch
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey,
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: prompt },
-                  {
-                    inline_data: {
-                      mime_type: file.type || 'image/jpeg',
-                      data: base64,
-                    },
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              responseModalities: ["TEXT", "IMAGE"],
-            },
-          }),
-        }
-      );
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Gemini API error ${response.status}: ${errorText}`);
+      const response = await supabase.functions.invoke('gemini-proxy', {
+        body: {
+          callType: 'visualise',
+          prompt,
+          imageBase64: base64,
+          mimeType: file.type || 'image/jpeg',
+        },
+      });
+      if (response.error) {
+        throw new Error(response.error.message || 'Edge function error');
       }
-      const data = await response.json();
+      const data = response.data;
       const imagePart = data?.candidates?.[0]?.content?.parts?.find(
         (part: any) => part.inlineData?.data
       );
