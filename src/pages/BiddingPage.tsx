@@ -15,6 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import mockLehengaNp00098 from "@/assets/mock-lehenga-np00098.avif";
 
 // ═══════════════════════════════════════
 // Helpers
@@ -173,7 +174,7 @@ const defaultActiveOrders: ActiveOrder[] = [
     bidsReceived: 8,
     measurementsSubmitted: true,
     rushOrder: false,
-    inspirationThumb: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=80&h=80&fit=crop",
+    inspirationThumb: mockLehengaNp00098,
   },
 ];
 
