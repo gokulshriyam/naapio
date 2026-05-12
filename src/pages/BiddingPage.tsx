@@ -15,6 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import mockLehengaNp00098 from "@/assets/mock-lehenga-np00098.avif";
 
 // ═══════════════════════════════════════
 // Helpers
