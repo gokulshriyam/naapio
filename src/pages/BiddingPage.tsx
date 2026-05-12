@@ -174,7 +174,7 @@ const defaultActiveOrders: ActiveOrder[] = [
     bidsReceived: 8,
     measurementsSubmitted: true,
     rushOrder: false,
-    inspirationThumb: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=80&h=80&fit=crop",
+    inspirationThumb: mockLehengaNp00098,
   },
 ];
 
