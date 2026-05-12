@@ -1232,9 +1232,11 @@ const Wizard = () => {
         localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
       }
       localStorage.removeItem("naapio_wizard_draft");
-      setOrderSuccess(true);
-      window.scrollTo(0, 0);
-    }, 2000);
+      setTimeout(() => {
+        setOrderSuccess(true);
+        window.scrollTo(0, 0);
+      }, 2000);
+    });
   };
 
   // Outfit Visualiser helpers
