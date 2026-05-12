@@ -1180,11 +1180,20 @@ const Wizard = () => {
 
   const handlePay = () => {
     setLoading(true);
-    setTimeout(() => {
+    const readPhoto = (): Promise<string> => new Promise((resolve) => {
+      if (!inspirationPhoto) return resolve("");
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : "");
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(inspirationPhoto);
+    });
+    readPhoto().then((inspirationDataUrl) => {
       const newOrderId = generateOrderId();
       setOrderId(newOrderId);
       localStorage.setItem("naapio_last_order", JSON.stringify({
         orderId: newOrderId,
+        inspirationPhoto: inspirationDataUrl,
+        inspirationDescription: description || "",
         orderType: isOwnFabric ? "Own Fabric" : "New Order",
         garment: `${gender === "women" ? "Women's" : "Men's"} · ${selectedCategory} · ${selectedSubCategory}`,
         occasion: selectedOccasion,
@@ -1223,9 +1232,11 @@ const Wizard = () => {
         localStorage.setItem('naapio_measurement_profile', JSON.stringify(profile));
       }
       localStorage.removeItem("naapio_wizard_draft");
-      setOrderSuccess(true);
-      window.scrollTo(0, 0);
-    }, 2000);
+      setTimeout(() => {
+        setOrderSuccess(true);
+        window.scrollTo(0, 0);
+      }, 2000);
+    });
   };
 
   // Outfit Visualiser helpers
