@@ -4243,10 +4243,10 @@ Important rules:
                       <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspiration Photos</span>
                       <button onClick={() => { setStep(1); window.scrollTo(0, 0); }} className="text-accent font-sans text-xs font-medium hover:underline">Edit →</button>
                     </div>
-                    {uploaded ? (
+                    {uploaded && inspirationPhoto ? (
                       <div className="flex gap-3 items-start">
-                        <img src={redLehenga} alt="Inspiration" className="w-16 h-16 rounded-lg object-cover border border-border" />
-                        <p className="text-sm text-muted-foreground font-sans">{description || "Red lehenga with gold embroidery"}</p>
+                        <img src={URL.createObjectURL(inspirationPhoto)} alt="Inspiration" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                        <p className="text-sm text-muted-foreground font-sans">{description || inspirationPhoto.name}</p>
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground font-sans">No photos uploaded</p>
