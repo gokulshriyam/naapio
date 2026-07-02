@@ -130,6 +130,31 @@ const CategoryPreview = () => {
           ))}
         </div>
 
+        {/* Craft origin scroll row */}
+        <div className="flex items-center gap-4 max-w-5xl mx-auto mb-6">
+          <div className="flex-1 h-px bg-border" />
+          <p className="text-sm font-sans font-semibold text-muted-foreground uppercase tracking-wider">
+            Shop by craft origin
+          </p>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div className="overflow-x-auto -mx-6 px-6 pb-3 mb-16">
+          <div className="flex gap-3">
+            {craftOrigins.map((c) => (
+              <button
+                key={c.craft}
+                onClick={() => navigate('/start')}
+                className={`flex-shrink-0 rounded-xl border p-4 cursor-pointer hover:shadow-sm transition-all text-left w-40 ${c.color}`}
+              >
+                <span className="text-2xl mb-2 block">{c.emoji}</span>
+                <p className="font-serif font-bold text-foreground text-sm">{c.craft}</p>
+                <p className="font-sans text-xs text-muted-foreground">{c.origin}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Individual garment category cards */}
         <div className="flex items-center gap-4 max-w-5xl mx-auto mb-10">
           <div className="flex-1 h-px bg-border" />
