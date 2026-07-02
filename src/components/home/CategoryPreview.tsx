@@ -15,16 +15,34 @@ import catSuitBlazer from "@/assets/categories/cat-suit-blazer.jpg";
 const categories = [
   {
     title: "Men's Bespoke",
-    items: ["Sherwani", "Bandhgala", "Suit", "Kurta", "Indo-Western", "Veshti / Mundu", "Regional Traditional"],
+    items: ["Sherwani", "Bandhgala", "Suit", "Kurta", "Indo-Western", "Veshti / Mundu", "Regional Traditional", "Angrakha", "Pathani Suit", "Pheran (J&K)"],
     image: mensFashion,
     gender: "Men",
   },
   {
     title: "Women's Bespoke",
-    items: ["Lehenga", "Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Chaniya Choli", "Maternity Wear"],
+    items: ["Lehenga", "Saree Blouse", "Anarkali", "Gown", "Salwar Kameez", "Chaniya Choli", "Maternity Wear", "Mekhela Chador", "Langa Voni", "Phanek"],
     image: womensFashion,
     gender: "Women",
   },
+];
+
+const craftOrigins = [
+  { craft: "Zardozi", origin: "Lucknow, UP", emoji: "🪡", color: "bg-amber-50 border-amber-200" },
+  { craft: "Chikankari", origin: "Lucknow, UP", emoji: "🧵", color: "bg-rose-50 border-rose-200" },
+  { craft: "Kanchipuram Silk", origin: "Tamil Nadu", emoji: "🥻", color: "bg-yellow-50 border-yellow-200" },
+  { craft: "Bandhani", origin: "Kutch, Gujarat", emoji: "🌈", color: "bg-purple-50 border-purple-200" },
+  { craft: "Phulkari", origin: "Punjab", emoji: "🌸", color: "bg-pink-50 border-pink-200" },
+  { craft: "Banarasi Brocade", origin: "Varanasi, UP", emoji: "✨", color: "bg-orange-50 border-orange-200" },
+  { craft: "Kalamkari", origin: "Andhra Pradesh", emoji: "🎨", color: "bg-green-50 border-green-200" },
+  { craft: "Pochampalli Ikat", origin: "Telangana", emoji: "🟡", color: "bg-amber-50 border-amber-200" },
+  { craft: "Kantha", origin: "West Bengal", emoji: "🧶", color: "bg-blue-50 border-blue-200" },
+  { craft: "Chanderi", origin: "Madhya Pradesh", emoji: "🌿", color: "bg-emerald-50 border-emerald-200" },
+  { craft: "Sambalpuri Ikat", origin: "Odisha", emoji: "🔶", color: "bg-orange-50 border-orange-200" },
+  { craft: "Paithani", origin: "Maharashtra", emoji: "🌺", color: "bg-red-50 border-red-200" },
+  { craft: "Pashmina", origin: "Kashmir", emoji: "🌀", color: "bg-slate-50 border-slate-200" },
+  { craft: "Mysore Silk", origin: "Karnataka", emoji: "🌟", color: "bg-yellow-50 border-yellow-200" },
+  { craft: "Mirror Work", origin: "Kutch, Gujarat", emoji: "🪞", color: "bg-cyan-50 border-cyan-200" },
 ];
 
 const garmentCategories = [
@@ -59,8 +77,8 @@ const CategoryPreview = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">Explore Categories</h2>
-          <p className="text-muted-foreground font-sans text-lg">From regal sherwanis to breathtaking lehengas</p>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">What do you want made?</h2>
+          <p className="text-muted-foreground font-sans text-lg">Every category. Every occasion. Every Indian craft tradition.</p>
         </motion.div>
 
         {/* Main category cards */}
@@ -110,6 +128,31 @@ const CategoryPreview = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Craft origin scroll row */}
+        <div className="flex items-center gap-4 max-w-5xl mx-auto mb-6">
+          <div className="flex-1 h-px bg-border" />
+          <p className="text-sm font-sans font-semibold text-muted-foreground uppercase tracking-wider">
+            Shop by craft origin
+          </p>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div className="overflow-x-auto -mx-6 px-6 pb-3 mb-16">
+          <div className="flex gap-3">
+            {craftOrigins.map((c) => (
+              <button
+                key={c.craft}
+                onClick={() => navigate('/start')}
+                className={`flex-shrink-0 rounded-xl border p-4 cursor-pointer hover:shadow-sm transition-all text-left w-40 ${c.color}`}
+              >
+                <span className="text-2xl mb-2 block">{c.emoji}</span>
+                <p className="font-serif font-bold text-foreground text-sm">{c.craft}</p>
+                <p className="font-sans text-xs text-muted-foreground">{c.origin}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Individual garment category cards */}

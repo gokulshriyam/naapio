@@ -1,11 +1,39 @@
 import { motion } from "framer-motion";
 
 const steps = [
-  { num: "01", emoji: "🖊️", title: "Describe your vision", sub: "Tell us the garment, occasion, fabric feel, budget, and deadline. Takes 4 minutes." },
-  { num: "02", emoji: "🎯", title: "Receive bids from vetted artisans", sub: "Verified artisans in your city compete for your brief. Review portfolios and chat before choosing." },
-  { num: "03", emoji: "🪡", title: "Track every stitch", sub: "Five escrow-locked milestones: measurements → fabric → stitching → fitting video → delivery." },
-  { num: "04", emoji: "🚚", title: "Delivered. Loved.", sub: "Your bespoke outfit arrives. Pay only after your final approval." },
+  {
+    num: "01",
+    emoji: "📸",
+    title: "Upload Your Inspiration",
+    sub: "Any Instagram screenshot, WhatsApp forward, or Pinterest save. AI converts it into a structured garment brief in under 60 seconds.",
+  },
+  {
+    num: "02",
+    emoji: "🔐",
+    title: "Pay ₹499 to Post",
+    sub: "₹49 platform fee. ₹451 moves to escrow immediately. Your brief goes live to 500+ verified artisans in your city.",
+  },
+  {
+    num: "03",
+    emoji: "🎯",
+    title: "Artisans Bid Blind",
+    sub: "Identities hidden until you accept. Review quality scores, portfolios, and delivery timelines. Chat before you commit.",
+  },
+  {
+    num: "04",
+    emoji: "🪡",
+    title: "5 Milestones, All Escrow-Locked",
+    sub: "Measurements → Fabric approval → Stitching update → Virtual fitting → Delivery. Escrow releases only at your approval. Never before.",
+  },
+  {
+    num: "05",
+    emoji: "✅",
+    title: "Delivered. Loved.",
+    sub: "Rate your artisan. Their verified score improves. Their income is formally documented — many for the first time.",
+  },
 ];
+
+const milestonePills = ["M1 Measure", "M2 Fabric", "M3 Stitch", "M4 Trial", "M5 Deliver"];
 
 const HowItWorks = () => {
   return (
@@ -17,15 +45,19 @@ const HowItWorks = () => {
           viewport={{ once: true }}
           className="text-center mb-20"
         >
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">How Naapio Works</h2>
-          <p className="text-muted-foreground font-sans text-lg max-w-xl mx-auto">
-            From inspiration to your doorstep in four simple steps
+          <p className="font-sans text-xs text-muted-foreground uppercase tracking-widest mb-4">
+            The Naapio Flow
+          </p>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">
+            From Instagram to your door.
+          </h2>
+          <p className="font-sans text-muted-foreground text-lg">
+            Five steps. Every rupee protected. Every stitch accountable.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6 relative">
-          {/* Connecting dashed line (desktop only) */}
-          <div className="hidden md:block absolute top-16 left-[12.5%] right-[12.5%] h-px border-t-2 border-dashed border-border" />
+        <div className="md:grid md:grid-cols-5 gap-6 relative space-y-12 md:space-y-0">
+          <div className="hidden md:block absolute top-10 left-[10%] right-[10%] h-px border-t border-dashed border-border" />
 
           {steps.map((step, i) => (
             <motion.div
@@ -33,10 +65,9 @@ const HowItWorks = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-              className="relative text-center"
+              transition={{ delay: i * 0.1 }}
+              className="relative text-center px-4"
             >
-              {/* Background number */}
               <div className="relative">
                 <span className="text-7xl md:text-8xl font-serif font-bold text-accent/10 select-none leading-none">
                   {step.num}
@@ -46,8 +77,23 @@ const HowItWorks = () => {
                 </span>
               </div>
 
-              <h3 className="text-lg font-serif font-bold text-foreground mt-4 mb-2">{step.title}</h3>
-              <p className="text-sm font-sans text-muted-foreground leading-relaxed max-w-xs mx-auto">{step.sub}</p>
+              <h3 className="text-base font-serif font-bold text-foreground mt-4 mb-2">{step.title}</h3>
+              <p className="text-sm font-sans text-muted-foreground leading-relaxed max-w-[200px] mx-auto">
+                {step.sub}
+              </p>
+
+              {step.num === "04" && (
+                <div className="flex justify-center gap-1 mt-3 flex-wrap">
+                  {milestonePills.map((p) => (
+                    <span
+                      key={p}
+                      className="font-sans text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent"
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

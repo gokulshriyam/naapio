@@ -27,5 +27,29 @@ export const fabricOptionsWithImages = [
   { name: "Wool", image: woolImg },
   { name: "Organza", image: organzaImg },
   { name: "Brocade", image: brocadeImg },
+
+  // Regional silk traditions
+  { name: "Tussar / Bhagalpuri Silk", image: silkImg },
+  { name: "Muga Silk", image: silkImg },
+  { name: "Eri / Ahimsa Silk", image: silkImg },
+  { name: "Patola Silk", image: silkImg },
+  { name: "Kosa Silk", image: silkImg },
+
+  // Regional cotton traditions
+  { name: "Mangalagiri Cotton", image: cottonImg },
+  { name: "Venkatagiri Cotton", image: cottonImg },
+  { name: "Narayanpet Cotton-Silk", image: cottonImg },
+  { name: "Chettinad Cotton", image: cottonImg },
+  { name: "Kota Doria", image: cottonImg },
+  { name: "Kasavu", image: cottonImg },
+  { name: "Kotpad", image: cottonImg },
+
+  // Mixed / blend traditions
+  { name: "Maheshwari", image: brocadeImg },
+  { name: "Gadwal", image: brocadeImg },
+  { name: "Himroo", image: brocadeImg },
+  { name: "Ilkal", image: brocadeImg },
+  { name: "Tangaliya", image: linenImg },
+
   { name: "Vendor's Choice", image: vendorsChoiceImg },
 ];

@@ -1,32 +1,47 @@
 import { motion } from "framer-motion";
 
-const signals = [
-  { emoji: "🔒", label: "Escrow Protected", sub: "Artisan paid only after your approval" },
-  { emoji: "✅", label: "Aadhaar-Verified Artisans", sub: "Every artisan is identity & skill verified" },
-  { emoji: "⭐", label: "4.8★ Average Rating", sub: "Across 2,000+ completed orders" },
-  { emoji: "🔄", label: "Free Alterations", sub: "One round of alterations included" },
+const stats = [
+  {
+    value: "₹28,000 Cr",
+    label: "India's bespoke fashion market",
+    sub: "Running entirely offline. No platform. No protection.",
+  },
+  {
+    value: "1.3 Cr",
+    label: "Skilled artisans across India",
+    sub: "No digital identity. No payment protection. No structured income.",
+  },
+  {
+    value: "78%",
+    label: "Customers cite payment safety as #1 barrier",
+    sub: "The trust layer has never existed. Until now.",
+  },
 ];
 
 const TrustSignals = () => {
   return (
-    <section className="py-16 md:py-20 bg-primary">
+    <section className="py-20 bg-foreground">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
-          {signals.map((s, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {stats.map((s, i) => (
             <motion.div
               key={s.label}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center"
+              className="bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10 text-center"
             >
-              <span className="text-3xl mb-3 block">{s.emoji}</span>
-              <h3 className="text-sm md:text-base font-serif font-bold text-primary-foreground mb-1">{s.label}</h3>
-              <p className="text-xs md:text-sm font-sans text-primary-foreground/60">{s.sub}</p>
+              <p className="font-serif text-4xl md:text-5xl font-bold text-accent">{s.value}</p>
+              <p className="font-sans text-sm text-white/70 mt-2">{s.label}</p>
+              <p className="font-sans text-xs text-white/40 mt-1">{s.sub}</p>
             </motion.div>
           ))}
         </div>
+
+        <p className="text-center font-sans text-white/60 text-sm max-w-3xl mx-auto">
+          Naapio is the infrastructure layer that was missing — escrow, milestones, AI briefing, and verified artisan identity in one platform.
+        </p>
       </div>
     </section>
   );
