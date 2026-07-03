@@ -904,6 +904,24 @@ const BiddingPage = () => {
                       </Button>
                     </div>
 
+                    {/* Zero-bid informative empty state */}
+                    {order.bidsReceived === 0 && (
+                      <div className="mt-6 p-6 bg-muted/50 rounded-xl border border-border text-center">
+                        <span className="text-3xl block mb-3">🎯</span>
+                        <p className="font-serif font-semibold text-foreground mb-1">Your brief is live</p>
+                        <p className="font-sans text-sm text-muted-foreground mb-4">
+                          Artisans in your city are reviewing your brief. First bids typically arrive within 48 hours.
+                        </p>
+                        {!order.measurementsSubmitted && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full">
+                            <span className="text-xs font-sans text-accent font-medium">
+                              💡 Complete your measurements now to get faster, more accurate bids
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* While you wait */}
                     {order.status === "awaiting_bids" && (
                       <div className="mt-3">
