@@ -699,6 +699,25 @@ const ActiveOrdersPage = () => {
       <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Track Order <span className="text-accent">#{orderId}</span></h1>
       <p className="text-muted-foreground font-sans mb-6">{garmentLabel} • {artisanRealName}</p>
 
+      {/* Persistent Escrow Badge */}
+      <div className="flex items-center justify-between mb-6 p-4 bg-success/10 border border-success/20 rounded-xl">
+        <div className="flex items-center gap-3">
+          <Lock className="w-5 h-5 text-success flex-shrink-0" />
+          <div>
+            <p className="font-sans font-semibold text-success text-sm">Escrow Active</p>
+            <p className="font-sans text-xs text-muted-foreground">
+              Held safely until your final approval at Milestone 5
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="font-serif font-bold text-foreground text-lg">
+            ₹{(bidAmount || 0).toLocaleString('en-IN')}
+          </p>
+          <p className="font-sans text-xs text-muted-foreground">in escrow</p>
+        </div>
+      </div>
+
       {/* Progress bar */}
       <div className="mb-8">
         <div className="flex justify-between text-xs font-sans text-muted-foreground mb-2">
@@ -709,19 +728,33 @@ const ActiveOrdersPage = () => {
       </div>
 
       {/* Milestone indicators */}
-      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2 -mx-2 px-2">
-        {MILESTONES.map((ms, i) => {
-          const completed = ms.id < activeMilestone;
-          const active = ms.id === activeMilestone;
+      <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+        {MILESTONES.map((m, idx) => {
+          const Icon = m.icon;
+          const isComplete = activeMilestone > m.id;
+          const isCurrent = activeMilestone === m.id;
           return (
-            <div key={ms.id} className="flex items-center gap-1 flex-shrink-0">
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-sans font-bold transition-all ${
-                completed ? "bg-success text-success-foreground" : active ? "bg-accent text-accent-foreground ring-4 ring-accent/20" : "bg-muted text-muted-foreground"
-              }`}>
-                {completed ? <Check className="w-4 h-4" /> : ms.id > activeMilestone ? <Lock className="w-3.5 h-3.5" /> : ms.id}
+            <div key={m.id} className="flex items-center flex-shrink-0">
+              <div className="flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                  isComplete
+                    ? 'bg-success border-success text-success-foreground'
+                    : isCurrent
+                    ? 'bg-accent border-accent text-accent-foreground ring-4 ring-accent/20'
+                    : 'bg-muted border-border text-muted-foreground'
+                }`}>
+                  {isComplete ? <Check className="w-5 h-5" /> : <Icon className="w-4 h-4" />}
+                </div>
+                <p className={`font-sans text-[10px] mt-1.5 text-center max-w-[56px] leading-tight ${
+                  isCurrent ? 'text-accent font-semibold' : isComplete ? 'text-success' : 'text-muted-foreground'
+                }`}>
+                  {m.title}
+                </p>
               </div>
-              {i < MILESTONES.length - 1 && (
-                <div className={`w-4 sm:w-8 h-0.5 ${completed ? "bg-success" : "bg-border"}`} />
+              {idx < MILESTONES.length - 1 && (
+                <div className={`h-px w-8 md:w-12 mx-1 flex-shrink-0 ${
+                  activeMilestone > m.id ? 'bg-success' : 'bg-border'
+                }`} />
               )}
             </div>
           );
