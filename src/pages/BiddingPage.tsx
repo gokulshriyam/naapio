@@ -401,8 +401,8 @@ const BiddingRoom = ({
     <div className="border-t border-border pt-5 mt-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
         <div>
-          <h3 className="font-serif font-bold text-foreground">Bidding Room — {order.bidsReceived} tailors have responded</h3>
-          <p className="text-xs text-muted-foreground font-sans">Tailor identities are revealed only after you select and confirm payment.</p>
+          <h3 className="font-serif font-bold text-foreground">{order.bidsReceived} artisan{order.bidsReceived !== 1 ? 's' : ''} have responded to your brief</h3>
+          <p className="text-xs text-muted-foreground font-sans">Artisan identities are revealed only after you accept and confirm. This keeps bidding fair and prices honest.</p>
         </div>
         <span className="text-xs font-sans text-muted-foreground shrink-0">{tl.days}d {tl.hours}h remaining to review</span>
       </div>
