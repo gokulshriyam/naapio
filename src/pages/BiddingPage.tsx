@@ -401,8 +401,8 @@ const BiddingRoom = ({
     <div className="border-t border-border pt-5 mt-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
         <div>
-          <h3 className="font-serif font-bold text-foreground">Bidding Room — {order.bidsReceived} tailors have responded</h3>
-          <p className="text-xs text-muted-foreground font-sans">Tailor identities are revealed only after you select and confirm payment.</p>
+          <h3 className="font-serif font-bold text-foreground">{order.bidsReceived} artisan{order.bidsReceived !== 1 ? 's' : ''} have responded to your brief</h3>
+          <p className="text-xs text-muted-foreground font-sans">Artisan identities are revealed only after you accept and confirm. This keeps bidding fair and prices honest.</p>
         </div>
         <span className="text-xs font-sans text-muted-foreground shrink-0">{tl.days}d {tl.hours}h remaining to review</span>
       </div>
@@ -430,7 +430,7 @@ const BiddingRoom = ({
       </button>
       {showRankInfo && (
         <p className="text-xs font-sans text-muted-foreground mb-4 p-3 bg-muted rounded-lg">
-          ⭐ Customer ratings (40%) · ✅ Completion rate (30%) · 🛡️ Low dispute rate (20%) · 🏆 Tier (10%). Tailors who perform better rise in ranking — this is how quality artisans grow on Naapio.
+          ⭐ Customer ratings (40%) · ✅ Completion rate (30%) · 🛡️ Low dispute rate (20%) · 🏆 Tier (10%). Artisans who perform better rise in ranking — this is how quality artisans grow on Naapio.
         </p>
       )}
 
@@ -846,7 +846,7 @@ const BiddingPage = () => {
                 const statusPill: Record<string, { icon: string; label: string; cls: string }> = {
                   awaiting_bids: { icon: "⏳", label: "Awaiting Bids", cls: "bg-warning-light text-warning" },
                   bids_received: { icon: "🎯", label: `${order.bidsReceived} Bids Received`, cls: "bg-success-light text-success" },
-                  tailor_selected: { icon: "✅", label: "Tailor Selected", cls: "bg-info-light text-info" },
+                  tailor_selected: { icon: "✅", label: "Artisan Selected", cls: "bg-info-light text-info" },
                   in_progress: { icon: "🪡", label: "In Progress", cls: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" },
                 };
                 const sp = statusPill[order.status] || statusPill.awaiting_bids;
@@ -903,6 +903,24 @@ const BiddingPage = () => {
                         <XIcon className="w-3 h-3 mr-1" /> Close Bid
                       </Button>
                     </div>
+
+                    {/* Zero-bid informative empty state */}
+                    {order.bidsReceived === 0 && (
+                      <div className="mt-6 p-6 bg-muted/50 rounded-xl border border-border text-center">
+                        <span className="text-3xl block mb-3">🎯</span>
+                        <p className="font-serif font-semibold text-foreground mb-1">Your brief is live</p>
+                        <p className="font-sans text-sm text-muted-foreground mb-4">
+                          Artisans in your city are reviewing your brief. First bids typically arrive within 48 hours.
+                        </p>
+                        {!order.measurementsSubmitted && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full">
+                            <span className="text-xs font-sans text-accent font-medium">
+                              💡 Complete your measurements now to get faster, more accurate bids
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* While you wait */}
                     {order.status === "awaiting_bids" && (
