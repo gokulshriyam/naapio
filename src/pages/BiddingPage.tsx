@@ -846,7 +846,7 @@ const BiddingPage = () => {
                 const statusPill: Record<string, { icon: string; label: string; cls: string }> = {
                   awaiting_bids: { icon: "⏳", label: "Awaiting Bids", cls: "bg-warning-light text-warning" },
                   bids_received: { icon: "🎯", label: `${order.bidsReceived} Bids Received`, cls: "bg-success-light text-success" },
-                  tailor_selected: { icon: "✅", label: "Tailor Selected", cls: "bg-info-light text-info" },
+                  tailor_selected: { icon: "✅", label: "Artisan Selected", cls: "bg-info-light text-info" },
                   in_progress: { icon: "🪡", label: "In Progress", cls: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" },
                 };
                 const sp = statusPill[order.status] || statusPill.awaiting_bids;
