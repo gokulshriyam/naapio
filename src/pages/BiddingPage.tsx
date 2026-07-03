@@ -430,7 +430,7 @@ const BiddingRoom = ({
       </button>
       {showRankInfo && (
         <p className="text-xs font-sans text-muted-foreground mb-4 p-3 bg-muted rounded-lg">
-          ⭐ Customer ratings (40%) · ✅ Completion rate (30%) · 🛡️ Low dispute rate (20%) · 🏆 Tier (10%). Tailors who perform better rise in ranking — this is how quality artisans grow on Naapio.
+          ⭐ Customer ratings (40%) · ✅ Completion rate (30%) · 🛡️ Low dispute rate (20%) · 🏆 Tier (10%). Artisans who perform better rise in ranking — this is how quality artisans grow on Naapio.
         </p>
       )}
 
