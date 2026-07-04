@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 import { useCity } from "@/context/CityContext";
 import startNewOrder from "@/assets/categories/start-new-order.jpg";
 import startAlteration from "@/assets/categories/start-alteration.jpg";
-import startOwnFabric from "@/assets/categories/start-own-fabric.jpg";
-import startCustomise from "@/assets/categories/start-customise.jpg";
 
 const StartPage = () => {
   const navigate = useNavigate();
@@ -14,6 +12,7 @@ const StartPage = () => {
   const { t } = useTranslation();
   const { selectedCity } = useCity();
   const [prefilledCategory, setPrefilledCategory] = useState<string>('');
+  const [showExistingOptions, setShowExistingOptions] = useState(false);
 
   useEffect(() => {
     const state = location.state as { prefilledGender?: string; prefilledCategory?: string } | null;
@@ -26,45 +25,6 @@ const StartPage = () => {
       setPrefilledCategory(state.prefilledCategory);
     }
   }, [location.state]);
-
-  const orderTypes = [
-    {
-      emoji: "🆕",
-      title: t('start.newOrder'),
-      description: t('start.newOrderDesc'),
-      color: "bg-blue-50 border-blue-200 hover:border-blue-400",
-      route: "/wizard",
-      img: startNewOrder,
-      alt: "New bespoke order — designer draping fabric on mannequin",
-    },
-    {
-      emoji: "✂️",
-      title: t('start.alteration'),
-      description: t('start.alterationDesc'),
-      color: "bg-orange-50 border-orange-200 hover:border-orange-400",
-      route: "/alteration",
-      img: startAlteration,
-      alt: "Alteration and repair — tailor working on sewing machine",
-    },
-    {
-      emoji: "🧵",
-      title: t('start.ownFabric'),
-      description: t('start.ownFabricDesc'),
-      color: "bg-green-50 border-green-200 hover:border-green-400",
-      route: "/wizard?type=own-fabric",
-      img: startOwnFabric,
-      alt: "Own fabric — cutting fabric with scissors and measuring tape",
-    },
-    {
-      emoji: "🎨",
-      title: t('start.customise'),
-      description: t('start.customiseDesc'),
-      color: "bg-purple-50 border-purple-200 hover:border-purple-400",
-      route: "/customise",
-      img: startCustomise,
-      alt: "Customise a design — hand-painted jacket customisation",
-    },
-  ];
 
   const isCitySelected = !!selectedCity;
 
@@ -79,49 +39,83 @@ const StartPage = () => {
 
       <div className="text-center mb-12">
         <h1 className="text-4xl font-serif font-bold text-foreground mb-3">
-          {t('start.heading')}
+          What would you like made?
         </h1>
         <p className="text-muted-foreground font-sans text-lg max-w-md mx-auto">
-          {t('start.subheading')}
+          New creation, or bringing something back to life?
         </p>
       </div>
 
       <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl transition-opacity ${!isCitySelected ? "opacity-50 pointer-events-none" : ""}`}>
-        {orderTypes.map((type, i) => (
-          <button
-            key={type.title}
-            onClick={() => {
-              if (isCitySelected) navigate(type.route);
-            }}
-            className={`border-2 rounded-2xl overflow-hidden text-left transition-all duration-200 ${
-              isCitySelected ? "hover:shadow-lg hover:scale-[1.02]" : "cursor-not-allowed"
-            } ${type.color}`}
-          >
-            <img
-              src={type.img}
-              alt={type.alt}
-              className={`w-full h-48 object-cover rounded-t-xl ${i === 0 ? 'object-top' : ''}`}
-              loading={i === 0 ? undefined : "lazy"}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML(
-                  'afterbegin',
-                  '<div class="w-full h-48 bg-muted rounded-t-xl"></div>'
-                );
-              }}
-            />
-            <div className="p-6 pt-4">
-              <div className="text-3xl mb-3">{type.emoji}</div>
-              <h2 className="text-xl font-serif font-bold text-foreground mb-2">
-                {type.title}
-              </h2>
-              <p className="text-sm font-sans text-muted-foreground leading-relaxed">
-                {type.description}
-              </p>
-            </div>
-          </button>
-        ))}
+        <button
+          onClick={() => { if (isCitySelected) navigate('/new-order/upload'); }}
+          className={`border-2 rounded-2xl overflow-hidden text-left transition-all duration-200 bg-blue-50 border-blue-200 hover:border-blue-400 ${isCitySelected ? "hover:shadow-lg hover:scale-[1.02]" : "cursor-not-allowed"}`}
+        >
+          <img
+            src={startNewOrder}
+            alt="New bespoke order — designer draping fabric on mannequin"
+            className="w-full h-48 object-cover object-top rounded-t-xl"
+          />
+          <div className="p-6 pt-4">
+            <div className="text-3xl mb-3">🆕</div>
+            <h2 className="text-xl font-serif font-bold text-foreground mb-2">New Garment</h2>
+            <p className="text-sm font-sans text-muted-foreground leading-relaxed">
+              Make something from scratch — upload your inspiration, AI builds the brief, artisans bid honest prices.
+            </p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => { if (isCitySelected) setShowExistingOptions(!showExistingOptions); }}
+          className={`border-2 rounded-2xl overflow-hidden text-left transition-all duration-200 bg-orange-50 border-orange-200 hover:border-orange-400 ${isCitySelected ? "hover:shadow-lg hover:scale-[1.02]" : "cursor-not-allowed"}`}
+        >
+          <img
+            src={startAlteration}
+            alt="Alteration and repair — tailor working on sewing machine"
+            className="w-full h-48 object-cover rounded-t-xl"
+            loading="lazy"
+          />
+          <div className="p-6 pt-4">
+            <div className="text-3xl mb-3">✂️</div>
+            <h2 className="text-xl font-serif font-bold text-foreground mb-2">Existing Garment</h2>
+            <p className="text-sm font-sans text-muted-foreground leading-relaxed">
+              Alter, repair, or add artwork to something you already own.
+            </p>
+          </div>
+        </button>
       </div>
+
+      <AnimatePresence>
+        {showExistingOptions && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mt-6 overflow-hidden"
+          >
+            <button
+              onClick={() => navigate('/alteration')}
+              className="flex items-center gap-4 p-5 rounded-xl border-2 border-orange-200 bg-white hover:border-orange-400 hover:shadow-md cursor-pointer transition-all w-full text-left"
+            >
+              <span className="text-3xl">✂️</span>
+              <div>
+                <p className="font-serif font-bold text-foreground">Alteration / Repair</p>
+                <p className="text-xs font-sans text-muted-foreground mt-0.5">Resize, fix, or restore an existing garment</p>
+              </div>
+            </button>
+            <button
+              onClick={() => navigate('/customise')}
+              className="flex items-center gap-4 p-5 rounded-xl border-2 border-purple-200 bg-white hover:border-purple-400 hover:shadow-md cursor-pointer transition-all w-full text-left"
+            >
+              <span className="text-3xl">🎨</span>
+              <div>
+                <p className="font-serif font-bold text-foreground">Customise My Garment</p>
+                <p className="text-xs font-sans text-muted-foreground mt-0.5">Add embroidery, artwork, or embellishments to an existing piece</p>
+              </div>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {prefilledCategory && (
         <p className="text-sm text-accent font-sans mt-4">Starting with {prefilledCategory} pre-selected ✓</p>
