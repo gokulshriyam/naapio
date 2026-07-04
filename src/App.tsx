@@ -17,6 +17,9 @@ import ForTailorsPage from "./pages/ForTailorsPage";
 import StartPage from "./pages/StartPage";
 import AlterationFlow from "./pages/AlterationFlow";
 import CustomiseFlow from "./pages/CustomiseFlow";
+import UploadPage from "./pages/new-order/UploadPage";
+import PaymentPage from "./pages/new-order/PaymentPage";
+import BriefPage from "./pages/new-order/BriefPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -42,6 +45,9 @@ const App = () => (
             <Route path="/for-tailors" element={<ForTailorsPage />} />
             <Route path="/start" element={<StartPage />} />
             <Route path="/wizard" element={<Wizard />} />
+            <Route path="/new-order/upload" element={<UploadPage />} />
+            <Route path="/new-order/payment" element={<PaymentPage />} />
+            <Route path="/new-order/brief" element={<BriefPage />} />
             <Route path="/alteration" element={<AlterationFlow />} />
             <Route path="/customise" element={<CustomiseFlow />} />
             <Route path="/terms" element={<TermsPage />} />
