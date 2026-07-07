@@ -3,15 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Sparkles,
-  IndianRupee,
-  Package,
-  Star,
-  ClipboardCheck,
   Scissors,
-  Landmark,
-  ShieldCheck,
-  CheckCircle2,
   ChevronRight,
+  CheckCircle2,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,120 +38,74 @@ const fadeUp = {
   }),
 };
 
-const benefits = [
+const problems = [
   {
-    icon: IndianRupee,
-    title: "Earn More, Guaranteed",
-    description:
-      "Top artisans on Naapio earn significantly more than traditional tailoring — on your own terms, on your own schedule. Every rupee is held in escrow and released to you on time, automatically. No chasing customers for payment.",
+    title: "No structured income",
+    body: "Seasonal, unpredictable, dependent on foot traffic alone.",
   },
   {
-    icon: Package,
-    title: "Zero Customer Acquisition",
-    description:
-      "No need to find clients, advertise, or negotiate. Naapio brings verified customers with confirmed budgets directly to you through our bid room.",
+    title: "No payment protection",
+    body: "Agents and middlemen take a cut. Payment delays are the norm, not the exception.",
   },
   {
-    icon: Star,
-    title: "Grow Your Reputation",
-    description:
-      "Build a verified review profile that only grows with every completed order. Top-rated Gold Tier tailors get priority leads, co-marketing features, and a dedicated account manager.",
+    title: "No digital identity",
+    body: "Decades of skill, with no record, no reputation score, no way to prove it to a new customer.",
   },
 ];
 
-const steps = [
+const changes = [
   {
-    icon: ClipboardCheck,
-    title: "Apply & Get Verified",
-    description:
-      "Submit your details, complete Aadhaar KYC, and pass a workspace inspection.",
+    title: "Escrow-guaranteed payment",
+    body: "You get paid. Every time. No chasing.",
+    image: artisanSewing,
   },
   {
-    icon: Scissors,
-    title: "Receive Order Requests",
-    description:
-      "Browse incoming customer RFQs and place your bid.",
+    title: "Blind bidding",
+    body: "You set your own price. Customers see your bid, not your name — pricing stays honest.",
+    image: artisanFabric,
   },
   {
-    icon: ShieldCheck,
-    title: "Stitch & Hit Milestones",
-    description:
-      "Complete the order in 5 tracked milestones; customer approves each stage.",
-  },
-  {
-    icon: Landmark,
-    title: "Get Paid",
-    description:
-      "Payment released within 7 days of delivery. No delays, no disputes left hanging.",
+    title: "Verified digital identity",
+    body: "Every completed order builds a reputation score and order history that's yours.",
+    image: tailorReputation,
   },
 ];
 
-const tierData = [
-  {
-    tier: "Bronze",
-    color: "bg-amber-700/20 text-amber-800 dark:text-amber-400",
-    badge: "🥉",
-    criteria: "All new tailors",
-    benefits: [
-      "Full platform access",
-      "Standard T+7 payout",
-      "Community support",
-    ],
-  },
-  {
-    tier: "Silver",
-    color: "bg-slate-300/30 text-slate-700 dark:text-slate-300",
-    badge: "🥈",
-    criteria: "10+ orders, 3.8★ rating",
-    benefits: [
-      "Priority placement in bid room",
-      "Faster T+5 payout",
-      "Profile badge & trust seal",
-    ],
-  },
-  {
-    tier: "Gold",
-    color: "bg-accent/20 text-accent",
-    badge: "🥇",
-    criteria: "20+ orders, 4.2★ rating",
-    benefits: [
-      "Fabric advance facility",
-      "Dedicated account manager",
-      "Co-marketing on Naapio campaigns",
-    ],
-  },
+const joinSteps = [
+  { n: "01", title: "Apply", body: "Share your craft speciality and location." },
+  { n: "02", title: "Verify", body: "Identity check, skill assessment, portfolio review." },
+  { n: "03", title: "Start bidding", body: "See open customer briefs in your city immediately." },
 ];
 
-const specialisationCategories = [
+const craftCategories = [
+  "Tailors",
+  "Embroiderers",
+  "Zari & Zardozi artisans",
+  "Weavers",
+  "Kalamkari & hand-painters",
+  "Alteration specialists",
+];
+
+const faqs = [
   {
-    label: "Women's Garments",
-    items: [
-      "Saree Blouse",
-      "Lehenga & Bridal Lehenga",
-      "Salwar Kameez & Anarkali",
-      "Kurti & Co-ord Sets",
-      "Gown & Evening Wear",
-      "Saree Draping & Nauvari",
-      "Chaniya Choli",
-    ],
+    q: "How does bidding actually work?",
+    a: "Customers post a brief with their budget range. You see the brief and the range, then submit your own price along with your portfolio. Bidding is blind — customers see your work and reputation, not your name — so pricing stays fair on both sides.",
   },
   {
-    label: "Men's Garments",
-    items: [
-      "Sherwani & Bandhgala",
-      "Kurta & Nehru Jacket",
-      "Suit, Blazer & Formal Shirt",
-      "Trousers & Formal Wear",
-      "Veshti / Dhoti / Mundu",
-    ],
+    q: "What happens if a customer cancels after I accept?",
+    a: "The customer's payment is held in escrow the moment you accept. If they cancel after work has begun, you're compensated for the completed milestones per our cancellation policy — you're never left unpaid for work you've done.",
   },
   {
-    label: "Alterations & Repairs",
-    items: ["Alterations (All Types)"],
+    q: "How are disputes handled?",
+    a: "Every order runs through 5 tracked milestones with customer approval at each stage. If a disagreement arises, our resolution team reviews the milestone evidence within 24 hours and mediates a fair outcome — with escrow protection in the meantime.",
   },
   {
-    label: "Kids (Coming Soon)",
-    items: [{ value: "Kids' Wear (Launching Soon)", disabled: true }],
+    q: "What's the platform's commission?",
+    a: "A flat 20% commission on each completed order covers payment protection, customer acquisition, verification and dispute resolution. No listing fees, no monthly subscription, no hidden charges.",
+  },
+  {
+    q: "When exactly do I get paid?",
+    a: "Payment for each milestone is released to your account within 7 days of the customer approving that milestone. No chasing, no delays — the escrow releases automatically.",
   },
 ];
 
@@ -164,6 +113,7 @@ const ForTailorsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [formData, setFormData] = useState({
     fullName: "",
     mobile: "",
@@ -180,6 +130,9 @@ const ForTailorsPage = () => {
     formData.city.trim().length > 0 &&
     formData.experience.trim().length > 0 &&
     formData.specialisation.length > 0;
+
+  const scrollToForm = () =>
+    document.getElementById("express-interest")?.scrollIntoView({ behavior: "smooth" });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,9 +153,7 @@ const ForTailorsPage = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="text-xl font-serif font-bold text-foreground">
-              Naapio
-            </span>
+            <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
           </a>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
             <a href="/#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
@@ -224,22 +175,18 @@ const ForTailorsPage = () => {
         </div>
       </nav>
 
-      {/* ======== HERO ======== */}
-      <section className="relative pt-32 pb-24 overflow-hidden">
-        <img src={forTailorsHero} alt="Artisan workspace" className="absolute inset-0 w-full h-full object-cover object-top" style={{ display: 'block', width: '100%', zIndex: 0 }} />
-        <div className="absolute inset-0 bg-background/80" style={{ zIndex: 0 }} />
-        {/* decorative thread motif */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
-          style={{
-            zIndex: 0,
-            backgroundImage:
-              "repeating-linear-gradient(120deg, hsl(var(--accent)) 0px, transparent 1px, transparent 60px)",
-          }}
+      {/* ======== SECTION 1 — HERO ======== */}
+      <section className="relative pt-32 pb-24 overflow-hidden bg-foreground">
+        <img
+          src={forTailorsHero}
+          alt="Artisan workspace"
+          className="absolute inset-0 w-full h-full object-cover object-top opacity-25"
         />
-        <div className="container mx-auto px-6 text-center relative" style={{ zIndex: 1 }}>
+        <div className="absolute inset-0 bg-foreground/60" />
+        <div className="container mx-auto px-6 relative">
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-            <span className="inline-flex items-center gap-2 text-accent font-sans font-medium tracking-wide uppercase text-sm mb-6">
-              <Scissors className="w-4 h-4" /> For Master Tailors & Artisans
+            <span className="inline-flex items-center gap-2 text-white/70 font-sans font-medium tracking-[0.2em] uppercase text-xs mb-8">
+              <Scissors className="w-4 h-4" /> For Artisans
             </span>
           </motion.div>
           <motion.h1
@@ -247,73 +194,101 @@ const ForTailorsPage = () => {
             animate="visible"
             variants={fadeUp}
             custom={1}
-            className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-foreground leading-tight mb-6 max-w-4xl mx-auto"
+            className="font-serif text-4xl md:text-6xl font-bold text-white leading-[1.1] mb-8 max-w-3xl"
           >
-            Turn Your Craft Into a{" "}
-            <span className="text-accent italic">Thriving Business</span>
+            Your craft deserves more than walk-in customers.
           </motion.h1>
           <motion.p
             initial="hidden"
             animate="visible"
             variants={fadeUp}
             custom={2}
-            className="text-lg md:text-xl text-muted-foreground font-sans max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="font-sans text-white/70 text-lg max-w-xl mb-10 leading-relaxed"
           >
-            Join Naapio and earn 3× more than street income — with guaranteed
-            payments, zero marketing effort, and customers who value your skill.
+            Naapio is building the payment and reputation infrastructure India's artisans have never had.
           </motion.p>
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3}>
-            <Button
-              variant="gold"
-              size="hero"
-              onClick={() =>
-                document
-                  .getElementById("express-interest")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              Express Interest to Join
+            <Button variant="gold" size="hero" onClick={scrollToForm}>
+              Apply as an Artisan
               <ChevronRight className="w-5 h-5" />
             </Button>
           </motion.div>
         </div>
       </section>
 
-      {/* ======== WHY JOIN ======== */}
-      <section className="py-24 bg-secondary">
+      {/* ======== SECTION 2 — THE PROBLEM ======== */}
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground mb-16"
+            className="font-sans text-xs text-muted-foreground uppercase tracking-[0.25em] mb-6"
           >
-            Why Join Naapio?
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {benefits.map((b, i) => (
+            The problem, named plainly
+          </motion.p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-border pt-12">
+            {problems.map((p, i) => (
               <motion.div
-                key={b.title}
+                key={p.title}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border hover:shadow-md transition-shadow"
               >
-                {i === 0 && <img src={artisanSewing} alt="Artisan sewing" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
-                {i === 1 && <img src={artisanFabric} alt="Artisan with fabric" className="w-full h-44 object-cover object-center rounded-t-xl" style={{ display: 'block', width: '100%' }} />}
-                {i === 2 && <img src={tailorReputation} alt="Grow Your Reputation" className="w-full h-44 object-cover object-center rounded-t-xl" />}
-                <div className="p-8">
-                <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
-                  <b.icon className="w-7 h-7 text-accent" />
-                </div>
-                <h3 className="text-xl font-serif font-bold text-foreground mb-3">
-                  {b.title}
+                <h3 className="font-serif text-2xl font-bold text-foreground mb-3">
+                  {p.title}
                 </h3>
-                <p className="text-muted-foreground font-sans leading-relaxed">
-                  {b.description}
+                <p className="font-sans text-base text-muted-foreground leading-relaxed">
+                  {p.body}
                 </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ======== SECTION 3 — WHAT CHANGES ======== */}
+      <section className="py-24 bg-secondary">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mb-16"
+          >
+            <p className="font-sans text-xs text-accent uppercase tracking-[0.25em] mb-4">
+              What changes on Naapio
+            </p>
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-foreground leading-tight">
+              Infrastructure. Not intermediaries.
+            </h2>
+          </motion.div>
+
+          <div className="space-y-6">
+            {changes.map((c, i) => (
+              <motion.div
+                key={c.title}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                custom={i}
+                className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 items-center bg-card rounded-2xl border border-border p-8 md:p-10"
+              >
+                <img
+                  src={c.image}
+                  alt={c.title}
+                  className="w-full h-48 md:h-full object-cover object-center rounded-xl"
+                />
+                <div>
+                  <h3 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
+                    {c.title}
+                  </h3>
+                  <p className="font-sans text-lg text-muted-foreground leading-relaxed">
+                    {c.body}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -321,42 +296,58 @@ const ForTailorsPage = () => {
         </div>
       </section>
 
-      {/* ======== HOW IT WORKS ======== */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
+      {/* ======== SECTION 4 — FAIR PRICING ======== */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-6 max-w-3xl">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground mb-16"
+            className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-8"
           >
-            How It Works for Tailors
+            Fair pricing, by design
           </motion.h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((s, i) => (
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="font-sans text-lg text-muted-foreground leading-relaxed"
+          >
+            Walk-in tailoring work is often priced well below fair market value — there's no way to compare, negotiate, or prove your worth to a new customer. Naapio's blind bidding removes that problem entirely: you see the customer's budget range, you set your own price, and the customer sees your portfolio and reputation — not a negotiation you're powerless in.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* ======== SECTION 5 — HOW JOINING WORKS ======== */}
+      <section className="py-24 bg-secondary">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mb-16">
+            <p className="font-sans text-xs text-accent uppercase tracking-[0.25em] mb-4">
+              How joining works
+            </p>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
+              Three steps. That's it.
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {joinSteps.map((s, i) => (
               <motion.div
-                key={s.title}
+                key={s.n}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="relative text-center"
+                className="border-t-2 border-accent pt-6"
               >
-                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-5">
-                  <s.icon className="w-7 h-7 text-primary-foreground" />
-                </div>
-                {i < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] border-t-2 border-dashed border-border" />
-                )}
-                <div className="text-xs font-sans font-semibold text-accent uppercase tracking-wider mb-2">
-                  Step {i + 1}
-                </div>
-                <h3 className="text-lg font-serif font-bold text-foreground mb-2">
+                <span className="font-serif text-5xl font-bold text-accent block mb-4">
+                  {s.n}
+                </span>
+                <h3 className="font-serif text-2xl font-bold text-foreground mb-3">
                   {s.title}
                 </h3>
-                <p className="text-muted-foreground font-sans text-sm leading-relaxed">
-                  {s.description}
+                <p className="font-sans text-muted-foreground leading-relaxed">
+                  {s.body}
                 </p>
               </motion.div>
             ))}
@@ -364,61 +355,94 @@ const ForTailorsPage = () => {
         </div>
       </section>
 
-      {/* ======== TIER TABLE ======== */}
-      <section className="py-24 bg-secondary">
-        <div className="container mx-auto px-6">
+      {/* ======== SECTION 6 — CRAFT CATEGORIES WELCOME ======== */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-6 max-w-4xl text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground mb-4"
+            className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-10"
           >
-            Tailor Tier Benefits
+            Every craft tradition has a place here — not just stitching.
           </motion.h2>
-          <p className="text-center text-muted-foreground font-sans mb-16 max-w-lg mx-auto">
-            Grow through the ranks — every order you complete takes you closer to
-            Gold.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {tierData.map((t, i) => (
-              <motion.div
-                key={t.tier}
-                initial="hidden"
-                whileInView="visible"
+          <div className="flex flex-wrap justify-center gap-3">
+            {craftCategories.map((cat, i) => (
+              <motion.span
+                key={cat}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i}
-                className={`rounded-2xl p-8 border border-border bg-card ${
-                  t.tier === "Gold" ? "ring-2 ring-accent shadow-lg" : "shadow-sm"
-                }`}
+                transition={{ delay: i * 0.08 }}
+                className="inline-flex items-center px-5 py-2.5 rounded-full bg-secondary border border-border font-sans text-sm text-foreground"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-3xl">{t.badge}</span>
-                  <div>
-                    <h3 className="text-xl font-serif font-bold text-foreground">
-                      {t.tier} Tier
-                    </h3>
-                    <span className="text-sm text-muted-foreground font-sans">
-                      {t.criteria}
-                    </span>
-                  </div>
-                </div>
-                <ul className="space-y-3 mt-6">
-                  {t.benefits.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm font-sans text-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
+                {cat}
+              </motion.span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ======== SECTION 7 — FAQ ======== */}
+      <section className="py-24 bg-secondary">
+        <div className="container mx-auto px-6 max-w-3xl">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-12"
+          >
+            Questions artisans ask us
+          </motion.h2>
+          <div className="space-y-3">
+            {faqs.map((f, i) => (
+              <div
+                key={f.q}
+                className="bg-card border border-border rounded-xl overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between gap-4 p-5 text-left hover:bg-muted/50 transition-colors"
+                >
+                  <span className="font-serif font-bold text-foreground text-lg">
+                    {f.q}
+                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${
+                      openFaq === i ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {openFaq === i && (
+                  <div className="px-5 pb-5 -mt-1 font-sans text-muted-foreground leading-relaxed">
+                    {f.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ======== SECTION 8 — CLOSING CTA ======== */}
+      <section className="py-24 bg-foreground text-center">
+        <div className="container mx-auto px-6 max-w-2xl">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-serif text-3xl md:text-4xl font-bold text-white mb-8 leading-tight"
+          >
+            Ready to build a reputation that follows you?
+          </motion.h2>
+          <Button variant="gold" size="hero" onClick={scrollToForm}>
+            Apply as an Artisan →
+          </Button>
         </div>
       </section>
 
       {/* ======== EXPRESS INTEREST FORM ======== */}
-      <section id="express-interest" className="py-24">
+      <section id="express-interest" className="py-24 bg-background">
         <div className="container mx-auto px-6 max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -426,7 +450,7 @@ const ForTailorsPage = () => {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground mb-3">
-              Ready to Join? Tell Us About Yourself
+              Tell us about your craft
             </h2>
             <p className="text-center text-muted-foreground font-sans mb-12">
               Fill in the form and our team will reach out within 2 business days.
