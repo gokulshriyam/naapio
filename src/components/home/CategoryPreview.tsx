@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { totalStatesCount } from "@/data/craftHeritage";
 import mensFashion from "@/assets/mens-fashion.jpg";
 import womensFashion from "@/assets/womens-fashion.jpg";
 import catLehenga from "@/assets/categories/cat-lehenga.jpg";
@@ -139,7 +140,7 @@ const CategoryPreview = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <div className="overflow-x-auto -mx-6 px-6 pb-3 mb-16">
+        <div className="overflow-x-auto -mx-6 px-6 pb-3 mb-6">
           <div className="flex gap-3">
             {craftOrigins.map((c) => (
               <button
@@ -153,6 +154,19 @@ const CategoryPreview = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="text-center mb-16">
+          <a
+            href="#india-craft-map"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('india-craft-map')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="inline-flex items-center gap-1.5 font-sans text-sm text-accent hover:text-accent/80 font-medium"
+          >
+            Explore all {totalStatesCount} states on the map ↓
+          </a>
         </div>
 
         {/* Individual garment category cards */}
