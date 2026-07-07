@@ -14,6 +14,7 @@ import ActiveOrdersPage from "./pages/ActiveOrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import ForTailorsPage from "./pages/ForTailorsPage";
+import OurStoryPage from "./pages/OurStoryPage";
 import StartPage from "./pages/StartPage";
 import AlterationFlow from "./pages/AlterationFlow";
 import CustomiseFlow from "./pages/CustomiseFlow";
@@ -43,6 +44,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/for-tailors" element={<ForTailorsPage />} />
+            <Route path="/our-story" element={<OurStoryPage />} />
             <Route path="/start" element={<StartPage />} />
             <Route path="/wizard" element={<Wizard />} />
             <Route path="/new-order/upload" element={<UploadPage />} />
