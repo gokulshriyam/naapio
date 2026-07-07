@@ -12,6 +12,7 @@ import CategoryPreview from "@/components/home/CategoryPreview";
 import VendorShowcase from "@/components/home/VendorShowcase";
 import FAQSection from "@/components/home/FAQSection";
 import SiteFooter from "@/components/home/SiteFooter";
+import IndiaCraftMap from "@/components/home/IndiaCraftMap";
 import CitySelector from "@/components/CitySelector";
 import LanguageSelector from "@/components/LanguageSelector";
 
@@ -411,6 +412,25 @@ const Index = () => {
       <HowItWorks />
       <TrustSignals />
       <CategoryPreview />
+
+      {/* India Craft Map — 5,000 years of heritage */}
+      <section id="india-craft-map" className="py-24 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <p className="font-sans text-xs text-accent uppercase tracking-[0.25em] mb-4">
+              5,000 Years in the Making
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-5">
+              India's Craft, Mapped
+            </h2>
+            <p className="font-sans text-muted-foreground text-lg leading-relaxed">
+              Every region has given the world something no machine can replicate. This is the heritage behind every stitch on Naapio.
+            </p>
+          </div>
+          <IndiaCraftMap />
+        </div>
+      </section>
+
       <VendorShowcase />
 
       {/* CTA Banner */}
