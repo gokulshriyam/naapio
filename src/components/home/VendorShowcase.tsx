@@ -2,9 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import artisanSewing from "@/assets/artisan-sewing.jpg";
-import artisanFabric from "@/assets/artisan-fabric.jpg";
-import tailorReputation from "@/assets/tailor-reputation.jpg";
+
 
 const craftOrigins = [
   { emoji: "🪡", craft: "Zardozi", origin: "Lucknow" },
