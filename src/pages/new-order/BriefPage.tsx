@@ -316,6 +316,7 @@ const BriefPage = () => {
             { id: 'fabric', label: 'Fabric' },
             { id: 'measurements', label: 'Measurements' },
             { id: 'addons', label: 'Add-ons' },
+            { id: 'review', label: 'Review & Preview' },
           ].map(tab => (
             <button
               key={tab.id}
