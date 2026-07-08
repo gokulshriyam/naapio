@@ -27,34 +27,10 @@ const craftOrigins = [
   { emoji: "💠", craft: "Patola", origin: "Patan, Gujarat" },
 ];
 
-const artisans = [
-  {
-    image: artisanSewing,
-    badge: "🪡 Zardozi Embroiderer",
-    name: "Fatima S. · Srinagar, Kashmir",
-    tier: "⭐ Gold Tier · 4.9 · 312 orders",
-    before: "₹18,000/month",
-    after: "₹54,000/month",
-    craft: "22 years · Zardozi embroidery",
-  },
-  {
-    image: artisanFabric,
-    badge: "🥻 Master Weaver",
-    name: "Rajan M. · Kanchipuram, Tamil Nadu",
-    tier: "⭐ Gold Tier · 4.8 · 187 orders",
-    before: "₹22,000/month",
-    after: "₹61,000/month",
-    craft: "34 years · Kanchipuram silk",
-  },
-  {
-    image: tailorReputation,
-    badge: "✂️ Master Tailor",
-    name: "Priya D. · Jayanagar, Bangalore",
-    tier: "⭐ Gold Tier · 4.9 · 234 orders",
-    before: "₹20,000/month",
-    after: "₹52,000/month",
-    craft: "15 years · Bridal lehenga specialist",
-  },
+const craftBadges = [
+  { emoji: "🪡", badge: "Zardozi Embroiderer", experience: "22 years of Zardozi embroidery" },
+  { emoji: "🥻", badge: "Master Weaver", experience: "34 years of Kanchipuram silk weaving" },
+  { emoji: "✂️", badge: "Master Tailor", experience: "15 years of bridal lehenga tailoring" },
 ];
 
 const VendorShowcase = () => {
