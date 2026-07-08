@@ -65,7 +65,7 @@ const OurStoryPage = () => {
         </motion.div>
       </section>
 
-      {/* SECTION 2 — Historical trade context */}
+      {/* SECTION 2 — Founding story */}
       <section className="py-32 bg-background">
         <div className="max-w-3xl mx-auto px-6">
           <motion.h2
@@ -74,7 +74,7 @@ const OurStoryPage = () => {
             viewport={{ once: true }}
             className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-8"
           >
-            A trade the world came looking for
+            It started with a search that led nowhere.
           </motion.h2>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -83,17 +83,27 @@ const OurStoryPage = () => {
             className="space-y-6 font-sans text-lg text-muted-foreground leading-relaxed"
           >
             <p>
-              Long before shipping routes had names, Indian cotton and silk were already crossing oceans. Roman writers complained about the gold leaving their empire to pay for it — historians estimate Rome spent enormous sums annually on Indian textiles and spices alone.
+              Someone had seen an outfit — on a screen, on someone else, at someone else's wedding — and wanted it made. Not bought. Made. For them.
             </p>
             <p>
-              The maritime Silk Road ran as much through Indian ports as it did through the deserts of Central Asia. Kanchipuram silk, Bengal muslin so fine it was called 'woven air,' and Gujarat's block-printed cottons travelled to Rome, to Southeast Asia, to the courts of China.
+              So they searched. And found nothing that could take them from that photo to that garment. No platform. No price. No way to know who could actually make it, or whether the money they sent would come back to them if it didn't work out.
             </p>
             <p>
-              Centuries later, Mughal ateliers turned this inherited craft into court art — Zardozi, Chikankari, brocade weaving reached a level of technical mastery that still hasn't been mechanised, because it can't be. Some things only hands can do.
+              What they found instead was what's always existed: a phone number, passed along by someone who knew someone. A walk-in visit, hoping the tailor was good. A payment made on trust alone, because trust was the only mechanism available.
+            </p>
+            <p>
+              That gap — between finding a design and getting it made — had never been closed. Not because no one wanted to close it. Because closing it meant solving three hard problems at once: turning a photo into something a tailor could actually bid on, protecting a payment between two strangers who'd never worked together, and giving India's artisans — some of the most skilled hands in the world — a way to be found by people who didn't already know them.
+            </p>
+            <p>
+              Naapio exists because that gap was still open in a country that invented half the textile techniques the fashion world now calls luxury.
+            </p>
+            <p>
+              We didn't build a fashion brand. We built the bridge that should have already existed.
             </p>
           </motion.div>
         </div>
       </section>
+
 
       {/* SECTION 3 — Craft geography */}
       <section className="py-24 bg-secondary">
