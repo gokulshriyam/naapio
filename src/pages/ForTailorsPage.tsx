@@ -272,32 +272,34 @@ const ForTailorsPage = () => {
           </motion.div>
 
           <div className="space-y-6">
-            {changes.map((c, i) => (
-              <motion.div
-                key={c.title}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i}
-                className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 items-center bg-card rounded-2xl border border-border p-8 md:p-10"
-              >
-                <img
-                  src={c.image}
-                  alt={c.title}
-                  className="w-full h-48 md:h-full object-cover object-center rounded-xl"
-                />
-                <div>
-                  <h3 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
-                    {c.title}
-                  </h3>
-                  <p className="font-sans text-lg text-muted-foreground leading-relaxed">
-                    {c.body}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+            {changes.map((c, i) => {
+              const Icon = c.icon;
+              return (
+                <motion.div
+                  key={c.title}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeUp}
+                  custom={i}
+                  className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 items-center bg-card rounded-2xl border border-border p-8 md:p-10"
+                >
+                  <div className="w-24 h-24 rounded-2xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-12 h-12 text-accent" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
+                      {c.title}
+                    </h3>
+                    <p className="font-sans text-lg text-muted-foreground leading-relaxed">
+                      {c.body}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
+
         </div>
       </section>
 
