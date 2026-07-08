@@ -191,7 +191,12 @@ const BriefPage = () => {
   const [recipientName, setRecipientName] = useState('');
   const [isGroup, setIsGroup] = useState(false);
   const [groupSize, setGroupSize] = useState(2);
-  const [activeSection, setActiveSection] = useState<'garment' | 'fabric' | 'measurements' | 'addons'>('garment');
+  const [activeSection, setActiveSection] = useState<'garment' | 'fabric' | 'measurements' | 'addons' | 'review'>('garment');
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewRegenerated, setPreviewRegenerated] = useState(false);
+  const [previewSkipped, setPreviewSkipped] = useState(false);
 
   useEffect(() => {
     try {
