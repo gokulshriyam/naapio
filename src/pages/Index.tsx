@@ -13,6 +13,9 @@ import VendorShowcase from "@/components/home/VendorShowcase";
 import FAQSection from "@/components/home/FAQSection";
 import SiteFooter from "@/components/home/SiteFooter";
 import IndiaCraftMap from "@/components/home/IndiaCraftMap";
+import LivePulseStrip from "@/components/home/LivePulseStrip";
+import WeddingEdit from "@/components/home/WeddingEdit";
+import RealOrdersStrip from "@/components/home/RealOrdersStrip";
 import CitySelector from "@/components/CitySelector";
 import LanguageSelector from "@/components/LanguageSelector";
 
