@@ -1,47 +1,41 @@
 import { motion } from "framer-motion";
 
-const stats = [
-  {
-    value: "₹28,000 Cr",
-    label: "India's bespoke fashion market",
-    sub: "Running entirely offline. No platform. No protection.",
-  },
-  {
-    value: "1.3 Cr",
-    label: "Skilled artisans across India",
-    sub: "No digital identity. No payment protection. No structured income.",
-  },
-  {
-    value: "78%",
-    label: "Customers cite payment safety as #1 barrier",
-    sub: "The trust layer has never existed. Until now.",
-  },
+const badges = [
+  { emoji: "🔒", label: "Escrow Protected" },
+  { emoji: "📊", label: "3.85% Dispute Rate", sub: "industry average is 30%+" },
+  { emoji: "✅", label: "Verified Artisans Only" },
 ];
 
 const TrustSignals = () => {
   return (
-    <section className="py-20 bg-foreground">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {stats.map((s, i) => (
+    <section className="py-16 bg-foreground">
+      <div className="max-w-3xl mx-auto px-6 text-center">
+        <p className="font-sans text-white/70 text-lg leading-relaxed mb-8">
+          Paying a stranger online for something this personal? That's exactly the problem escrow was built to solve. Your money sits safely in escrow — the artisan is only paid once you approve the finished piece.
+        </p>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="flex justify-center gap-8 flex-wrap"
+        >
+          {badges.map((b, i) => (
             <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10 text-center"
+              key={b.label}
+              variants={{
+                hidden: { opacity: 0, y: 10 },
+                visible: { opacity: 1, y: 0, transition: { delay: i * 0.15 } },
+              }}
+              className="flex flex-col items-center"
             >
-              <p className="font-serif text-4xl md:text-5xl font-bold text-accent">{s.value}</p>
-              <p className="font-sans text-sm text-white/70 mt-2">{s.label}</p>
-              <p className="font-sans text-xs text-white/40 mt-1">{s.sub}</p>
+              <span className="text-2xl mb-2">{b.emoji}</span>
+              <span className="font-sans text-sm text-white font-medium">{b.label}</span>
+              {b.sub && (
+                <span className="font-sans text-xs text-white/50 mt-1">{b.sub}</span>
+              )}
             </motion.div>
           ))}
-        </div>
-
-        <p className="text-center font-sans text-white/60 text-sm max-w-3xl mx-auto">
-          Naapio is the infrastructure layer that was missing — escrow, milestones, AI briefing, and verified artisan identity in one platform.
-        </p>
+        </motion.div>
       </div>
     </section>
   );
