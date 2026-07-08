@@ -7,6 +7,9 @@ import {
   ChevronRight,
   CheckCircle2,
   ChevronDown,
+  ShieldCheck,
+  Gavel,
+  BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,9 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import SiteFooter from "@/components/home/SiteFooter";
 import forTailorsHero from "@/assets/for-tailors-hero.jpg";
-import artisanSewing from "@/assets/artisan-sewing.jpg";
-import artisanFabric from "@/assets/artisan-fabric.jpg";
-import tailorReputation from "@/assets/tailor-reputation.jpg";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
