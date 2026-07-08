@@ -758,40 +758,294 @@ const BriefPage = () => {
                 className="font-sans"
               />
             </div>
+
+            <Button
+              variant="gold"
+              size="hero"
+              className="w-full mt-6"
+              onClick={() => setActiveSection('review')}
+            >
+              Continue to Review →
+            </Button>
           </motion.div>
         )}
 
-        {/* SUBMIT */}
-        <div className="mt-10 space-y-4">
-          <div className="p-4 bg-card rounded-xl border border-border">
-            <div className="flex justify-between mb-2">
-              <span className="font-sans text-sm font-semibold">Brief completeness</span>
-              <span className="font-sans text-sm">{completeness}%</span>
+        {/* REVIEW & PREVIEW */}
+        {activeSection === 'review' && (
+          <motion.div key="review" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-foreground mb-2">Review your brief</h2>
+              <p className="font-sans text-sm text-muted-foreground">Confirm every detail before it goes to artisans.</p>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <motion.div className="h-full bg-accent" animate={{ width: `${completeness}%` }} transition={{ duration: 0.4 }} />
+
+            <div className="bg-card rounded-2xl border border-border p-6 space-y-6">
+              {/* Garment */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-serif font-bold text-foreground text-base">Garment</h3>
+                  <button onClick={() => setActiveSection('garment')} className="text-xs text-accent font-sans hover:underline">Edit</button>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { l: 'Gender', v: gender === 'women' ? "Women's" : "Men's" },
+                    { l: 'Category', v: selectedCategory || '—' },
+                    { l: 'Style', v: selectedSubCategory || '—' },
+                    { l: 'Occasion', v: selectedOccasion || '—' },
+                    { l: 'Fit', v: selectedFit || '—' },
+                    ...(selectedNeckline ? [{ l: 'Neckline', v: selectedNeckline }] : []),
+                    ...(selectedSleeve ? [{ l: 'Sleeve', v: selectedSleeve }] : []),
+                    ...(selectedDupatta ? [{ l: 'Dupatta', v: selectedDupatta }] : []),
+                    ...(selectedLining ? [{ l: 'Lining', v: selectedLining }] : []),
+                  ].map((r) => (
+                    <div key={r.l} className="flex justify-between gap-4">
+                      <span className="text-muted-foreground text-sm font-sans">{r.l}</span>
+                      <span className="text-foreground font-medium text-sm font-sans text-right">{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Fabric */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-serif font-bold text-foreground text-base">Fabric</h3>
+                  <button onClick={() => setActiveSection('fabric')} className="text-xs text-accent font-sans hover:underline">Edit</button>
+                </div>
+                <div className="space-y-2">
+                  {ownFabric ? (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground text-sm font-sans">Own fabric</span>
+                      <span className="text-foreground font-medium text-sm font-sans text-right">{ownFabricDescription || '—'}</span>
+                    </div>
+                  ) : (
+                    [
+                      { l: 'Feel', v: selectedFeel || '—' },
+                      { l: 'Types', v: selectedFabricTypes.join(', ') || '—' },
+                      { l: 'Colour', v: selectedColourMood || '—' },
+                      { l: 'Embellishment', v: selectedSurfaces.join(', ') || '—' },
+                      { l: 'Blend', v: selectedBlend || '—' },
+                      { l: 'Budget band', v: fabricBudgetBand || '—' },
+                    ].map((r) => (
+                      <div key={r.l} className="flex justify-between gap-4">
+                        <span className="text-muted-foreground text-sm font-sans">{r.l}</span>
+                        <span className="text-foreground font-medium text-sm font-sans text-right">{r.v}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Measurements */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-serif font-bold text-foreground text-base">Measurements</h3>
+                  <button onClick={() => setActiveSection('measurements')} className="text-xs text-accent font-sans hover:underline">Edit</button>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground text-sm font-sans">Type</span>
+                    <span className="text-foreground font-medium text-sm font-sans text-right">
+                      {measurementType === 'standard' ? `Standard — ${selectedStandardSize || '—'}` :
+                       measurementType === 'custom' ? `Custom (${Object.keys(measurements).length} fields)` :
+                       'Provide later'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Add-ons */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-serif font-bold text-foreground text-base">Add-ons</h3>
+                  <button onClick={() => setActiveSection('addons')} className="text-xs text-accent font-sans hover:underline">Edit</button>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { l: 'Ordering for', v: orderingFor === 'self' ? 'Myself' : orderingFor === 'someone' ? `Gift · ${recipientName || '—'}` : orderingFor === 'group' ? `Group of ${groupSize}` : '—' },
+                    { l: 'Budget range', v: `₹${budgetMin.toLocaleString()} – ₹${budgetMax.toLocaleString()}` },
+                    { l: 'Delivery date', v: deliveryDate || '—' },
+                  ].map((r) => (
+                    <div key={r.l} className="flex justify-between gap-4">
+                      <span className="text-muted-foreground text-sm font-sans">{r.l}</span>
+                      <span className="text-foreground font-medium text-sm font-sans text-right">{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            {completeness < 80 ? (
-              <p className="text-xs text-muted-foreground font-sans mt-2">Complete more sections for better quality bids</p>
-            ) : (
-              <p className="text-xs text-success font-sans mt-2">✓ Great brief — ready to post</p>
-            )}
-          </div>
 
-          <Button
-            variant="gold"
-            size="hero"
-            className="w-full"
-            onClick={handleSubmit}
-            disabled={completeness < 50 || !budgetMin || !deliveryDate}
-          >
-            Post Brief to Artisans →
-          </Button>
+            {/* Virtual Trial Room */}
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h3 className="font-serif text-xl font-bold text-foreground mb-1">See it on you (optional)</h3>
+              <p className="font-sans text-sm text-muted-foreground mb-5">
+                Upload a photo and see an AI preview of your garment before you post your brief.
+              </p>
 
-          <p className="text-xs text-muted-foreground font-sans text-center">
-            🔒 Your ₹450 is held in escrow. Released only at your final approval.
-          </p>
-        </div>
+              {previewSkipped ? (
+                <div className="p-4 bg-muted/30 rounded-xl">
+                  <p className="text-sm font-sans text-muted-foreground">
+                    Skipped. You can still post your brief below.
+                  </p>
+                </div>
+              ) : !selfiePreview ? (
+                <>
+                  <label className="border-2 border-dashed border-border rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-accent/40 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 8 * 1024 * 1024) { toast.error("Photo must be under 8MB"); return; }
+                        const dataUrl = await new Promise<string>((resolve) => {
+                          const r = new FileReader();
+                          r.onload = () => resolve(r.result as string);
+                          r.readAsDataURL(file);
+                        });
+                        setSelfiePreview(dataUrl);
+                        setPreviewLoading(true);
+                        try {
+                          const base64 = dataUrl.split(',')[1];
+                          const promptParts = [
+                            `Generate a photorealistic image of the person in the photo wearing a custom-tailored ${selectedCategory || 'traditional Indian outfit'}`,
+                            selectedSubCategory ? `(${selectedSubCategory})` : '',
+                            selectedColourMood ? `in ${selectedColourMood.toLowerCase()}` : '',
+                            selectedFeel ? `with a ${selectedFeel.toLowerCase()} feel` : '',
+                            selectedSurfaces.length ? `featuring ${selectedSurfaces.join(', ')}` : '',
+                            '. Keep the person\'s face, pose, and background unchanged. Show only the garment change with realistic drape and lighting.',
+                          ].filter(Boolean).join(' ');
+                          const res = await supabase.functions.invoke('gemini-proxy', {
+                            body: {
+                              callType: 'generate-preview',
+                              prompt: promptParts,
+                              imageBase64: base64,
+                              mimeType: file.type || 'image/jpeg',
+                            },
+                          });
+                          if (res.error) throw new Error(res.error.message);
+                          const parts = res.data?.candidates?.[0]?.content?.parts || [];
+                          const imgPart = parts.find((p: any) => p.inline_data || p.inlineData);
+                          const inline = imgPart?.inline_data || imgPart?.inlineData;
+                          if (inline?.data) {
+                            const mime = inline.mime_type || inline.mimeType || 'image/png';
+                            setPreviewImage(`data:${mime};base64,${inline.data}`);
+                          } else {
+                            toast.error("Preview couldn't be generated — try another photo");
+                          }
+                        } catch (err: any) {
+                          toast.error(err?.message || "Preview failed");
+                        } finally {
+                          setPreviewLoading(false);
+                        }
+                      }}
+                    />
+                    <Upload className="w-8 h-8 text-muted-foreground mb-3" />
+                    <p className="font-sans text-sm text-foreground font-medium">Click to upload your photo</p>
+                    <p className="font-sans text-xs text-muted-foreground mt-1">Full-body or half-body works best · under 8MB</p>
+                  </label>
+                  <button onClick={() => setPreviewSkipped(true)} className="mt-4 text-xs text-muted-foreground font-sans hover:underline block mx-auto">
+                    Skip — I don't want a preview
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  {previewLoading && (
+                    <div className="flex flex-col items-center py-8">
+                      <Loader2 className="w-8 h-8 text-accent animate-spin mb-3" />
+                      <p className="font-sans text-sm text-muted-foreground">Creating your preview...</p>
+                    </div>
+                  )}
+                  {!previewLoading && previewImage && (
+                    <>
+                      <img src={previewImage} alt="AI preview" className="w-full max-w-sm rounded-2xl mx-auto" />
+                      <div className="flex gap-3 justify-center flex-wrap">
+                        {!previewRegenerated && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              if (!selfiePreview) return;
+                              setPreviewRegenerated(true);
+                              setPreviewLoading(true);
+                              try {
+                                const base64 = selfiePreview.split(',')[1];
+                                const mime = selfiePreview.substring(5, selfiePreview.indexOf(';'));
+                                const prompt = `Generate a different photorealistic view of the person wearing a custom ${selectedCategory || 'outfit'} ${selectedColourMood ? 'in ' + selectedColourMood.toLowerCase() : ''}. Keep face and pose, vary the styling slightly.`;
+                                const res = await supabase.functions.invoke('gemini-proxy', {
+                                  body: { callType: 'generate-preview', prompt, imageBase64: base64, mimeType: mime },
+                                });
+                                const parts = res.data?.candidates?.[0]?.content?.parts || [];
+                                const imgPart = parts.find((p: any) => p.inline_data || p.inlineData);
+                                const inline = imgPart?.inline_data || imgPart?.inlineData;
+                                if (inline?.data) {
+                                  const mt = inline.mime_type || inline.mimeType || 'image/png';
+                                  setPreviewImage(`data:${mt};base64,${inline.data}`);
+                                }
+                              } catch (e: any) {
+                                toast.error("Regeneration failed");
+                              } finally {
+                                setPreviewLoading(false);
+                              }
+                            }}
+                          >Regenerate (1 free)</Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelfiePreview(null);
+                            setPreviewImage(null);
+                            setPreviewRegenerated(false);
+                          }}
+                        >Try another photo</Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SUBMIT */}
+            <div className="space-y-4">
+              <div className="p-4 bg-card rounded-xl border border-border">
+                <div className="flex justify-between mb-2">
+                  <span className="font-sans text-sm font-semibold">Brief completeness</span>
+                  <span className="font-sans text-sm">{completeness}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-accent" animate={{ width: `${completeness}%` }} transition={{ duration: 0.4 }} />
+                </div>
+                {completeness < 80 ? (
+                  <p className="text-xs text-muted-foreground font-sans mt-2">Complete more sections for better quality bids</p>
+                ) : (
+                  <p className="text-xs text-success font-sans mt-2">✓ Great brief — ready to post</p>
+                )}
+              </div>
+
+              <Button
+                variant="gold"
+                size="hero"
+                className="w-full"
+                onClick={handleSubmit}
+                disabled={completeness < 50 || !budgetMin || !deliveryDate}
+              >
+                Post Brief to Artisans →
+              </Button>
+
+              <p className="text-xs text-muted-foreground font-sans text-center">
+                🔒 Your ₹450 is held in escrow. Released only at your final approval.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur border-t border-border p-4 sm:static sm:mt-4 sm:pt-6">
