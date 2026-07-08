@@ -58,17 +58,17 @@ const changes = [
   {
     title: "Escrow-guaranteed payment",
     body: "You get paid. Every time. No chasing.",
-    image: artisanSewing,
+    icon: ShieldCheck,
   },
   {
     title: "Blind bidding",
     body: "You set your own price. Customers see your bid, not your name — pricing stays honest.",
-    image: artisanFabric,
+    icon: Gavel,
   },
   {
     title: "Verified digital identity",
     body: "Every completed order builds a reputation score and order history that's yours.",
-    image: tailorReputation,
+    icon: BadgeCheck,
   },
 ];
 
