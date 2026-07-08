@@ -29,7 +29,7 @@ serve(async (req) => {
     let geminiUrl: string;
     let body: Record<string, unknown>;
 
-    if (callType === 'visualise') {
+    if (callType === 'visualise' || callType === 'generate-preview') {
       geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`;
       body = {
         contents: [{
@@ -58,7 +58,7 @@ serve(async (req) => {
       };
     } else {
       return new Response(
-        JSON.stringify({ error: 'Invalid callType. Must be "visualise" or "analyse".' }),
+        JSON.stringify({ error: 'Invalid callType. Must be "visualise", "generate-preview", or "analyse".' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

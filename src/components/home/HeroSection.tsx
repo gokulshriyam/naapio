@@ -37,9 +37,9 @@ const HeroSection = () => {
             {/* Stat strip */}
             <div className="flex flex-wrap items-start gap-6 mb-10">
               {[
-                { value: "104", label: "Orders completed pre-launch" },
                 { value: "3.85%", label: "Dispute rate vs 30%+ industry" },
                 { value: "₹499", label: "To post your brief" },
+                { value: "7 Days", label: "Average time to first bid" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl font-serif font-bold text-accent">{stat.value}</p>

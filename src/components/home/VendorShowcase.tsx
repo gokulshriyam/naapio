@@ -2,9 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import artisanSewing from "@/assets/artisan-sewing.jpg";
-import artisanFabric from "@/assets/artisan-fabric.jpg";
-import tailorReputation from "@/assets/tailor-reputation.jpg";
+
 
 const craftOrigins = [
   { emoji: "🪡", craft: "Zardozi", origin: "Lucknow" },
@@ -29,34 +27,10 @@ const craftOrigins = [
   { emoji: "💠", craft: "Patola", origin: "Patan, Gujarat" },
 ];
 
-const artisans = [
-  {
-    image: artisanSewing,
-    badge: "🪡 Zardozi Embroiderer",
-    name: "Fatima S. · Srinagar, Kashmir",
-    tier: "⭐ Gold Tier · 4.9 · 312 orders",
-    before: "₹18,000/month",
-    after: "₹54,000/month",
-    craft: "22 years · Zardozi embroidery",
-  },
-  {
-    image: artisanFabric,
-    badge: "🥻 Master Weaver",
-    name: "Rajan M. · Kanchipuram, Tamil Nadu",
-    tier: "⭐ Gold Tier · 4.8 · 187 orders",
-    before: "₹22,000/month",
-    after: "₹61,000/month",
-    craft: "34 years · Kanchipuram silk",
-  },
-  {
-    image: tailorReputation,
-    badge: "✂️ Master Tailor",
-    name: "Priya D. · Jayanagar, Bangalore",
-    tier: "⭐ Gold Tier · 4.9 · 234 orders",
-    before: "₹20,000/month",
-    after: "₹52,000/month",
-    craft: "15 years · Bridal lehenga specialist",
-  },
+const craftBadges = [
+  { emoji: "🪡", badge: "Zardozi Embroiderer", experience: "22 years of Zardozi embroidery" },
+  { emoji: "🥻", badge: "Master Weaver", experience: "34 years of Kanchipuram silk weaving" },
+  { emoji: "✂️", badge: "Master Tailor", experience: "15 years of bridal lehenga tailoring" },
 ];
 
 const VendorShowcase = () => {
@@ -108,43 +82,39 @@ const VendorShowcase = () => {
       </div>
 
       <div className="container mx-auto px-6">
-        {/* Artisan cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {artisans.map((a, i) => (
+        {/* Fair pricing framing */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-3xl mx-auto text-center mb-12"
+        >
+          <h3 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-5">
+            Fair pricing, by design
+          </h3>
+          <p className="font-sans text-muted-foreground text-lg leading-relaxed">
+            Walk-in tailoring work is often priced well below fair market value — there's no way to compare, negotiate, or prove your worth to a new customer. Naapio's blind bidding removes that problem entirely: artisans see the customer's budget range, set their own price, and let their portfolio and reputation do the rest.
+          </p>
+        </motion.div>
+
+        {/* Craft badges — skill/experience only, no names or income */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto mb-16">
+          {craftBadges.map((c, i) => (
             <motion.div
-              key={a.name}
+              key={c.badge}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card rounded-2xl border border-border overflow-hidden"
+              className="bg-card rounded-2xl border border-border p-6 text-center"
             >
-              <div className="relative">
-                <img src={a.image} alt={a.name} className="w-full h-48 object-cover" />
-                <span className="absolute top-3 left-3 bg-black/60 backdrop-blur text-white font-sans text-xs px-3 py-1 rounded-full">
-                  {a.badge}
-                </span>
-              </div>
-              <div className="p-5">
-                <p className="font-serif font-bold text-foreground text-base">{a.name}</p>
-                <span className="inline-flex bg-amber-400 text-amber-950 font-sans text-[10px] font-bold px-2 py-0.5 rounded-full mb-3 mt-2">
-                  {a.tier}
-                </span>
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground font-sans text-xs">Before Naapio:</span>
-                    <span className="text-foreground font-sans text-sm">{a.before}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-accent font-sans text-xs font-medium">On Naapio:</span>
-                    <span className="text-foreground font-sans text-sm font-semibold">{a.after}</span>
-                  </div>
-                </div>
-                <p className="font-sans text-xs text-muted-foreground mt-3">{a.craft}</p>
-              </div>
+              <span className="text-3xl block mb-3">{c.emoji}</span>
+              <p className="font-serif font-bold text-foreground text-base mb-1">{c.badge}</p>
+              <p className="font-sans text-xs text-muted-foreground">{c.experience}</p>
             </motion.div>
           ))}
         </div>
+
 
         {/* Dual CTA */}
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">

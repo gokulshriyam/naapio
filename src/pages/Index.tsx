@@ -13,6 +13,9 @@ import VendorShowcase from "@/components/home/VendorShowcase";
 import FAQSection from "@/components/home/FAQSection";
 import SiteFooter from "@/components/home/SiteFooter";
 import IndiaCraftMap from "@/components/home/IndiaCraftMap";
+import LivePulseStrip from "@/components/home/LivePulseStrip";
+import WeddingEdit from "@/components/home/WeddingEdit";
+import RealOrdersStrip from "@/components/home/RealOrdersStrip";
 import CitySelector from "@/components/CitySelector";
 import LanguageSelector from "@/components/LanguageSelector";
 
@@ -409,8 +412,10 @@ const Index = () => {
       </nav>
 
       <HeroSection />
-      <HowItWorks />
+      <LivePulseStrip />
       <TrustSignals />
+      <HowItWorks />
+      <WeddingEdit />
       <CategoryPreview />
 
       {/* India Craft Map — 5,000 years of heritage */}
@@ -432,6 +437,8 @@ const Index = () => {
       </section>
 
       <VendorShowcase />
+      <RealOrdersStrip />
+
 
       {/* CTA Banner */}
       <section className="py-24 bg-primary">

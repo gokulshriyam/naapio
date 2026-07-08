@@ -178,49 +178,60 @@ const CategoryPreview = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-6xl mx-auto mb-16">
-          {garmentCategories.map((gc, i) => (
-            <motion.button
-              key={gc.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              onClick={() => {
-                localStorage.setItem('naapio_prefill', JSON.stringify({
-                  gender: gc.gender,
-                  category: gc.category,
-                  orderType: 'New Order',
-                }));
-                navigate('/start');
-              }}
-              className="group relative overflow-hidden rounded-xl cursor-pointer"
-            >
-              <img
-                src={gc.image}
-                alt={`${gc.label} category`}
-                className="w-full h-56 object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-500"
-                style={{ display: 'block', width: '100%' }}
-                loading={i < 2 ? undefined : "lazy"}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML(
-                    'afterbegin',
-                    '<div class="w-full h-56 bg-muted rounded-xl"></div>'
-                  );
+        <div className="grid grid-cols-2 md:grid-cols-6 auto-rows-[180px] md:auto-rows-[200px] gap-4 max-w-6xl mx-auto mb-16">
+          {garmentCategories.map((gc, i) => {
+            const sizeClasses = [
+              "col-span-2 md:col-span-3 row-span-2",
+              "col-span-1 md:col-span-3 row-span-1",
+              "col-span-1 md:col-span-3 row-span-1",
+              "col-span-2 md:col-span-2 row-span-1",
+              "col-span-1 md:col-span-2 row-span-1",
+              "col-span-1 md:col-span-2 row-span-1",
+              "col-span-1 md:col-span-3 row-span-1",
+              "col-span-1 md:col-span-3 row-span-1",
+            ];
+            const isHero = i === 0;
+            return (
+              <motion.button
+                key={gc.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                onClick={() => {
+                  localStorage.setItem('naapio_prefill', JSON.stringify({
+                    gender: gc.gender,
+                    category: gc.category,
+                    orderType: 'New Order',
+                  }));
+                  navigate('/start');
                 }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-xl" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="font-serif font-bold text-white text-base">{gc.label}</h3>
-                <div className="flex items-center gap-1 text-white/80 font-sans text-xs mt-1 group-hover:gap-2 transition-all">
-                  <span>Explore</span>
-                  <ArrowRight className="w-3 h-3" />
+                className={`group relative overflow-hidden rounded-xl cursor-pointer ${sizeClasses[i]}`}
+              >
+                <img
+                  src={gc.image}
+                  alt={`${gc.label} category`}
+                  className="w-full h-full object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-500"
+                  loading={i < 2 ? undefined : "lazy"}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-xl" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className={`font-serif font-bold text-white ${isHero ? 'text-xl' : 'text-base'}`}>
+                    {gc.label}
+                  </h3>
+                  {isHero && (
+                    <p className="text-white/70 text-xs font-sans mt-1">Most requested this season</p>
+                  )}
+                  <div className="flex items-center gap-1 text-white/80 font-sans text-xs mt-1 group-hover:gap-2 transition-all">
+                    <span>Explore</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
                 </div>
-              </div>
-            </motion.button>
-          ))}
+              </motion.button>
+            );
+          })}
         </div>
+
 
         {/* Occasion tiles */}
         <div className="flex items-center gap-4 max-w-4xl mx-auto mb-10">
