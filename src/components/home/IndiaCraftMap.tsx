@@ -57,6 +57,26 @@ const findStateEntry = (rawValue: string): StateEntry | undefined => {
 
 const IndiaCraftMap = () => {
   const [selectedState, setSelectedState] = useState<StateEntry | null>(null);
+  const [noTextileState, setNoTextileState] = useState<string | null>(null);
+
+  const prettifyRegion = (raw: string) => {
+    const upper = raw.trim().toUpperCase();
+    const namesByCode: Record<string, string> = {
+      AN: "Andaman & Nicobar Islands",
+      LD: "Lakshadweep",
+      DN: "Dadra & Nagar Haveli and Daman & Diu",
+      DD: "Dadra & Nagar Haveli and Daman & Diu",
+      PY: "Puducherry",
+      CH: "Chandigarh",
+    };
+    if (namesByCode[upper]) return namesByCode[upper];
+    return raw
+      .toLowerCase()
+      .split(/\s+|-/)
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
 
   return (
     <div className="relative w-full bg-card rounded-3xl border border-border overflow-hidden">
@@ -68,10 +88,11 @@ const IndiaCraftMap = () => {
               onClick={(value: string) => {
                 const entry = findStateEntry(value);
                 if (entry) {
+                  setNoTextileState(null);
                   setSelectedState(entry);
                 } else {
-                  // eslint-disable-next-line no-console
-                  console.warn(`No craft data found for map value: "${value}"`);
+                  setSelectedState(null);
+                  setNoTextileState(prettifyRegion(value));
                 }
               }}
               size="100%"
@@ -90,7 +111,7 @@ const IndiaCraftMap = () => {
         {/* RIGHT — detail panel */}
         <div className="min-h-[420px] md:min-h-[560px] max-h-[640px] relative border-t md:border-t-0 md:border-l border-border">
           <AnimatePresence mode="wait">
-            {!selectedState ? (
+            {!selectedState && !noTextileState ? (
               <motion.div
                 key="placeholder"
                 initial={{ opacity: 0 }}
@@ -104,6 +125,31 @@ const IndiaCraftMap = () => {
                   5,000 years of craft, mapped across every region of India
                 </p>
               </motion.div>
+            ) : noTextileState ? (
+              <motion.div
+                key={`no-${noTextileState}`}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="p-6 md:p-8 h-full flex flex-col items-center justify-center text-center relative"
+              >
+                <button
+                  onClick={() => setNoTextileState(null)}
+                  className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-muted"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <span className="text-5xl mb-4">🪵</span>
+                <h3 className="font-serif text-2xl font-bold text-foreground mb-3">
+                  {noTextileState}
+                </h3>
+                <p className="font-sans text-sm text-muted-foreground leading-relaxed max-w-sm">
+                  This region's craft heritage runs through wood, leather, bamboo, and shell work rather than textiles — its own rich tradition, just outside what Naapio's garment marketplace covers today.
+                </p>
+              </motion.div>
+
             ) : (
               <motion.div
                 key={selectedState.stateSlug}
