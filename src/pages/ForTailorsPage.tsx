@@ -82,8 +82,12 @@ const craftCategories = [
   "Tailors",
   "Embroiderers",
   "Zari & Zardozi artisans",
+  "Mirror & shisha workers",
+  "Hand painters & fabric artists",
+  "Block & screen printers",
+  "Sequin & beadwork specialists",
   "Weavers",
-  "Kalamkari & hand-painters",
+  "Kalamkari artists",
   "Alteration specialists",
 ];
 
