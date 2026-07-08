@@ -630,22 +630,11 @@ const ForTailorsPage = () => {
         </div>
       </section>
 
-      {/* ======== DIVIDER ======== */}
-      <div className="container mx-auto px-6">
-        <div className="flex items-center gap-4 my-0">
-          <div className="flex-1 border-t border-border" />
-          <span className="text-muted-foreground font-sans text-sm">or</span>
-          <div className="flex-1 border-t border-border" />
-        </div>
-      </div>
-
-      {/* ======== ARTISAN SECTION ======== */}
-      <ArtisanSection />
-
       <SiteFooter />
     </div>
   );
 };
+
 
 /* ═══════════════════════════════════════ */
 /*  Artisan / Embroiderer Interest Section */
