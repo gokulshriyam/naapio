@@ -412,8 +412,10 @@ const Index = () => {
       </nav>
 
       <HeroSection />
-      <HowItWorks />
+      <LivePulseStrip />
       <TrustSignals />
+      <HowItWorks />
+      <WeddingEdit />
       <CategoryPreview />
 
       {/* India Craft Map — 5,000 years of heritage */}
@@ -435,6 +437,8 @@ const Index = () => {
       </section>
 
       <VendorShowcase />
+      <RealOrdersStrip />
+
 
       {/* CTA Banner */}
       <section className="py-24 bg-primary">
