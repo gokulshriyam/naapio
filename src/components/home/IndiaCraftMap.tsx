@@ -51,11 +51,7 @@ const findStateEntry = (rawValue: string): StateEntry | undefined => {
     s.toLowerCase().trim().replace(/&/g, "").replace(/\s+/g, "-").replace(/--+/g, "-");
   const target = normalise(rawValue);
   return craftHeritage.find(
-    (s) =>
-      normalise(s.state) === target ||
-      s.stateSlug === target ||
-      normalise(s.state).includes(target) ||
-      target.includes(s.stateSlug)
+    (s) => normalise(s.state) === target || s.stateSlug === target
   );
 };
 
