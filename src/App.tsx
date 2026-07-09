@@ -43,6 +43,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/for-tailors" element={<ForTailorsPage />} />
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/customise" element={<CustomiseFlow />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/careers" element={<CareersPage />} />
             <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/vendor" element={<VendorLayout />}>
               <Route index element={<VendorLeads />} />
