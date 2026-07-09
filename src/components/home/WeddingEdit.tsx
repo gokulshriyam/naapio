@@ -1,16 +1,21 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import mehendiVideo from "@/assets/wedding/mehendi.mp4.asset.json";
+import sangeetVideo from "@/assets/wedding/sangeet.mp4.asset.json";
+import haldiVideo from "@/assets/wedding/haldi.mp4.asset.json";
+import weddingDayVideo from "@/assets/wedding/wedding-day.mp4.asset.json";
+import receptionVideo from "@/assets/wedding/reception.mp4.asset.json";
 import redLehenga from "@/assets/red-lehenga.jpg";
 import womensFashion from "@/assets/womens-fashion.jpg";
 import mensFashion from "@/assets/mens-fashion.jpg";
 
 const functions = [
-  { name: "Mehendi", image: womensFashion },
-  { name: "Sangeet", image: redLehenga },
-  { name: "Haldi", image: womensFashion },
-  { name: "Wedding Day", image: redLehenga },
-  { name: "Reception", image: mensFashion },
+  { name: "Mehendi", video: mehendiVideo.url, poster: womensFashion },
+  { name: "Sangeet", video: sangeetVideo.url, poster: redLehenga },
+  { name: "Haldi", video: haldiVideo.url, poster: womensFashion },
+  { name: "Wedding Day", video: weddingDayVideo.url, poster: redLehenga },
+  { name: "Reception", video: receptionVideo.url, poster: mensFashion },
 ];
 
 const WeddingEdit = () => {
@@ -42,11 +47,17 @@ const WeddingEdit = () => {
               className="rounded-2xl overflow-hidden relative aspect-[3/4] cursor-pointer group"
               onClick={() => navigate('/start')}
             >
-              <img
-                src={f.image}
-                alt={f.name}
-                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
-              />
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={f.poster}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              >
+                <source src={f.video} type="video/mp4" />
+              </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <p className="font-serif font-bold text-white text-lg">{f.name}</p>

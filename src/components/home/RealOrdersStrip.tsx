@@ -1,34 +1,51 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Instagram } from "lucide-react";
+import { featuredPosts } from "@/data/featuredPosts";
 
-type IGPost = {
-  id: string;
-  caption: string | null;
-  media_type: string;
-  media_url: string;
-  thumbnail_url: string | null;
-  permalink: string;
-  posted_at: string | null;
+type OEmbedResult = {
+  url: string;
+  html: string | null;
+  loading: boolean;
 };
 
 const RealOrdersStrip = () => {
-  const [posts, setPosts] = useState<IGPost[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [results, setResults] = useState<OEmbedResult[]>(
+    () => featuredPosts.map((url) => ({ url, html: null, loading: true }))
+  );
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from('instagram_posts_cache')
-        .select('*')
-        .order('posted_at', { ascending: false })
-        .limit(10);
-      setPosts((data as IGPost[]) || []);
-      setLoading(false);
+      await Promise.all(
+        featuredPosts.map(async (postUrl, idx) => {
+          try {
+            const endpoint = `https://graph.facebook.com/v25.0/instagram_oembed?url=${encodeURIComponent(
+              postUrl
+            )}&omitscript=true`;
+            const res = await fetch(endpoint);
+            if (!res.ok) throw new Error(`oEmbed ${res.status}`);
+            const json = await res.json();
+            if (cancelled) return;
+            setResults((prev) => {
+              const next = [...prev];
+              next[idx] = { url: postUrl, html: json.html || null, loading: false };
+              return next;
+            });
+          } catch (err) {
+            console.error("Instagram oEmbed failed for", postUrl, err);
+            if (cancelled) return;
+            setResults((prev) => {
+              const next = [...prev];
+              next[idx] = { url: postUrl, html: null, loading: false };
+              return next;
+            });
+          }
+        })
+      );
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  if (!loading && (!posts || posts.length === 0)) return null;
 
   return (
     <section className="py-24 bg-background">
@@ -47,54 +64,30 @@ const RealOrdersStrip = () => {
 
         <div className="overflow-x-auto -mx-6 px-6">
           <div className="flex gap-4">
-            {loading &&
-              Array.from({ length: 4 }).map((_, i) => (
+            {results.map((r, i) =>
+              r.loading ? (
                 <div
                   key={i}
                   className="bg-muted animate-pulse rounded-2xl w-64 h-80 flex-shrink-0"
                 />
-              ))}
-
-            {!loading &&
-              posts?.map((p) => (
+              ) : r.html ? (
                 <div
-                  key={p.id}
+                  key={i}
                   className="w-64 flex-shrink-0 rounded-2xl overflow-hidden border border-border bg-card"
+                  dangerouslySetInnerHTML={{ __html: r.html }}
+                />
+              ) : (
+                <a
+                  key={i}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-64 flex-shrink-0 rounded-2xl border border-border bg-card p-4 flex items-center justify-center text-center text-sm font-sans text-muted-foreground hover:text-accent transition-colors h-80"
                 >
-                  {p.media_type === 'VIDEO' ? (
-                    <video
-                      src={p.media_url}
-                      poster={p.thumbnail_url || undefined}
-                      controls
-                      muted
-                      loop
-                      playsInline
-                      className="w-full h-64 object-cover bg-black"
-                    />
-                  ) : (
-                    <img
-                      src={p.media_url}
-                      alt={p.caption?.slice(0, 80) || 'Naapio artisan work'}
-                      className="w-full h-64 object-cover"
-                      loading="lazy"
-                    />
-                  )}
-                  <div className="p-3 flex items-start gap-2">
-                    <p className="font-sans text-xs text-muted-foreground line-clamp-2 flex-1">
-                      {p.caption || ''}
-                    </p>
-                    <a
-                      href={p.permalink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent hover:text-accent/80 flex-shrink-0"
-                      aria-label="View on Instagram"
-                    >
-                      <Instagram className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
-              ))}
+                  View on Instagram →
+                </a>
+              )
+            )}
           </div>
         </div>
 
