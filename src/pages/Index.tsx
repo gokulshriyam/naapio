@@ -18,6 +18,7 @@ import WeddingEdit from "@/components/home/WeddingEdit";
 import RealOrdersStrip from "@/components/home/RealOrdersStrip";
 import CitySelector from "@/components/CitySelector";
 import LanguageSelector from "@/components/LanguageSelector";
+import naapioLogo from "@/assets/naapio-logo.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -230,15 +231,14 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between" style={{flexWrap:'nowrap', overflow:'visible'}}>
           <Link to="/" className="flex items-center gap-2 cursor-pointer">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <img src={naapioLogo} alt="Naapio" className="w-8 h-8 rounded-lg object-cover" />
             <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition-colors whitespace-nowrap">{t('nav.howItWorks')}</a>
             <a href="/#categories" className="hover:text-foreground transition-colors whitespace-nowrap">{t('nav.categories')}</a>
             <Link to="/for-tailors" className="hover:text-foreground transition-colors whitespace-nowrap">{t('nav.forTailors')}</Link>
+            <Link to="/our-story" className="hover:text-foreground transition-colors whitespace-nowrap">Our Naapio Story</Link>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 flex-nowrap hidden md:flex">
 
@@ -368,6 +368,7 @@ const Index = () => {
             <a href="#how-it-works" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.howItWorks')}</a>
             <a href="/#categories" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.categories')}</a>
             <Link to="/for-tailors" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>{t('nav.forTailors')}</Link>
+            <Link to="/our-story" className="flex items-center min-h-[48px] font-sans text-sm text-foreground py-2 border-l-2 border-transparent hover:border-accent pl-3" onClick={() => { setMobileMenuOpen(false); document.body.style.overflow = ''; }}>Our Naapio Story</Link>
             <div className="flex-1" />
             <div className="space-y-3 pt-3">
               {isLoggedIn ? (
@@ -445,7 +446,7 @@ const Index = () => {
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl font-serif font-bold text-primary-foreground mb-4">India's finest bespoke fashion, made for you.</h2>
           <p className="text-primary-foreground/70 font-sans text-lg mb-8 max-w-xl mx-auto">
-            Join 500+ artisans and thousands of customers already on Naapio.
+            From inspiration to your doorstep — protected by escrow, every step of the way.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="gold" size="hero" onClick={() => navigate("/start")}>
