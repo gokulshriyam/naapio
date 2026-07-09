@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const badges = [
   { emoji: "🔒", label: "Escrow Protected" },
-  { emoji: "📊", label: "3.85% Dispute Rate", sub: "industry average is 30%+" },
+  { emoji: "🎯", label: "Milestone-by-Milestone Approval", sub: "You approve every stage before funds release" },
   { emoji: "✅", label: "Verified Artisans Only" },
 ];
 
