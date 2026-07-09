@@ -244,7 +244,7 @@ export const faqItems = [
   },
   {
     q: "What if no vendor bids on my request?",
-    a: "If no vendor bids within 7 days, your ₹499 posting fee is fully refunded. No questions asked.",
+    a: "If no artisan bids within 7 days, your ₹499 posting fee is refunded after the ₹49 platform fee is deducted. No questions asked.",
   },
   {
     q: "Can I share my measurements later?",
@@ -256,30 +256,18 @@ export const faqItems = [
   },
   {
     q: "Can I get my existing clothes altered?",
-    a: "Yes — select 'Alteration / Repair' when you start your order. Upload photos of your garment, describe what needs to change, and artisans will bid on your brief.",
+    a: "Yes — select 'Existing Garment → Alteration / Repair' when you start your order. Upload photos of your garment, describe what needs to change, and artisans will bid on your brief.",
   },
   {
     q: "Can I get embroidery or artwork added to my jacket or kurta?",
-    a: "Yes — select 'Customise My Garment'. Upload photos of your existing garment and describe the artwork or embellishment you want. Embroiderers, zari artisans, and painters in our network will bid on your brief. This flow is for adding to an existing finished garment — not for stitching a new one.",
+    a: "Yes — select 'Existing Garment → Customise My Garment' when you start your order. Upload photos of your existing garment and describe the artwork or embellishment you want. Embroiderers, zari artisans, and painters in our network will bid on your brief. This flow is for adding to an existing finished garment — not for stitching a new one.",
   },
   {
     q: "I have my own fabric. Can Naapio help with just the stitching?",
-    a: "Yes — select 'I Have My Own Fabric' when you start. You skip the fabric sourcing steps and go straight to design, fit, and measurements. Your tailor works with the fabric you provide. Describe your fabric (type, colour, metres available) and the tailor will confirm it's sufficient for your garment.",
+    a: "Yes — select 'New Order' when you start, then choose 'I have my own fabric' at the AI brief section after the ₹499 token payment. You skip the fabric sourcing steps and go straight to design, fit, and measurements. Describe your fabric (type, colour, metres available) and the artisan will confirm it's sufficient for your garment.",
   },
   {
     q: "Do you cover regional garments like Mundu, Mekhela Chador, or Nauvari Saree?",
     a: "Yes — regional garments are covered under Men's Regional Traditional and Women's Regional Traditional categories in the wizard. These garments have their own measurement and construction logic built in, so your brief reaches tailors who specialise in them.",
-  },
-  {
-    q: "I'm a tailor. How do I start receiving orders?",
-    a: "Visit our Artisan page, submit your details for verification. Once approved, you'll see open customer briefs in your city and can start placing bids immediately.",
-  },
-  {
-    q: "When do I get paid as an artisan?",
-    a: "Payments are released within 7 days of the customer's final delivery approval. Funds are held in escrow throughout — so you're always protected.",
-  },
-  {
-    q: "Can I set my own prices?",
-    a: "Yes. You see the customer's budget range and submit your own bid. You decide your price — Naapio takes a platform commission on completed orders.",
   },
 ];

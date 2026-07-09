@@ -55,7 +55,7 @@ const VendorShowcase = () => {
             Heritage craft meets digital trust.
           </h2>
           <p className="font-sans text-muted-foreground text-lg max-w-2xl mx-auto">
-            Zardozi embroiderers in Kashmir. Kanchipuram weavers in Tamil Nadu. Bandhani artists in Rajasthan. For the first time, they have a platform — verified identity, structured income, escrow-protected payment.
+            Zardozi embroiderers in Lucknow. Kanchipuram weavers in Tamil Nadu. Pashmina artisans in Kashmir. For the first time, they have a platform — verified identity, structured income, escrow-protected payment.
           </p>
         </motion.div>
       </div>
@@ -90,10 +90,10 @@ const VendorShowcase = () => {
           className="max-w-3xl mx-auto text-center mb-12"
         >
           <h3 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-5">
-            Fair pricing, by design
+            Transparent pricing, not guesswork
           </h3>
           <p className="font-sans text-muted-foreground text-lg leading-relaxed">
-            Walk-in tailoring work is often priced well below fair market value — there's no way to compare, negotiate, or prove your worth to a new customer. Naapio's blind bidding removes that problem entirely: artisans see the customer's budget range, set their own price, and let their portfolio and reputation do the rest.
+            Walk-in pricing is a black box — you don't know if you're paying a fair price, and artisans can't prove theirs is fair either. Naapio's blind bidding puts multiple real quotes from verified artisans side by side, so you choose with real information — not a single guess.
           </p>
         </motion.div>
 

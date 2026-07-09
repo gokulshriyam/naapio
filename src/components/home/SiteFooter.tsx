@@ -1,55 +1,64 @@
-import { Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import naapioLogo from "@/assets/naapio-logo.png";
 
 const SiteFooter = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+
+  const scrollToId = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    else navigate('/');
+  };
 
   return (
     <footer className="bg-primary text-primary-foreground py-16">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+          {/* Column 1 — Logo + tagline */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-accent-foreground" />
-              </div>
+              <img src={naapioLogo} alt="Naapio" className="w-8 h-8 rounded-lg object-cover" />
               <span className="text-xl font-serif font-bold">Naapio</span>
             </div>
             <p className="text-primary-foreground/60 font-sans text-sm leading-relaxed">
               India's premier marketplace for bespoke custom tailoring. See it. Stitch it.
             </p>
           </div>
+
+          {/* Column 2 — Explore */}
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.services')}</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">Explore</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
-              <li className="hover:text-accent cursor-pointer transition-colors">{t('nav.howItWorks')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">{t('footer.categories')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/alteration")}>{t('footer.alteration')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/customise")}>{t('footer.customise')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => scrollToId('how-it-works')}>How It Works</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => scrollToId('categories')}>Categories</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/our-story')}>Our Naapio Story</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/for-tailors')}>For Tailors</li>
             </ul>
           </div>
+
+          {/* Column 3 — Order Types */}
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.company')}</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">Order Types</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/for-tailors")}>{t('footer.forTailors')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => { const el = document.getElementById('faq'); if (el) el.scrollIntoView({ behavior: 'smooth' }); else navigate('/'); }}>{t('footer.faq')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/terms")}>{t('footer.terms')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/privacy")}>{t('footer.privacy')}</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/start')}>New Order</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/alteration')}>Alteration &amp; Repair</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/customise')}>Customise My Garment</li>
             </ul>
           </div>
+
+          {/* Column 4 — Company */}
           <div>
-            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">{t('footer.categories')}</h4>
+            <h4 className="font-sans font-semibold mb-4 text-sm uppercase tracking-wide text-primary-foreground/80">Company</h4>
             <ul className="space-y-2 text-primary-foreground/60 font-sans text-sm">
-              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate("/wizard")}>{t('footer.regional')}</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">About Us</li>
-              <li className="hover:text-accent cursor-pointer transition-colors">Careers</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => scrollToId('faq')}>FAQ</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/careers')}>Careers</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/terms')}>Terms</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/privacy')}>Privacy</li>
             </ul>
           </div>
         </div>
         <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center text-primary-foreground/40 font-sans text-sm">
-          {t('footer.rights')} Made with ❤️ in India.
+          © 2026 Naapio. All rights reserved. Made with ❤️ in India.
         </div>
       </div>
     </footer>

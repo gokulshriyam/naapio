@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CityProvider } from "@/context/CityContext";
+import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Wizard from "./pages/Wizard";
 import DashboardLayout from "./components/DashboardLayout";
@@ -24,6 +25,7 @@ import BriefPage from "./pages/new-order/BriefPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import CareersPage from "./pages/CareersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import VendorLayout from "./vendor/layout/VendorLayout";
 import VendorLeads from "./vendor/pages/VendorLeads";
@@ -41,6 +43,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/for-tailors" element={<ForTailorsPage />} />
@@ -54,6 +57,7 @@ const App = () => (
             <Route path="/customise" element={<CustomiseFlow />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/careers" element={<CareersPage />} />
             <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/vendor" element={<VendorLayout />}>
               <Route index element={<VendorLeads />} />

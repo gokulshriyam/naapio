@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import SiteFooter from "@/components/home/SiteFooter";
 import forTailorsHero from "@/assets/for-tailors-hero.jpg";
+import naapioLogo from "@/assets/naapio-logo.png";
 
 
 const fadeUp = {
@@ -155,9 +156,7 @@ const ForTailorsPage = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 cursor-pointer">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <img src={naapioLogo} alt="Naapio" className="w-8 h-8 rounded-lg object-cover" />
             <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
           </a>
           <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
@@ -312,7 +311,7 @@ const ForTailorsPage = () => {
             viewport={{ once: true }}
             className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-8"
           >
-            Fair pricing, by design
+            You set the price. The customer sees your work, not just a number.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -320,7 +319,7 @@ const ForTailorsPage = () => {
             viewport={{ once: true }}
             className="font-sans text-lg text-muted-foreground leading-relaxed"
           >
-            Walk-in tailoring work is often priced well below fair market value — there's no way to compare, negotiate, or prove your worth to a new customer. Naapio's blind bidding removes that problem entirely: you see the customer's budget range, you set your own price, and the customer sees your portfolio and reputation — not a negotiation you're powerless in.
+            Walk-in negotiations put you at a disadvantage — no way to prove your price is fair, no way to stand out from a lower bid down the street. On Naapio, customers see your portfolio and reputation alongside your price, so good work can win on more than just being the cheapest option.
           </motion.p>
         </div>
       </section>
