@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
+import { Play } from "lucide-react";
 import { featuredPosts } from "@/data/featuredPosts";
 
 type OEmbedResult = {
   url: string;
-  html: string | null;
+  thumbnail: string | null;
+  author: string | null;
   loading: boolean;
 };
 
 const RealOrdersStrip = () => {
   const [results, setResults] = useState<OEmbedResult[]>(
-    () => featuredPosts.map((url) => ({ url, html: null, loading: true }))
+    () => featuredPosts.map((url) => ({ url, thumbnail: null, author: null, loading: true }))
   );
 
   useEffect(() => {
@@ -27,7 +29,12 @@ const RealOrdersStrip = () => {
             if (cancelled) return;
             setResults((prev) => {
               const next = [...prev];
-              next[idx] = { url: postUrl, html: json.html || null, loading: false };
+              next[idx] = {
+                url: postUrl,
+                thumbnail: json.thumbnail_url || null,
+                author: json.author_name || null,
+                loading: false,
+              };
               return next;
             });
           } catch (err) {
@@ -35,7 +42,7 @@ const RealOrdersStrip = () => {
             if (cancelled) return;
             setResults((prev) => {
               const next = [...prev];
-              next[idx] = { url: postUrl, html: null, loading: false };
+              next[idx] = { url: postUrl, thumbnail: null, author: null, loading: false };
               return next;
             });
           }
@@ -46,6 +53,9 @@ const RealOrdersStrip = () => {
       cancelled = true;
     };
   }, []);
+
+  const anyLoading = results.some((r) => r.loading);
+  const visibleCards = results.filter((r) => r.loading || r.thumbnail);
 
   return (
     <section className="py-24 bg-background">
@@ -64,29 +74,44 @@ const RealOrdersStrip = () => {
 
         <div className="overflow-x-auto -mx-6 px-6">
           <div className="flex gap-4">
-            {results.map((r, i) =>
+            {visibleCards.map((r, i) =>
               r.loading ? (
                 <div
-                  key={i}
+                  key={`skel-${i}`}
                   className="bg-muted animate-pulse rounded-2xl w-64 h-80 flex-shrink-0"
-                />
-              ) : r.html ? (
-                <div
-                  key={i}
-                  className="w-64 flex-shrink-0 rounded-2xl overflow-hidden border border-border bg-card"
-                  dangerouslySetInnerHTML={{ __html: r.html }}
                 />
               ) : (
                 <a
-                  key={i}
+                  key={r.url}
                   href={r.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-64 flex-shrink-0 rounded-2xl border border-border bg-card p-4 flex items-center justify-center text-center text-sm font-sans text-muted-foreground hover:text-accent transition-colors h-80"
+                  className="group relative w-64 h-80 flex-shrink-0 rounded-2xl overflow-hidden border border-border bg-card"
                 >
-                  View on Instagram →
+                  <img
+                    src={r.thumbnail!}
+                    alt={r.author ? `Reel by ${r.author}` : "Instagram reel"}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Play className="w-6 h-6 text-foreground ml-0.5" fill="currentColor" />
+                    </div>
+                  </div>
+                  {r.author && (
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <p className="font-sans text-xs text-white/90 truncate">@{r.author}</p>
+                    </div>
+                  )}
                 </a>
               )
+            )}
+            {!anyLoading && visibleCards.length === 0 && (
+              <p className="font-sans text-sm text-muted-foreground py-12">
+                Follow us on Instagram to see the latest work.
+              </p>
             )}
           </div>
         </div>

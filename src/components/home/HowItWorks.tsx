@@ -57,49 +57,53 @@ const HowItWorks = () => {
           </p>
         </motion.div>
 
-        <div className="md:grid md:grid-cols-5 gap-6 relative space-y-12 md:space-y-0">
-          <div className="hidden md:block absolute top-10 left-[10%] right-[10%] h-px border-t border-dashed border-border" />
+        <div className="relative">
+          {/* Solid accent pipeline line across desktop */}
+          <div className="hidden md:block absolute top-[3.5rem] left-[10%] right-[10%] h-0.5 bg-accent/40 z-0" />
 
-          {steps.map((step, i) => {
-            const Icon = step.Icon;
-            return (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="relative text-center px-4"
-              >
-                <div className="relative">
-                  <span className="text-7xl md:text-8xl font-serif font-bold text-accent/20 select-none leading-none">
+          <div className="md:grid md:grid-cols-5 gap-6 relative space-y-8 md:space-y-0">
+            {steps.map((step, i) => {
+              const Icon = step.Icon;
+              return (
+                <motion.div
+                  key={step.num}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="relative bg-card rounded-2xl border border-border shadow-sm p-6 flex flex-col items-center text-center"
+                >
+                  {/* Step number badge */}
+                  <span className="absolute top-3 right-3 font-sans text-xs font-bold text-accent bg-accent/10 rounded-full w-6 h-6 flex items-center justify-center">
                     {step.num}
                   </span>
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <Icon className="w-7 h-7 text-accent" strokeWidth={2} />
-                  </span>
-                </div>
 
-                <h3 className="text-base font-serif font-bold text-foreground mt-4 mb-2">{step.title}</h3>
-                <p className="text-sm font-sans text-muted-foreground leading-relaxed max-w-[200px] mx-auto">
-                  {step.sub}
-                </p>
-
-                {step.num === "04" && (
-                  <div className="flex justify-center gap-1 mt-3 flex-wrap">
-                    {milestonePills.map((p) => (
-                      <span
-                        key={p}
-                        className="font-sans text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent"
-                      >
-                        {p}
-                      </span>
-                    ))}
+                  {/* Filled icon circle */}
+                  <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center mb-4 relative z-10">
+                    <Icon className="w-7 h-7 text-accent-foreground" strokeWidth={2} />
                   </div>
-                )}
-              </motion.div>
-            );
-          })}
+
+                  <h3 className="text-base font-serif font-bold text-foreground mb-2">{step.title}</h3>
+                  <p className="text-sm font-sans text-muted-foreground leading-relaxed">
+                    {step.sub}
+                  </p>
+
+                  {step.num === "04" && (
+                    <div className="flex justify-center gap-1 mt-4 flex-wrap">
+                      {milestonePills.map((p) => (
+                        <span
+                          key={p}
+                          className="font-sans text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20"
+                        >
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

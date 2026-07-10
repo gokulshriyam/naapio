@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import CitySelector from "@/components/CitySelector";
 import LanguageSelector from "@/components/LanguageSelector";
 import redLehenga from "@/assets/red-lehenga.jpg";
-import mensFashion from "@/assets/mens-fashion.jpg";
-import womensFashion from "@/assets/womens-fashion.jpg";
+import partyLehenga from "@/assets/hero-scenarios/party-lehenga.jpeg.asset.json";
+import formalSuit from "@/assets/hero-scenarios/formal-suit.jpeg.asset.json";
+import anarkali from "@/assets/hero-scenarios/anarkali.jpeg.asset.json";
+import sherwani from "@/assets/hero-scenarios/sherwani.jpeg.asset.json";
+import sareeBlouse from "@/assets/hero-scenarios/saree-blouse.jpeg.asset.json";
 
 const scenarios = [
-  { garment: "Party Lehenga", gender: "Women's", price: "₹18,000", fabric: "Georgette · Deep Red", surface: "Heavy Embroidery", milestone: "Milestone 4 — Virtual trial approved, ready for delivery", image: redLehenga },
-  { garment: "Formal Suit", gender: "Men's", price: "₹12,500", fabric: "Wool Blend · Charcoal", surface: "Tailored Finish", milestone: "Milestone 1 — Measurements approved", image: mensFashion },
-  { garment: "Anarkali", gender: "Women's", price: "₹9,000", fabric: "Chanderi Silk · Mustard", surface: "Zari Border", milestone: "Milestone 3 — Stitching in progress", image: womensFashion },
-  { garment: "Sherwani", gender: "Men's", price: "₹15,000", fabric: "Brocade · Deep Maroon", surface: "Zardozi Work", milestone: "Bidding just closed — escrow active", image: mensFashion },
-  { garment: "Saree Blouse", gender: "Women's", price: "₹5,500", fabric: "Silk · Emerald Green", surface: "Mirror Work", milestone: "Milestone 2 — Fabric approved", image: womensFashion },
+  { garment: "Party Lehenga", gender: "Women's", price: "₹18,000", fabric: "Georgette · Deep Red", surface: "Heavy Embroidery", milestone: "Milestone 4 — Virtual trial approved, ready for delivery", image: partyLehenga.url },
+  { garment: "Formal Suit", gender: "Men's", price: "₹12,500", fabric: "Wool Blend · Charcoal", surface: "Tailored Finish", milestone: "Milestone 1 — Measurements approved", image: formalSuit.url },
+  { garment: "Anarkali", gender: "Women's", price: "₹9,000", fabric: "Chanderi Silk · Mustard", surface: "Zari Border", milestone: "Milestone 3 — Stitching in progress", image: anarkali.url },
+  { garment: "Sherwani", gender: "Men's", price: "₹15,000", fabric: "Brocade · Deep Maroon", surface: "Zardozi Work", milestone: "Bidding just closed — escrow active", image: sherwani.url },
+  { garment: "Saree Blouse", gender: "Women's", price: "₹5,500", fabric: "Silk · Emerald Green", surface: "Mirror Work", milestone: "Milestone 2 — Fabric approved", image: sareeBlouse.url },
 ];
 
 const stats = [
@@ -94,7 +97,7 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="hidden md:block"
           >
-            <div className="relative h-[520px] w-full">
+            <div className="relative h-[620px] w-full">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={scenarioIndex}
@@ -118,7 +121,7 @@ const HeroSection = () => {
                   </div>
 
                   {/* Card 2 — AI Brief */}
-                  <div className="absolute top-16 left-1/2 -translate-x-1/4 rotate-1 z-10 bg-card rounded-2xl shadow-xl p-4 w-60">
+                  <div className="absolute top-40 left-1/2 -translate-x-1/4 rotate-1 z-10 bg-card rounded-2xl shadow-xl p-4 w-60">
                     <p className="font-sans text-xs text-accent mb-2 flex items-center gap-1">
                       <span>✦</span> AI Brief Generated
                     </p>
@@ -136,8 +139,8 @@ const HeroSection = () => {
                   </div>
 
                   {/* Card 3 — Milestone */}
-                  <div className="absolute bottom-0 right-0 -rotate-1 bg-card rounded-2xl shadow-lg p-4 w-64">
-                    <p className="font-sans text-xs font-semibold text-success mb-1">🔒 {s.milestone}</p>
+                  <div className="absolute bottom-4 right-0 -rotate-1 z-20 bg-card rounded-2xl shadow-lg p-4 w-64">
+                    <p className="font-sans text-xs font-semibold text-success mb-1 leading-snug">🔒 {s.milestone}</p>
                     <p className="font-sans text-xs text-muted-foreground mt-1">{s.price} held in escrow</p>
                   </div>
                 </motion.div>
