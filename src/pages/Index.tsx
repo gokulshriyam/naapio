@@ -1,10 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Sparkles, Menu, X, User, LogOut, ShoppingBag, Settings, Scissors } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import SiteNavbar from "@/components/SiteNavbar";
 import HeroSection from "@/components/home/HeroSection";
 import HowItWorks from "@/components/home/HowItWorks";
 import TrustSignals from "@/components/home/TrustSignals";
@@ -16,9 +12,6 @@ import IndiaCraftMap from "@/components/home/IndiaCraftMap";
 import LivePulseStrip from "@/components/home/LivePulseStrip";
 import WeddingEdit from "@/components/home/WeddingEdit";
 import RealOrdersStrip from "@/components/home/RealOrdersStrip";
-import CitySelector from "@/components/CitySelector";
-import LanguageSelector from "@/components/LanguageSelector";
-import naapioLogo from "@/assets/naapio-logo.png";
 
 const Index = () => {
   const navigate = useNavigate();
