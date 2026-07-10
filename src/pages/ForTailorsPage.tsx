@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import SiteFooter from "@/components/home/SiteFooter";
+import SiteNavbar from "@/components/SiteNavbar";
 import forTailorsHero from "@/assets/for-tailors-hero.jpg";
-import naapioLogo from "@/assets/naapio-logo.png";
 
 
 const fadeUp = {
@@ -152,32 +152,7 @@ const ForTailorsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 cursor-pointer">
-            <img src={naapioLogo} alt="Naapio" className="w-8 h-8 rounded-lg object-cover" />
-            <span className="text-xl font-serif font-bold text-foreground">Naapio</span>
-          </a>
-          <div className="hidden md:flex items-center gap-8 font-sans text-sm text-muted-foreground">
-            <a href="/#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
-            <a href="/#categories" className="hover:text-foreground transition-colors">Categories</a>
-            <a href="/for-tailors" className="text-foreground font-medium">For Tailors</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => {
-              const isVendor = !!localStorage.getItem('naapio_vendor');
-              if (isVendor) navigate('/vendor');
-              else navigate('/?vendor_login=1');
-            }}>
-              {localStorage.getItem('naapio_vendor') ? 'My Dashboard →' : 'Artisan Login'}
-            </Button>
-            <Button variant="gold" size="sm" onClick={() => navigate("/wizard")}>
-              Get Started
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <SiteNavbar />
 
       {/* ======== SECTION 1 — HERO ======== */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-foreground">

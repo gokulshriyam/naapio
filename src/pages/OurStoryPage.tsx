@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { craftHeritage } from "@/data/craftHeritage";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SiteNavbar from "@/components/SiteNavbar";
+import SiteFooter from "@/components/home/SiteFooter";
 
 const REGION_ORDER: Array<"North" | "East" | "Northeast" | "South" | "West" | "Central"> = [
   "North",
@@ -18,13 +20,8 @@ const OurStoryPage = () => {
 
   return (
     <div className="bg-background">
-      {/* Back button */}
-      <button
-        onClick={() => navigate("/")}
-        className="fixed top-6 left-6 z-50 inline-flex items-center gap-2 text-white/70 hover:text-white font-sans text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
+      <SiteNavbar />
+
 
       {/* SECTION 1 — Opening */}
       <section className="min-h-screen bg-foreground flex items-center justify-center relative overflow-hidden">
@@ -227,6 +224,8 @@ const OurStoryPage = () => {
           </Button>
         </div>
       </section>
+
+      <SiteFooter />
     </div>
   );
 };

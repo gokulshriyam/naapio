@@ -6,16 +6,13 @@ import sangeetVideo from "@/assets/wedding/sangeet.mp4.asset.json";
 import haldiVideo from "@/assets/wedding/haldi.mp4.asset.json";
 import weddingDayVideo from "@/assets/wedding/wedding-day.mp4.asset.json";
 import receptionVideo from "@/assets/wedding/reception.mp4.asset.json";
-import redLehenga from "@/assets/red-lehenga.jpg";
-import womensFashion from "@/assets/womens-fashion.jpg";
-import mensFashion from "@/assets/mens-fashion.jpg";
 
 const functions = [
-  { name: "Mehendi", video: mehendiVideo.url, poster: womensFashion },
-  { name: "Sangeet", video: sangeetVideo.url, poster: redLehenga },
-  { name: "Haldi", video: haldiVideo.url, poster: womensFashion },
-  { name: "Wedding Day", video: weddingDayVideo.url, poster: redLehenga },
-  { name: "Reception", video: receptionVideo.url, poster: mensFashion },
+  { name: "Mehendi", video: mehendiVideo.url },
+  { name: "Sangeet", video: sangeetVideo.url },
+  { name: "Haldi", video: haldiVideo.url },
+  { name: "Wedding Day", video: weddingDayVideo.url },
+  { name: "Reception", video: receptionVideo.url },
 ];
 
 const WeddingEdit = () => {
@@ -44,7 +41,7 @@ const WeddingEdit = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="rounded-2xl overflow-hidden relative aspect-[3/4] cursor-pointer group"
+              className="rounded-2xl overflow-hidden relative aspect-[3/4] cursor-pointer group bg-black/40"
               onClick={() => navigate('/start')}
             >
               <video
@@ -53,7 +50,6 @@ const WeddingEdit = () => {
                 loop
                 playsInline
                 preload="metadata"
-                poster={f.poster}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               >
                 <source src={f.video} type="video/mp4" />
