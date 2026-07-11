@@ -97,7 +97,7 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="hidden md:block"
           >
-            <div className="relative h-[620px] w-full">
+            <div className="relative h-[480px] w-full">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={scenarioIndex}
@@ -139,7 +139,7 @@ const HeroSection = () => {
                   </div>
 
                   {/* Card 3 — Milestone */}
-                  <div className="absolute bottom-4 right-0 -rotate-1 z-20 bg-card rounded-2xl shadow-lg p-4 w-64">
+                  <div className="absolute top-72 right-0 -rotate-1 z-20 bg-card rounded-2xl shadow-lg p-4 w-64">
                     <p className="font-sans text-xs font-semibold text-success mb-1 leading-snug">🔒 {s.milestone}</p>
                     <p className="font-sans text-xs text-muted-foreground mt-1">{s.price} held in escrow</p>
                   </div>

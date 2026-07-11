@@ -1,61 +1,43 @@
 import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { featuredPosts } from "@/data/featuredPosts";
+import { supabase } from "@/integrations/supabase/client";
 
-type OEmbedResult = {
+type Card = {
   url: string;
-  thumbnail: string | null;
-  author: string | null;
-  loading: boolean;
+  thumbnailUrl: string;
+  authorName: string | null;
 };
 
 const RealOrdersStrip = () => {
-  const [results, setResults] = useState<OEmbedResult[]>(
-    () => featuredPosts.map((url) => ({ url, thumbnail: null, author: null, loading: true }))
-  );
+  const [cards, setCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await Promise.all(
-        featuredPosts.map(async (postUrl, idx) => {
-          try {
-            const endpoint = `https://graph.facebook.com/v25.0/instagram_oembed?url=${encodeURIComponent(
-              postUrl
-            )}&omitscript=true`;
-            const res = await fetch(endpoint);
-            if (!res.ok) throw new Error(`oEmbed ${res.status}`);
-            const json = await res.json();
-            if (cancelled) return;
-            setResults((prev) => {
-              const next = [...prev];
-              next[idx] = {
-                url: postUrl,
-                thumbnail: json.thumbnail_url || null,
-                author: json.author_name || null,
-                loading: false,
-              };
-              return next;
-            });
-          } catch (err) {
-            console.error("Instagram oEmbed failed for", postUrl, err);
-            if (cancelled) return;
-            setResults((prev) => {
-              const next = [...prev];
-              next[idx] = { url: postUrl, thumbnail: null, author: null, loading: false };
-              return next;
-            });
-          }
-        })
-      );
+      try {
+        const { data, error } = await supabase.functions.invoke("instagram-oembed", {
+          body: { urls: featuredPosts },
+        });
+        if (cancelled) return;
+        if (error) {
+          console.error("instagram-oembed invoke error", error);
+          setCards([]);
+        } else {
+          setCards((data?.results as Card[]) || []);
+        }
+      } catch (e) {
+        console.error("instagram-oembed fetch failed", e);
+        if (!cancelled) setCards([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
   }, []);
-
-  const anyLoading = results.some((r) => r.loading);
-  const visibleCards = results.filter((r) => r.loading || r.thumbnail);
 
   return (
     <section className="py-24 bg-background">
@@ -74,13 +56,15 @@ const RealOrdersStrip = () => {
 
         <div className="overflow-x-auto -mx-6 px-6">
           <div className="flex gap-4">
-            {visibleCards.map((r, i) =>
-              r.loading ? (
+            {loading &&
+              Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={`skel-${i}`}
                   className="bg-muted animate-pulse rounded-2xl w-64 h-80 flex-shrink-0"
                 />
-              ) : (
+              ))}
+            {!loading &&
+              cards.map((r) => (
                 <a
                   key={r.url}
                   href={r.url}
@@ -89,8 +73,8 @@ const RealOrdersStrip = () => {
                   className="group relative w-64 h-80 flex-shrink-0 rounded-2xl overflow-hidden border border-border bg-card"
                 >
                   <img
-                    src={r.thumbnail!}
-                    alt={r.author ? `Reel by ${r.author}` : "Instagram reel"}
+                    src={r.thumbnailUrl}
+                    alt={r.authorName ? `Reel by ${r.authorName}` : "Instagram reel"}
                     loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -100,15 +84,14 @@ const RealOrdersStrip = () => {
                       <Play className="w-6 h-6 text-foreground ml-0.5" fill="currentColor" />
                     </div>
                   </div>
-                  {r.author && (
+                  {r.authorName && (
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="font-sans text-xs text-white/90 truncate">@{r.author}</p>
+                      <p className="font-sans text-xs text-white/90 truncate">@{r.authorName}</p>
                     </div>
                   )}
                 </a>
-              )
-            )}
-            {!anyLoading && visibleCards.length === 0 && (
+              ))}
+            {!loading && cards.length === 0 && (
               <p className="font-sans text-sm text-muted-foreground py-12">
                 Follow us on Instagram to see the latest work.
               </p>
