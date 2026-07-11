@@ -47,14 +47,14 @@ const craftOrigins = [
 ];
 
 const garmentCategories = [
-  { label: "Lehenga", image: catLehenga, gender: "Women", category: "Lehenga" },
-  { label: "Salwar Kameez", image: catSalwarKameez, gender: "Women", category: "Salwar Kameez" },
-  { label: "Saree Blouse", image: catSareeBlouse, gender: "Women", category: "Saree Blouse" },
-  { label: "Kurti", image: catKurti, gender: "Women", category: "Kurti" },
-  { label: "Sherwani", image: catSherwani, gender: "Men", category: "Sherwani" },
-  { label: "Kurta", image: catKurta, gender: "Men", category: "Kurta" },
-  { label: "Bandhgala", image: catBandhgala, gender: "Men", category: "Bandhgala" },
-  { label: "Suit", image: catSuitBlazer, gender: "Men", category: "Suit" },
+  { label: "Lehenga", image: catLehenga, gender: "Women", category: "Lehenga", position: "object-[50%_30%]" },
+  { label: "Salwar Kameez", image: catSalwarKameez, gender: "Women", category: "Salwar Kameez", position: "object-[50%_70%]" },
+  { label: "Saree Blouse", image: catSareeBlouse, gender: "Women", category: "Saree Blouse", position: "object-[50%_55%]" },
+  { label: "Kurti", image: catKurti, gender: "Women", category: "Kurti", position: "object-[50%_30%]" },
+  { label: "Sherwani", image: catSherwani, gender: "Men", category: "Sherwani", position: "object-[50%_30%]" },
+  { label: "Kurta", image: catKurta, gender: "Men", category: "Kurta", position: "object-[50%_30%]" },
+  { label: "Bandhgala", image: catBandhgala, gender: "Men", category: "Bandhgala", position: "object-[50%_30%]" },
+  { label: "Suit", image: catSuitBlazer, gender: "Men", category: "Suit", position: "object-[50%_30%]" },
 ];
 
 const occasions = [
@@ -211,7 +211,7 @@ const CategoryPreview = () => {
                 <img
                   src={gc.image}
                   alt={`${gc.label} category`}
-                  className="w-full h-full object-cover object-[50%_30%] rounded-xl group-hover:scale-105 transition-transform duration-500"
+                  className={`w-full h-full object-cover ${gc.position} rounded-xl group-hover:scale-105 transition-transform duration-500`}
                   loading={i < 2 ? undefined : "lazy"}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-xl" />
