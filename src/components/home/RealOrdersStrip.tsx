@@ -1,42 +1,32 @@
-import { useEffect, useState } from "react";
-import { Play } from "lucide-react";
+import { useEffect } from "react";
 import { featuredPosts } from "@/data/featuredPosts";
-import { supabase } from "@/integrations/supabase/client";
 
-type Card = {
-  url: string;
-  thumbnailUrl: string;
-  authorName: string | null;
-};
+declare global {
+  interface Window {
+    instgrm?: {
+      Embeds: {
+        process: () => void;
+      };
+    };
+  }
+}
 
 const RealOrdersStrip = () => {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("instagram-oembed", {
-          body: { urls: featuredPosts },
-        });
-        if (cancelled) return;
-        if (error) {
-          console.error("instagram-oembed invoke error", error);
-          setCards([]);
-        } else {
-          setCards((data?.results as Card[]) || []);
-        }
-      } catch (e) {
-        console.error("instagram-oembed fetch failed", e);
-        if (!cancelled) setCards([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    const scriptId = "instagram-embed-script";
+    const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!existing) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://www.instagram.com/embed.js";
+      script.async = true;
+      script.onload = () => {
+        if (window.instgrm) window.instgrm.Embeds.process();
+      };
+      document.body.appendChild(script);
+    } else if (window.instgrm) {
+      window.instgrm.Embeds.process();
+    }
   }, []);
 
   return (
@@ -54,48 +44,36 @@ const RealOrdersStrip = () => {
           </p>
         </div>
 
-        <div className="overflow-x-auto -mx-6 px-6">
+        <div className="overflow-x-auto -mx-6 px-6 pb-4">
           <div className="flex gap-4">
-            {loading &&
-              Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={`skel-${i}`}
-                  className="bg-muted animate-pulse rounded-2xl w-64 h-80 flex-shrink-0"
-                />
-              ))}
-            {!loading &&
-              cards.map((r) => (
-                <a
-                  key={r.url}
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative w-64 h-80 flex-shrink-0 rounded-2xl overflow-hidden border border-border bg-card"
+            {featuredPosts.map((url) => (
+              <div
+                key={url}
+                className="flex-shrink-0 w-[328px] rounded-2xl overflow-hidden bg-card"
+                style={{ minHeight: 500 }}
+              >
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-permalink={url}
+                  data-instgrm-version="14"
+                  style={{
+                    background: "#FFF",
+                    border: 0,
+                    borderRadius: 12,
+                    boxShadow: "none",
+                    margin: 0,
+                    padding: 0,
+                    width: "100%",
+                    minWidth: 326,
+                  }}
                 >
-                  <img
-                    src={r.thumbnailUrl}
-                    alt={r.authorName ? `Reel by ${r.authorName}` : "Instagram reel"}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Play className="w-6 h-6 text-foreground ml-0.5" fill="currentColor" />
-                    </div>
+                  <div className="p-6 animate-pulse">
+                    <div className="h-4 w-24 bg-muted rounded mb-4" />
+                    <div className="h-64 w-full bg-muted rounded" />
                   </div>
-                  {r.authorName && (
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="font-sans text-xs text-white/90 truncate">@{r.authorName}</p>
-                    </div>
-                  )}
-                </a>
-              ))}
-            {!loading && cards.length === 0 && (
-              <p className="font-sans text-sm text-muted-foreground py-12">
-                Follow us on Instagram to see the latest work.
-              </p>
-            )}
+                </blockquote>
+              </div>
+            ))}
           </div>
         </div>
 
