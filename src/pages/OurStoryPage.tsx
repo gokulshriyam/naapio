@@ -142,7 +142,7 @@ const OurStoryPage = () => {
                         <img
                           src={headline.image}
                           alt={`${headline.name} — ${state.state}`}
-                          className="w-full h-56 object-cover object-top"
+                          className="w-full h-56 object-cover object-center"
                         />
                         <div className="p-5">
                           <p className="font-sans text-xs text-accent uppercase tracking-wider mb-1">
