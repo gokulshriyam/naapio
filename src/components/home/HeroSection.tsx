@@ -16,7 +16,7 @@ const scenarios = [
   { garment: "Formal Suit", gender: "Men's", price: "₹12,500", fabric: "Wool Blend · Charcoal", surface: "Tailored Finish", milestone: "Milestone 1 — Measurements approved", image: formalSuit.url, objectPosition: "object-top" },
   { garment: "Anarkali", gender: "Women's", price: "₹9,000", fabric: "Chanderi Silk · Mustard", surface: "Zari Border", milestone: "Milestone 3 — Stitching in progress", image: anarkali.url, objectPosition: "object-top" },
   { garment: "Sherwani", gender: "Men's", price: "₹15,000", fabric: "Brocade · Deep Maroon", surface: "Zardozi Work", milestone: "Bidding just closed — escrow active", image: sherwani.url, objectPosition: "object-top" },
-  { garment: "Saree Blouse", gender: "Women's", price: "₹5,500", fabric: "Silk · Emerald Green", surface: "Mirror Work", milestone: "Milestone 2 — Fabric approved", image: sareeBlouse.url, objectPosition: "object-bottom" },
+  { garment: "Saree Blouse", gender: "Women's", price: "₹5,500", fabric: "Silk · Emerald Green", surface: "Mirror Work", milestone: "Milestone 2 — Fabric approved", image: sareeBlouse.url, objectPosition: "object-center" },
 ];
 
 const stats = [
