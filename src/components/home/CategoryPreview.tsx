@@ -211,7 +211,7 @@ const CategoryPreview = () => {
                 <img
                   src={gc.image}
                   alt={`${gc.label} category`}
-                  className="w-full h-full object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover object-[50%_30%] rounded-xl group-hover:scale-105 transition-transform duration-500"
                   loading={i < 2 ? undefined : "lazy"}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-xl" />

@@ -191,7 +191,7 @@ const IndiaCraftMap = () => {
                       <img
                         src={craft.image}
                         alt={craft.name}
-                        className="w-20 h-20 object-cover rounded-lg flex-shrink-0 border border-border"
+                        className="w-20 h-20 object-cover object-[50%_35%] rounded-lg flex-shrink-0 border border-border"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
