@@ -12,11 +12,11 @@ import sherwani from "@/assets/hero-scenarios/sherwani.jpeg.asset.json";
 import sareeBlouse from "@/assets/hero-scenarios/saree-blouse.jpeg.asset.json";
 
 const scenarios = [
-  { garment: "Party Lehenga", gender: "Women's", price: "₹18,000", fabric: "Georgette · Deep Red", surface: "Heavy Embroidery", milestone: "Milestone 4 — Virtual trial approved, ready for delivery", image: partyLehenga.url },
-  { garment: "Formal Suit", gender: "Men's", price: "₹12,500", fabric: "Wool Blend · Charcoal", surface: "Tailored Finish", milestone: "Milestone 1 — Measurements approved", image: formalSuit.url },
-  { garment: "Anarkali", gender: "Women's", price: "₹9,000", fabric: "Chanderi Silk · Mustard", surface: "Zari Border", milestone: "Milestone 3 — Stitching in progress", image: anarkali.url },
-  { garment: "Sherwani", gender: "Men's", price: "₹15,000", fabric: "Brocade · Deep Maroon", surface: "Zardozi Work", milestone: "Bidding just closed — escrow active", image: sherwani.url },
-  { garment: "Saree Blouse", gender: "Women's", price: "₹5,500", fabric: "Silk · Emerald Green", surface: "Mirror Work", milestone: "Milestone 2 — Fabric approved", image: sareeBlouse.url },
+  { garment: "Party Lehenga", gender: "Women's", price: "₹18,000", fabric: "Georgette · Deep Red", surface: "Heavy Embroidery", milestone: "Milestone 4 — Virtual trial approved, ready for delivery", image: partyLehenga.url, objectPosition: "object-top" },
+  { garment: "Formal Suit", gender: "Men's", price: "₹12,500", fabric: "Wool Blend · Charcoal", surface: "Tailored Finish", milestone: "Milestone 1 — Measurements approved", image: formalSuit.url, objectPosition: "object-top" },
+  { garment: "Anarkali", gender: "Women's", price: "₹9,000", fabric: "Chanderi Silk · Mustard", surface: "Zari Border", milestone: "Milestone 3 — Stitching in progress", image: anarkali.url, objectPosition: "object-top" },
+  { garment: "Sherwani", gender: "Men's", price: "₹15,000", fabric: "Brocade · Deep Maroon", surface: "Zardozi Work", milestone: "Bidding just closed — escrow active", image: sherwani.url, objectPosition: "object-top" },
+  { garment: "Saree Blouse", gender: "Women's", price: "₹5,500", fabric: "Silk · Emerald Green", surface: "Mirror Work", milestone: "Milestone 2 — Fabric approved", image: sareeBlouse.url, objectPosition: "object-bottom" },
 ];
 
 const stats = [
@@ -113,7 +113,7 @@ const HeroSection = () => {
                     <img
                       src={s.image}
                       alt="Uploaded inspiration"
-                      className="w-full h-32 object-cover object-top rounded-lg mb-2"
+                      className={`w-full h-32 object-cover ${s.objectPosition} rounded-lg mb-2`}
                     />
                     <p className="font-sans text-xs text-foreground">
                       {s.garment} · {colorPart} · {s.surface}
