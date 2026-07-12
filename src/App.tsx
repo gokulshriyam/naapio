@@ -24,6 +24,8 @@ import PaymentPage from "./pages/new-order/PaymentPage";
 import BriefPage from "./pages/new-order/BriefPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import RefundPage from "./pages/RefundPage";
+import CancellationPage from "./pages/CancellationPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import CareersPage from "./pages/CareersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
@@ -57,6 +59,8 @@ const App = () => (
             <Route path="/customise" element={<CustomiseFlow />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/refund" element={<RefundPage />} />
+            <Route path="/cancellation" element={<CancellationPage />} />
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/vendor" element={<VendorLayout />}>
