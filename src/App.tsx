@@ -26,6 +26,8 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import RefundPage from "./pages/RefundPage";
 import CancellationPage from "./pages/CancellationPage";
+import ContactPage from "./pages/ContactPage";
+import ShippingPage from "./pages/ShippingPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import CareersPage from "./pages/CareersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
@@ -61,6 +63,8 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/refund" element={<RefundPage />} />
             <Route path="/cancellation" element={<CancellationPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/shipping" element={<ShippingPage />} />
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/vendor" element={<VendorLayout />}>

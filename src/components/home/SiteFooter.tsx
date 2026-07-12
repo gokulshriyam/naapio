@@ -56,6 +56,8 @@ const SiteFooter = () => {
               <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/privacy')}>Privacy Policy</li>
               <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/refund')}>Refund Policy</li>
               <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/cancellation')}>Cancellation Policy</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/shipping')}>Shipping &amp; Exchange</li>
+              <li className="hover:text-accent cursor-pointer transition-colors" onClick={() => navigate('/contact')}>Contact Us</li>
             </ul>
           </div>
         </div>
