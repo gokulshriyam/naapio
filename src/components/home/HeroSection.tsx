@@ -148,18 +148,60 @@ const HeroSection = () => {
             </div>
           </motion.div>
 
-          {/* Mobile single image */}
+          {/* Mobile — same rotating scenario, stacked & optimized */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="md:hidden"
           >
-            <img
-              src={redLehenga}
-              alt="Red bridal lehenga"
-              className="w-full rounded-2xl shadow-xl"
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={scenarioIndex}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-3"
+              >
+                {/* Card 1 — Inspiration */}
+                <div className="bg-card rounded-2xl shadow-lg p-3">
+                  <p className="font-sans text-[11px] text-muted-foreground mb-2">Your inspiration</p>
+                  <img
+                    src={s.image}
+                    alt={`${s.garment} inspiration`}
+                    className={`w-full h-48 object-cover ${s.objectPosition} rounded-lg mb-2`}
+                  />
+                  <p className="font-sans text-xs text-foreground">
+                    {s.garment} · {colorPart} · {s.surface}
+                  </p>
+                </div>
+
+                {/* Card 2 — AI Brief */}
+                <div className="bg-card rounded-2xl shadow-xl p-3">
+                  <p className="font-sans text-[11px] text-accent mb-2 flex items-center gap-1">
+                    <span>✦</span> AI Brief Generated
+                  </p>
+                  <ul className="space-y-1">
+                    <li className="font-sans text-xs text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent" /> {s.gender} · {s.garment}
+                    </li>
+                    <li className="font-sans text-xs text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent" /> {s.fabric}
+                    </li>
+                    <li className="font-sans text-xs text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent" /> {s.surface} · {s.price}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Card 3 — Milestone */}
+                <div className="bg-card rounded-2xl shadow-lg p-3">
+                  <p className="font-sans text-xs font-semibold text-success leading-snug">🔒 {s.milestone}</p>
+                  <p className="font-sans text-[11px] text-muted-foreground mt-1">{s.price} held in escrow</p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
