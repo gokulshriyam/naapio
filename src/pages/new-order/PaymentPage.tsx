@@ -113,7 +113,7 @@ const PaymentPage = () => {
                       else toast.error("Enter any 4 digits");
                     }}>Verify</Button>
                   </div>
-                  <p className="text-xs text-muted-foreground font-sans mt-2">Demo mode — enter any 4 digits</p>
+                  
                 </>
               )
             ) : (
