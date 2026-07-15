@@ -262,7 +262,7 @@ const VendorWallet = () => {
               <div>
                 <Label className="text-xs font-sans">Enter OTP</Label>
                 <Input value={bankOtp} onChange={e => setBankOtp(e.target.value)} placeholder="4-digit OTP" maxLength={4} className="mt-1 h-8 text-xs" />
-                <p className="text-[10px] font-sans text-muted-foreground mt-1">Demo mode — enter any 4 digits</p>
+                
               </div>
             )}
           </div>
